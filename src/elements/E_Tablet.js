@@ -1,9 +1,10 @@
 import { Rect, Keyboard } from "leafer-game";
 import { GI, GP, Tablet } from "../core/instances";
-import { UIConf } from "../config";
+import { GameConf, UIConf } from "../config";
 
 export default class E_Tablet extends Rect {
     confUI = UIConf.Tablet;
+    confGm = GameConf.Tablet;
     vxMax;
     vyMax;
     vx;
@@ -19,8 +20,8 @@ export default class E_Tablet extends Rect {
     }
 
     reset_() {
-        this.vxMax = 6;
-        this.vyMax = 2.8;
+        this.vxMax = this.confGm.VX;
+        this.vyMax = this.confGm.VY;
         this.vx = 0;
         this.vy = 0;
         this.cx = GP.bw * this.confUI.X_RATIO;

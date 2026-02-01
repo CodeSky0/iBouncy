@@ -1,3 +1,4 @@
+import { GameConf } from "./config";
 import {
     setPrevTimeStamp,
     F,
@@ -69,7 +70,7 @@ function gameLoop(timeStamp) {
 
     let steps = 1;
     if (GP.at("playing")) {
-        accumulated += Math.min(deltaTime, 500); // can redisplay frames of up to 0.5s
+        accumulated += Math.min(deltaTime, GameConf.MAX_ACCUMULATED * 1000);
         Ball.timeDivisor = Math.min(F(accumulated / GP.ENV.fixedStep), GP.ENV.maxStepPerFrame);
         while (accumulated >= GP.ENV.fixedStep && steps <= GP.ENV.maxStepPerFrame) { // sub-stepping loop
             accumulated -= GP.ENV.fixedStep;

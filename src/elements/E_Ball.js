@@ -1,10 +1,11 @@
 import { Ellipse } from "leafer-game";
 import X_BallTrailing from "../elements_extensions/X_BallTrailing";
 import { GI, GP, leafer, Timing } from "../core/instances";
-import { UIConf } from "../config";
+import { GameConf, UIConf } from "../config";
 
 export default class E_Ball extends Ellipse {
     confUI = UIConf.Ball;
+    confGm = GameConf.Ball;
     vx;
     ax;
     ay;
@@ -20,10 +21,11 @@ export default class E_Ball extends Ellipse {
     }
 
     reset_() {
-        this.vx = (Math.random() * 1.9 + 1.6) * (Math.random() > 0.5 ? 1 : -1);
-        this.vy = 3.5;
-        this.ax = 4.2e-4;
-        this.ay = 8.2e-4;
+        const { VX_MAX, VX_MIN, VY, AX, AY } = this.confGm;
+        this.vx = (Math.random() * (VX_MAX - VX_MIN) + VX_MIN) * (Math.random() > 0.5 ? 1 : -1);
+        this.vy = VY;
+        this.ax = AX;
+        this.ay = AY;
         this.cx = GP.bw * this.confUI.X_RATIO;
         this.cy = GP.bh * this.confUI.Y_RATIO;
     }
@@ -38,7 +40,7 @@ export default class E_Ball extends Ellipse {
     }
 
     frameLoop_(prog) {
-        if (Timing.remaining > 15 && Timing.remaining <= 105) {
+        if (Timing.remaining > this.confGm.ACCELERATION.TO && Timing.remaining <= this.confGm.ACCELERATION.FROM) {
             this.vx += Math.sign(this.vx) * this.ax * prog;
             this.vy += Math.sign(this.vy) * this.ay * prog;
         }

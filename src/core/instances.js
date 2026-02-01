@@ -1,5 +1,6 @@
 import { Leafer } from "leafer-game";
 import extendUI from "../utils/UIExtensions";
+import { GameConf } from "../config";
 import Processor from "./processor";
 import Interaction from "./interaction";
 import EmbeddedTimer from "../utils/EmbeddedTimer";
@@ -37,14 +38,14 @@ export const leafer = new Leafer({
 });
 
 export const GP = new Processor({
-    refreshRate: 60,
-    actUnitInterval: 16.7,
-    stdUnitInterval: 16.7,
-    fixedStep: 16.7,
-    maxStepPerFrame: 10,
-    paddingTop: 80,
-    paddingSide: 40,
-    timeLimit: 120,
+    refreshRate: GameConf.DEFAULT_REFRESH_RATE,
+    actUnitInterval: 1000 / GameConf.DEFAULT_REFRESH_RATE,
+    stdUnitInterval: 1000 / GameConf.DEFAULT_REFRESH_RATE,
+    fixedStep: 1000 / GameConf.DEFAULT_REFRESH_RATE,
+    maxStepPerFrame: GameConf.MAX_STEP_PER_FRAME,
+    paddingTop: GameConf.PADDING.TOP,
+    paddingSide: GameConf.PADDING.SIDE,
+    timeLimit: GameConf.TIME_LIMIT,
 });
 
 export const GI = new Interaction();

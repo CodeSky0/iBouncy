@@ -1,10 +1,10 @@
 import { Ball, D, GP, Tablet, timer } from "./instances";
+import { GameConf } from "../config";
 
 export default class Interaction {
     collisionStat = 0;
-    accelerateCD = 50;
-    prevXAccTime;
-    prevYAccTime;
+    accelerateCD = GameConf.Ball.ACCELERATION.COOLDOWN * 1000;
+    prevAccTime = [0, 0];
 
     boundaryDetect(ge, {
         bounce = false,
@@ -69,20 +69,21 @@ export default class Interaction {
     tempAccelerate(direction) {
         if (direction !== "x" && direction !== "y") return 0;
         const now = performance.now();
-        const prevAccTimeName = `prev${direction.toUpperCase()}AccTime`;
-        if (this[prevAccTimeName] !== void 0 && now - this[prevAccTimeName] < this.accelerateCD) return 0;
-        this[prevAccTimeName] = now;
+        const patI = direction === "x" ? 0 : 1;
+        if (this.prevAccTime[patI] !== void 0 && now - this.prevAccTime[patI] < this.accelerateCD) return 0;
+        this.prevAccTime[patI] = now;
+        const { RATIO_X1, RATIO_X2, RATIO_Y1, RATIO_Y2, DECAY_DELAY, DECAY_TIMES } = GameConf.Ball.ACCELERATION;
         const vName = "v" + direction;
-        const ratio1 = direction === "x" ? 1.5 : 1.2;
-        const ratio2 = direction === "x" ? 0.6 : 0.25;
+        const ratio1 = direction === "x" ? RATIO_X1 : RATIO_Y1;
+        const ratio2 = direction === "x" ? RATIO_X2 : RATIO_Y2;
         const vBuffRatio = ratio1 - Math.sign(Ball[vName]) * Tablet[vName] * ratio2 / Tablet[vName + "Max"];
         const vBuff = D(Ball[vName] * (vBuffRatio - 1));
-        const vUnitNerf = vBuff / 6;
+        const vUnitNerf = vBuff / DECAY_TIMES;
         timer.newInterval(() => {
             Ball[vName] -= Math.sign(Ball[vName]) * vUnitNerf;
         }, 0, {
-            delay: 200,
-            executeTimes: 6,
+            delay: DECAY_DELAY * 1000,
+            executeTimes: DECAY_TIMES,
         });
         return vBuff;
     }

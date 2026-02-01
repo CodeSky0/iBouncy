@@ -94,6 +94,7 @@ export default class Processor {
     }
 
     async fontInitializer(name, src) {
+        src = src.replace(".woff2", "").replace(".woff", "");
         const font = new FontFace(name, `url(${src}.woff2)`);
         try {
             await font.load();
