@@ -2,8 +2,6 @@ import { Group, Path, Text } from "leafer-game";
 import { Ball, F, GP, timer } from "../core/instances";
 import { UIConf } from "../config";
 
-import customFont from "/src/assets/fonts/HYDiSiKe-U.woff2";
-
 export default class E_Scoring extends Group {
     confUI = UIConf.Scoring;
     v = 0;
@@ -65,7 +63,8 @@ export default class E_Scoring extends Group {
     }
 
     async #loadFont_() {
-        await GP.fontInitializer("HYDiSiKe-U", customFont);
+        const fontURL = new URL("/public/fonts/HYDiSiKe-U.woff2", import.meta.url).href;
+        await GP.fontInitializer("HYDiSiKe-U", fontURL);
         this.#newScore_();
     }
 

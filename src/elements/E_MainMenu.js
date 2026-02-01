@@ -3,8 +3,6 @@ import { GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
 
-import brandSVG from "/src/assets/svg/brand.svg";
-
 export default class E_MainMenu extends Group {
     confUI = UIConf.MainMenu;
 
@@ -62,6 +60,7 @@ export default class E_MainMenu extends Group {
     }
 
     async preloadImage() {
+        const brandSVG = new URL('/public/svg/brand.svg', import.meta.url).href;
         await GP.ImageInitializer("brand.svg", brandSVG);
     }
 

@@ -3,10 +3,6 @@ import { GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
 
-import winJPG from "/src/assets/img/GL.jpg";
-import failJPG from "/src/assets/img/DL.jpg";
-import customFont from "/src/assets/fonts/HYBeiBingYang-W.woff2";
-
 export default class E_Settlement extends Group {
     confUI = UIConf.Settlement;
 
@@ -68,10 +64,13 @@ export default class E_Settlement extends Group {
     }
 
     async #loadFont_() {
-        await GP.fontInitializer("HYBeiBingYang-W", customFont);
+        const fontURL = new URL("/public/fonts/HYBeiBingYang-W.woff2", import.meta.url).href;
+        await GP.fontInitializer("HYBeiBingYang-W", fontURL);
     }
 
     async #preloadImage_() {
+        const winJPG = new URL("/public/img/GL.jpg", import.meta.url).href;
+        const failJPG = new URL("/public/img/DL.jpg", import.meta.url).href;
         await Promise.all([
             GP.ImageInitializer("GL.jpg", winJPG),
             GP.ImageInitializer("DL.jpg", failJPG),
