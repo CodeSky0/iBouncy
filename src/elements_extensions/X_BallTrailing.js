@@ -1,9 +1,9 @@
 import { Ellipse, AnimateEvent } from "leafer-game";
 import { Ball, C, F, GP, leafer } from "../core/instances";
+import { UIConf } from "../config";
 
 export default class X_BallTrailing {
     length = 8;
-    dotRadius = 5.5;
     loopIdx = 0;
     dotIdx = -1;
     dots = new Map();
@@ -15,10 +15,10 @@ export default class X_BallTrailing {
             this.dots.set(i, new Ellipse({
                 x: -100,
                 y: -100,
-                width: this.dotRadius * 2,
-                height: this.dotRadius * 2,
+                width: UIConf.BallTrailing.RADIUS * 2,
+                height: UIConf.BallTrailing.RADIUS * 2,
                 around: "center",
-                fill: "#FF4500BA",
+                fill: UIConf.BallTrailing.FILL,
                 visible: false,
             }));
         }
@@ -43,7 +43,7 @@ export default class X_BallTrailing {
         if (this.loopIdx === 0) {
             const idx = this.dotIdx = (this.dotIdx + 1) % this.length;
             const dot = this.dots.get(idx);
-            dot.w = dot.h = this.dotRadius * 2;
+            dot.w = dot.h = UIConf.BallTrailing.RADIUS * 2;
             dot.opacity = 1;
             dot.x = Ball.cx;
             dot.y = Ball.cy;
@@ -56,7 +56,7 @@ export default class X_BallTrailing {
             }
             const ani = dot.animate(
                 [
-                    { opacity: 1, width: this.dotRadius * 2, height: this.dotRadius * 2 },
+                    { opacity: 1, width: UIConf.BallTrailing.RADIUS * 2, height: UIConf.BallTrailing.RADIUS * 2 },
                     { opacity: 0.3, width: 5, height: 5 },
                 ],
                 {
@@ -67,7 +67,7 @@ export default class X_BallTrailing {
             ani.on(AnimateEvent.COMPLETED, () => {
                 this.activeAnimations.delete(idx);
                 dot.visible = false;
-                dot.w = dot.h = this.dotRadius * 2;
+                dot.w = dot.h = UIConf.BallTrailing.RADIUS * 2;
                 dot.opacity = 1;
             });
             this.activeAnimations.set(idx, ani);

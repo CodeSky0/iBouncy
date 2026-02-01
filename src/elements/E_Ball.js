@@ -4,6 +4,7 @@ import { GI, GP, leafer, Timing } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_Ball extends Ellipse {
+    confUI = UIConf.Ball;
     vx;
     ax;
     ay;
@@ -23,8 +24,8 @@ export default class E_Ball extends Ellipse {
         this.vy = 3.5;
         this.ax = 4.2e-4;
         this.ay = 8.2e-4;
-        this.cx = GP.bw / 2;
-        this.cy = GP.bh / 4;
+        this.cx = GP.bw * this.confUI.X_RATIO;
+        this.cy = GP.bh * this.confUI.Y_RATIO;
     }
 
     render_() {

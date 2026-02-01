@@ -3,11 +3,7 @@ import { GP } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_Mask extends Rect {
-    #config = {
-        fill: UIConf.Mask.FILL,
-        opacity: 0.6,
-        fadeInDuration: 0.8,
-    };
+    confUI = UIConf.Mask;
 
     constructor() {
         super({
@@ -20,8 +16,8 @@ export default class E_Mask extends Rect {
             zIndex: 990,
         });
         this.animation = {
-            style: { opacity: this.#config.opacity },
-            duration: this.#config.fadeInDuration,
+            style: { opacity: this.confUI.OPACITY },
+            duration: this.confUI.FADE_IN_DURATION,
             join: true,
         };
     }
@@ -31,7 +27,7 @@ export default class E_Mask extends Rect {
         this.h = e.height;
     }
 
-    show_(fill = this.#config.fill, fromOpacity = 0, toOpacity = this.#config.opacity, duration = this.#config.fadeInDuration) {
+    show_(fill = this.confUI.FILL, fromOpacity = 0, toOpacity = this.confUI.OPACITY, duration = this.confUI.FADE_IN_DURATION) {
         this.visible = true;
         this.relocate_({ width: GP.bw, height: GP.bh });
         this.fill = fill;

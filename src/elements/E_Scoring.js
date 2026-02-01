@@ -3,6 +3,7 @@ import { Ball, F, GP, timer } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_Scoring extends Group {
+    confUI = UIConf.Scoring;
     v = 0;
 
     constructor() {
@@ -24,23 +25,23 @@ export default class E_Scoring extends Group {
                 "  Z",
             x: 120,
             y: 0,
-            fill: UIConf.Scoring.Panel.FILL,
+            fill: this.confUI.Panel.FILL,
         });
         this.Integer = new Text({
             x: -GP.bw,
             y: 7,
-            fontSize: UIConf.Scoring.Integer.FONT_SIZE,
-            fill: UIConf.Scoring.Integer.FILL,
+            fontSize: this.confUI.Integer.FONT_SIZE,
+            fill: this.confUI.Integer.FILL,
             text: "-",
-            fontFamily: UIConf.Scoring.Integer.FONT_FAMILY,
+            fontFamily: this.confUI.FONT_FAMILY,
         });
         this.Decimal = new Text({
             x: -GP.bw,
             y: 15,
-            fontSize: UIConf.Scoring.Decimal.FONT_SIZE,
-            fill: UIConf.Scoring.Decimal.FILL,
+            fontSize: this.confUI.Decimal.FONT_SIZE,
+            fill: this.confUI.Decimal.FILL,
             text: "--",
-            fontFamily: UIConf.Scoring.Decimal.FONT_FAMILY,
+            fontFamily: this.confUI.FONT_FAMILY,
         });
         this.add([this.Panel, this.Integer, this.Decimal]);
 
@@ -80,27 +81,35 @@ export default class E_Scoring extends Group {
     }
 
     tip_(delta) {
+        const tipConf = this.confUI.tip;
+        const aniConf = tipConf.ANIMATION;
         const [initialOffsetX, transitionX, transitionY] = this.#getTipData_();
         const tip = new Text({
             x: Ball.cx + initialOffsetX,
             y: Ball.oy,
             around: "center",
             text: "+" + delta,
-            fill: UIConf.Scoring.tip.FILL,
-            stroke: UIConf.Scoring.tip.STROKE,
-            fontSize: UIConf.Scoring.tip.FONT_SIZE,
-            fontFamily: UIConf.Scoring.tip.FONT_FAMILY,
-            opacity: 0.9,
+            fill: tipConf.FILL,
+            stroke: tipConf.STROKE,
+            fontSize: tipConf.FONT_SIZE,
+            fontFamily: this.confUI.FONT_FAMILY,
+            opacity: tipConf.OPACITY,
             shadow: {
                 x: 1,
                 y: 1,
                 blur: 10,
-                color: "gray",
+                color: tipConf.SHADOW_COLOR,
             },
             animation: {
                 keyframes: [
-                    { style: { opacity: 0.9, fontSize: 24 }, duration: 0.3 },
-                    { style: { opacity: 0, fontSize: 25 }, duration: 0.4 },
+                    {
+                        style: { opacity: tipConf.OPACITY, fontSize: aniConf.FONT_SIZE1 },
+                        duration: aniConf.STYLE_DURATION1,
+                    },
+                    {
+                        style: { opacity: 0, fontSize: aniConf.FONT_SIZE2 },
+                        duration: aniConf.STYLE_DURATION2,
+                    },
                 ],
                 join: true,
             },
@@ -109,19 +118,27 @@ export default class E_Scoring extends Group {
         tip.animate([
             { offsetX: transitionX },
         ], {
-            duration: 0.45,
+            duration: aniConf.X_DURATION,
             easing: "sine-out",
             join: true,
         });
         tip.animate([
-            { style: { offsetY: -12 }, duration: 0.12, easing: "quad-out" },
-            { style: { offsetY: transitionY }, duration: 0.28, easing: "quad-in-out" },
+            {
+                style: { offsetY: aniConf.Y_OFFSET1 },
+                duration: aniConf.Y_DURATION1,
+                easing: "quad-out",
+            },
+            {
+                style: { offsetY: transitionY },
+                duration: aniConf.Y_DURATION2,
+                easing: "quad-in-out",
+            },
         ], {
             join: true,
         });
         timer.newTimeout(function () {
             tip.destroy();
-        }, 600);
+        }, tipConf.DURATION * 1000);
     }
 
     #getTipData_() {

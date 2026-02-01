@@ -4,6 +4,8 @@ import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
 
 export default class E_Settlement extends Group {
+    confUI = UIConf.Settlement;
+
     constructor() {
         super({
             x: 0,
@@ -14,21 +16,30 @@ export default class E_Settlement extends Group {
             zIndex: 991,
         });
         this.Title = new Text({
-            x: GP.bw / 2,
-            y: GP.bh * 2 / 7,
+            x: GP.bw * this.confUI.X_RATIO,
+            y: GP.bh * this.confUI.Title.Y_RATIO,
             around: "center",
             text: "",
-            fontSize: UIConf.Settlement.Title.FONT_SIZE,
-            fontFamily: UIConf.Settlement.Title.FONT_FAMILY,
-            scale: 0.5,
+            fontSize: this.confUI.Title.FONT_SIZE,
+            fontFamily: this.confUI.Title.FONT_FAMILY,
+            scale: this.confUI.Title.SCALE,
             opacity: 0,
         });
-        this.Hint1 = new TextLine(GP.bw / 2, GP.bh * 9 / 14 - 12, "center", UIConf.Settlement.Hint1.FILL, UIConf.Settlement.Hint1.FONT_SIZE)
+        this.Hint1 = new TextLine(
+            GP.bw * this.confUI.X_RATIO,
+            GP.bh * this.confUI.Hint1.Y_RATIO + this.confUI.Hint1.Y_OFFSET,
+            "center",
+            this.confUI.Hint1.FILL,
+            this.confUI.Hint1.FONT_SIZE)
             .$append("按")
             .$append("空格键", 3, void 0, void 0, "bold")
             .$append("重新开始");
         this.Hint1.opacity = 0;
-        this.Hint2 = new TextLine(GP.bw / 2, GP.bh * 9 / 14 + 12, "center", UIConf.Settlement.Hint2.FILL, UIConf.Settlement.Hint2.FONT_SIZE)
+        this.Hint2 = new TextLine(GP.bw * this.confUI.X_RATIO,
+            GP.bh * this.confUI.Hint2.Y_RATIO + this.confUI.Hint2.Y_OFFSET,
+            "center",
+            this.confUI.Hint2.FILL,
+            this.confUI.Hint2.FONT_SIZE)
             .$append("按")
             .$append("回车键", 3, void 0, void 0, "bold")
             .$append("返回开始菜单");
@@ -69,36 +80,36 @@ export default class E_Settlement extends Group {
         this.Title.animate([
             { scale: 1, opacity: 1 },
         ], {
-            duration: 0.4,
+            duration: this.confUI.Title.SHOW_DURATION,
             join: true,
         });
-        this.Hint1.fadeIn_(0.8, 0.2);
-        this.Hint2.fadeIn_(0.8, 0.4);
+        this.Hint1.fadeIn_(this.confUI.Hint1.FADE_IN_DURATION, this.confUI.Hint1.FADE_IN_DELAY);
+        this.Hint2.fadeIn_(this.confUI.Hint2.FADE_IN_DURATION, this.confUI.Hint2.FADE_IN_DELAY);
     }
 
     hide_() {
         this.Title.animate([
-            { scale: 0.3, opacity: 0 },
+            { scale: this.confUI.Title.HIDE_SCALE, opacity: 0 },
         ], {
-            duration: 0.3,
+            duration: this.confUI.Title.HIDE_DURATION,
             join: true,
         });
-        this.Hint1.fadeOut_(0.5);
-        this.Hint2.fadeOut_(0.5)
+        this.Hint1.fadeOut_(this.confUI.Hint1.FADE_OUT_DURATION);
+        this.Hint2.fadeOut_(this.confUI.Hint2.FADE_OUT_DURATION)
             .once(AnimateEvent.COMPLETED, () => this.visible = false);
     }
 
     win_() {
         this.Title.text = " You Win! ";
-        this.#setTextFill_("leafer://GL.jpg", 75);
-        this.#setShadowColor_("#FFEF00");
+        this.#setTextFill_("leafer://GL.jpg", this.confUI.Title.WIN_BG_Y_OFFSET);
+        this.#setShadowColor_(this.confUI.Title.WIN_SHADOW_COLOR);
         this.show_();
     }
 
     fail_() {
         this.Title.text = " FAIL ";
-        this.#setTextFill_("leafer://DL.jpg", -50);
-        this.#setShadowColor_("#474746");
+        this.#setTextFill_("leafer://DL.jpg", this.confUI.Title.FAIL_BG_Y_OFFSET);
+        this.#setShadowColor_(this.confUI.Title.FAIL_SHADOW_COLOR);
         this.show_();
     }
 
@@ -114,8 +125,8 @@ export default class E_Settlement extends Group {
         this.Title.shadow = {
             x: 0,
             y: 0,
-            blur: 25,
-            spread: 15,
+            blur: this.confUI.Title.SHADOW_BLUR,
+            spread: this.confUI.Title.SHADOW_SPREAD,
             color: color,
         };
     }

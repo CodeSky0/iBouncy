@@ -4,7 +4,7 @@ import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
 
 export default class E_OptionsMenu extends Group {
-    $vis = false;
+    confUI = UIConf.OptionsMenu;
 
     constructor() {
         super({
@@ -16,19 +16,29 @@ export default class E_OptionsMenu extends Group {
             zIndex: 991,
         });
         this.Title = new Text({
-            x: GP.bw / 2,
-            y: GP.bh * 2 / 7,
+            x: GP.bw * this.confUI.X_RATIO,
+            y: GP.bh * this.confUI.Title.Y_RATIO,
             around: "center",
             text: "游戏已暂停",
-            fontSize: UIConf.OptionsMenu.Title.FONT_SIZE,
-            fontWeight: UIConf.OptionsMenu.Title.FONT_WEIGHT,
+            fontFamily: this.confUI.Title.FONT_FAMILY,
+            fontSize: this.confUI.Title.FONT_SIZE,
         });
-        this.Hint1 = new TextLine(GP.bw / 2, GP.bh * 4 / 7 - 12, "center", UIConf.OptionsMenu.Hint1.FILL, UIConf.OptionsMenu.Hint1.FONT_SIZE)
+        this.Hint1 = new TextLine(
+            GP.bw * this.confUI.X_RATIO,
+            GP.bh * this.confUI.Hint1.Y_RATIO + this.confUI.Hint1.Y_OFFSET,
+            "center",
+            this.confUI.Hint1.FILL,
+            this.confUI.Hint1.FONT_SIZE)
             .$append("按")
             .$append("空格键", 3, void 0, void 0, "bold")
             .$append("继续游戏");
         this.Hint1.opacity = 0;
-        this.Hint2 = new TextLine(GP.bw / 2, GP.bh * 4 / 7 + 12, "center", UIConf.OptionsMenu.Hint2.FILL, UIConf.OptionsMenu.Hint2.FONT_SIZE)
+        this.Hint2 = new TextLine(
+            GP.bw * this.confUI.X_RATIO,
+            GP.bh * this.confUI.Hint2.Y_RATIO + this.confUI.Hint2.Y_OFFSET,
+            "center",
+            this.confUI.Hint2.FILL,
+            this.confUI.Hint2.FONT_SIZE)
             .$append("按")
             .$append("回车键", 3, void 0, void 0, "bold")
             .$append("结束游戏并返回开始菜单");
@@ -37,9 +47,9 @@ export default class E_OptionsMenu extends Group {
     }
 
     relocate_(e) {
-        this.cx = e.width / 2;
-        this.Hint1.y = e.height * 4 / 7 - 12;
-        this.Hint2.y = e.height * 4 / 7 + 12;
+        this.cx = e.width * this.confUI.X_RATIO;
+        this.Hint1.y = e.height * this.confUI.Hint1.Y_RATIO + this.confUI.Hint1.Y_OFFSET;
+        this.Hint2.y = e.height * this.confUI.Hint2.Y_RATIO + this.confUI.Hint2.Y_OFFSET;
     }
 
     reset_() {
@@ -50,7 +60,6 @@ export default class E_OptionsMenu extends Group {
     }
 
     show_() {
-        this.$vis = true;
         this.visible = true;
         this.relocate_({ width: GP.bw, height: GP.bh });
         this.fadeIn_(0);
@@ -60,7 +69,6 @@ export default class E_OptionsMenu extends Group {
     }
 
     hide_() {
-        this.$vis = false;
         this.fadeOut_(0.5).once(AnimateEvent.COMPLETED, () => this.visible = false);
     }
 }

@@ -1,1 +1,1 @@
-export { UIConf } from "./UIConf";
+export { ColorConf, FontConf, UIConf } from "./UIConf";

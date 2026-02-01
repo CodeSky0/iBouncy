@@ -3,10 +3,12 @@ import { GP } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_FPS extends Text {
+    confUI = UIConf.FPS;
+
     constructor() {
         super({
-            x: 12,
-            y: GP.bh - 24,
+            x: UIConf.FPS.LEFT,
+            y: GP.bh - UIConf.FPS.BOTTOM,
             fontSize: UIConf.FPS.FONT_SIZE,
             fill: UIConf.FPS.FILL,
             text: "FPS: --",
@@ -16,7 +18,7 @@ export default class E_FPS extends Text {
 
     relocate_(e) {
         if (e.height === e.old.height) return;
-        this.y = e.height - 24;
+        this.y = e.height - this.confUI.BOTTOM;
     }
 
     assign_(fps) {

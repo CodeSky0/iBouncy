@@ -121,6 +121,7 @@ leafer.on(KeyEvent.UP, function (e) {
             }
             break;
         case "Enter":
+        case "NumpadEnter":
             if (GP.at("over")) {
                 GP.state("prepared");
                 Settlement.hide_();

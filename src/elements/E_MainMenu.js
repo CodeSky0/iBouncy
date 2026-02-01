@@ -1,8 +1,11 @@
 import { AnimateEvent, Group, Image } from "leafer-game";
 import { GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
+import { UIConf } from "../config";
 
 export default class E_MainMenu extends Group {
+    confUI = UIConf.MainMenu;
+
     constructor() {
         super({
             x: 0,
@@ -13,26 +16,36 @@ export default class E_MainMenu extends Group {
             zIndex: 991,
         });
         this.Brand = new Image({
-            x: GP.bw / 2,
-            y: GP.bh * 2 / 7,
+            x: GP.bw * this.confUI.X_RATIO,
+            y: GP.bh * this.confUI.Brand.Y_RATIO,
             around: "center",
             url: "leafer://brand.svg",
             opacity: 0,
             scale: 0,
-            offsetY: -300,
+            offsetY: this.confUI.Brand.Y_OFFSET,
             shadow: {
                 x: 0,
                 y: 0,
                 blur: 50,
-                color: "#555",
+                color: this.confUI.Brand.SHADOW_COLOR,
             },
         });
-        this.Hint1 = new TextLine(GP.bw / 2, GP.bh * 4 / 7 - 12, "center", "#444", 16)
+        this.Hint1 = new TextLine(
+            GP.bw * this.confUI.X_RATIO,
+            GP.bh * this.confUI.Hint1.Y_RATIO + this.confUI.Hint1.Y_OFFSET,
+            "center",
+            this.confUI.Hint1.FILL,
+            this.confUI.Hint1.FONT_SIZE)
             .$append("按")
             .$append("空格键", 3, void 0, void 0, "bold")
             .$append("开始游戏");
         this.Hint1.opacity = 0;
-        this.Hint2 = new TextLine(GP.bw / 2, GP.bh * 4 / 7 + 12, "center", "#777", 12)
+        this.Hint2 = new TextLine(
+            GP.bw * this.confUI.X_RATIO,
+            GP.bh * this.confUI.Hint2.Y_RATIO + this.confUI.Hint2.Y_OFFSET,
+            "center",
+            this.confUI.Hint2.FILL,
+            this.confUI.Hint2.FONT_SIZE)
             .$append("通过")
             .$append("方向键", 3, void 0, void 0, "bold")
             .$append("或")
@@ -51,17 +64,17 @@ export default class E_MainMenu extends Group {
     }
 
     relocate_(e) {
-        this.cx = e.width / 2;
-        this.Brand.y = e.height * 2 / 7;
-        this.Hint1.y = e.height * 4 / 7 - 12;
-        this.Hint2.y = e.height * 4 / 7 + 12;
+        this.cx = e.width * this.confUI.X_RATIO;
+        this.Brand.y = e.height * this.confUI.Brand.Y_RATIO;
+        this.Hint1.y = e.height * this.confUI.Hint1.Y_RATIO + this.confUI.Hint1.Y_OFFSET;
+        this.Hint2.y = e.height * this.confUI.Hint2.Y_RATIO + this.confUI.Hint2.Y_OFFSET;
     }
 
     reset_() {
         this.opacity = 1;
         this.Brand.opacity = 0;
         this.Brand.scale = 0;
-        this.Brand.offsetY = -300;
+        this.Brand.offsetY = this.confUI.Brand.Y_OFFSET;
         this.Hint1.opacity = 0;
         this.Hint2.opacity = 0;
     }
@@ -81,7 +94,7 @@ export default class E_MainMenu extends Group {
                     x: 0,
                     y: 0,
                     blur: 20,
-                    color: "#FFEF00",
+                    color: this.confUI.Brand.HOVER_SHADOW_COLOR,
                 },
             };
         });

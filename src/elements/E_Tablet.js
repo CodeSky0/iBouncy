@@ -3,6 +3,7 @@ import { GI, GP, Tablet } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_Tablet extends Rect {
+    confUI = UIConf.Tablet;
     vxMax;
     vyMax;
     vx;
@@ -22,8 +23,8 @@ export default class E_Tablet extends Rect {
         this.vyMax = 2.8;
         this.vx = 0;
         this.vy = 0;
-        this.cx = GP.bw / 2;
-        this.y = GP.bh - 140;
+        this.cx = GP.bw * this.confUI.X_RATIO;
+        this.y = GP.bh * this.confUI.Y_RATIO + this.confUI.Y_OFFSET;
     }
 
     frameLoop(prog) {
