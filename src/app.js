@@ -96,7 +96,15 @@ leafer.on(ResizeEvent.RESIZE, function (e) {
     Scoring.relocate_(e);
 });
 leafer.on(KeyEvent.HOLD, function (e) {
-    e.code === "Semicolon" && FPS.toggle_();
+    switch (e.code) {
+        case "Semicolon":
+            FPS.toggle_();
+            break;
+        case "Escape":
+        case "KeyP":
+            GP.pause();
+            break;
+    }
 });
 leafer.on(KeyEvent.UP, function (e) {
     switch (e.code) {
