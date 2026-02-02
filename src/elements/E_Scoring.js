@@ -1,5 +1,5 @@
 import { Group, Path, Text } from "leafer-game";
-import { Ball, F, GP, timer } from "../core/instances";
+import { Ball, evBus, F, GEV, GP, timer } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_Scoring extends Group {
@@ -46,6 +46,11 @@ export default class E_Scoring extends Group {
         this.add([this.Panel, this.Integer, this.Decimal]);
 
         this.init_ = this.init_.bind(this);
+        this.#$setupEventListeners();
+    }
+
+    #$setupEventListeners() {
+        evBus.on(GEV.GAME_RESET, this.reset_.bind(this));
     }
 
     reset_() {

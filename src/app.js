@@ -1,5 +1,8 @@
+import evBridge from "./core/EventBridge";
 import { GameConf } from "./config";
 import {
+    evBus,
+    GEV,
     setPrevTimeStamp,
     F,
     D,
@@ -15,7 +18,6 @@ import {
     Settlement,
     FPS,
     ForbiddenZone,
-    Timing,
     Scoring,
     Tablet,
     Ball,
@@ -26,26 +28,21 @@ import {
     KeyEvent,
 } from "leafer-game";
 
+evBridge.setup();
 loading.addEventListener("dragstart", e => e.preventDefault());
 
 let accumulated = 0;
 
 Mask.render_();
 Mask.show_("#FFF", 1, 0.7, 0.4);
-beforeStart();
+evBus.emit(GEV.GAME_RESET);
 GP.renderAll();
 requestAnimationFrame(firstFrame);
-timer.newInterval(() => FPS.assign_(timer.FPS), 400);
+timer.newInterval(() => FPS.assign_(timer.FPS), GameConf.FPS_DETECT_INTERVAL * 1000);
 GP.initializeAll()
     .then(GP.secondRender)
     .then(() => GP.state("init1"))
     .catch(err => console.error("Initialization failed...\n", err));
-
-function beforeStart() {
-    Timing.reset_();
-    Tablet.reset_();
-    Ball.reset_();
-}
 
 function firstFrame(timeStamp) {
     setPrevTimeStamp(timeStamp);
@@ -63,9 +60,7 @@ function gameLoop(timeStamp) {
         Ball.prepare_();
         GP.state("almost-prepared");
     } else if (GP.at("almost-prepared")) {
-        GP.state("prepared");
-        GP.loadingFadeOut();
-        GP.mainMenu();
+        GP.prepared();
     }
 
     let steps = 1;
@@ -110,13 +105,9 @@ leafer.on(KeyEvent.UP, function (e) {
     switch (e.code) {
         case "Space":
             if (GP.at("prepared")) {
-                GP.state("playing");
-                Timing.start_();
                 GP.start();
             } else if (GP.at("over")) {
-                GP.resetMain();
-                GP.state("playing");
-                Timing.start_();
+                GP.restart();
             } else if (GP.at("paused")) {
                 GP.resume();
             }
@@ -124,13 +115,11 @@ leafer.on(KeyEvent.UP, function (e) {
         case "Enter":
         case "NumpadEnter":
             if (GP.at("over")) {
-                GP.state("prepared");
                 Settlement.hide_();
-                GP.mainMenu();
+                GP.prepared();
             } else if (GP.at("paused")) {
-                GP.state("prepared");
                 OptionsMenu.hide_();
-                GP.mainMenu();
+                GP.prepared();
             }
             break;
     }

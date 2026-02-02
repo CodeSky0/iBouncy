@@ -1,5 +1,5 @@
 import { AnimateEvent, Group, Image } from "leafer-game";
-import { GP } from "../core/instances";
+import { evBus, GEV, GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
 
@@ -53,6 +53,17 @@ export default class E_MainMenu extends Group {
             .$append("来控制平板的移动");
         this.Hint2.opacity = 0;
         this.add([this.Brand, this.Hint1, this.Hint2]);
+        this.#$setupEventListeners();
+    }
+
+    #$setupEventListeners() {
+        evBus.on(GEV.MAIN_MENU_SHOW, () => {
+            this.reset_();
+            this.show_();
+        });
+        evBus.on(GEV.MAIN_MENU_HIDE, () => {
+            this.hide_();
+        });
     }
 
     async init() {
@@ -60,7 +71,7 @@ export default class E_MainMenu extends Group {
     }
 
     async preloadImage() {
-        const brandSVG = new URL('/public/svg/brand.svg', import.meta.url).href;
+        const brandSVG = new URL("/public/svg/brand.svg", import.meta.url).href;
         await GP.ImageInitializer("brand.svg", brandSVG);
     }
 

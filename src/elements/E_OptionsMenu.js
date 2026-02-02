@@ -1,5 +1,5 @@
 import { AnimateEvent, Group, Text } from "leafer-game";
-import { GP } from "../core/instances";
+import { evBus, GEV, GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
 
@@ -44,6 +44,17 @@ export default class E_OptionsMenu extends Group {
             .$append("结束游戏并返回开始菜单");
         this.Hint2.opacity = 0;
         this.add([this.Title, this.Hint1, this.Hint2]);
+        this.#$setupEventListeners();
+    }
+
+    #$setupEventListeners() {
+        evBus.on(GEV.GAME_PAUSE, () => {
+            this.reset_();
+            this.show_();
+        });
+        evBus.on(GEV.GAME_RESUME, () => {
+            this.hide_();
+        });
     }
 
     relocate_(e) {

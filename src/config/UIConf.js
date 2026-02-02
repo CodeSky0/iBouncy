@@ -10,7 +10,8 @@ export const ColorConf = {
     DAWN_GRAY: "#474746",
     DIM_GRAY: "#555555",
     LIGHT_GRAY: "#777777",
-    LIGHT_WHITE: "#DDDDDD",
+    LIGHTER_WHITE: "#DDDDDD",
+    LIGHT_WHITE: "#EEFFFF",
     WHITE: "#FFFFFF",
 };
 
@@ -25,6 +26,7 @@ Units:
     time: second (s)
  */
 export const UIConf = {
+    BACKGROUND_FILL: ColorConf.LIGHT_WHITE,
     Ball: {
         X_RATIO: 1 / 2,
         Y_RATIO: 1 / 4,
@@ -56,6 +58,7 @@ export const UIConf = {
         FILL: ColorConf.WHITE,
         OPACITY: 0.6,
         FADE_IN_DURATION: 0.8,
+        FADE_TO_DURATION: 0.5,
     },
     MainMenu: {
         X_RATIO: 1 / 2,
@@ -109,7 +112,7 @@ export const UIConf = {
         },
         Decimal: {
             FONT_SIZE: 32,
-            FILL: ColorConf.LIGHT_WHITE,
+            FILL: ColorConf.LIGHTER_WHITE,
         },
         tip: {
             OPACITY: 0.9,

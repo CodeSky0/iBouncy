@@ -1,5 +1,5 @@
 import { AnimateEvent, Group, Text } from "leafer-game";
-import { GP } from "../core/instances";
+import { evBus, GEV, GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
 
@@ -47,6 +47,17 @@ export default class E_Settlement extends Group {
         this.add([this.Title, this.Hint1, this.Hint2]);
 
         this.init_ = this.init_.bind(this);
+        this.#$setupEventListeners();
+    }
+
+    #$setupEventListeners() {
+        evBus.on(GEV.GAME_RESET, () => {
+            this.hide_();
+        });
+        evBus.on(GEV.GAME_OVER, (...args) => {
+            if (args[0].win) this.win_();
+            else this.fail_();
+        });
     }
 
     relocate_(e) {

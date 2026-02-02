@@ -10,6 +10,7 @@ export const GameConf = {
     MAX_ACCUMULATED: 0.5, // can redisplay frames of up to 0.5s
     MAX_STEP_PER_FRAME: 10,
     DEFAULT_REFRESH_RATE: 60,
+    FPS_DETECT_INTERVAL: 0.4,
     PADDING: {
         TOP: 80,
         SIDE: 40,

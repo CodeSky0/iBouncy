@@ -1,5 +1,5 @@
 import { Group, Path, Text } from "leafer-game";
-import { F, GP, timer } from "../core/instances";
+import { evBus, F, GEV, GP, timer } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_Timing extends Group {
@@ -37,6 +37,17 @@ export default class E_Timing extends Group {
             fill: this.confUI.FILL,
         });
         this.add([this.IconG, this.Text]);
+        this.#$setupEventListeners();
+    }
+
+    #$setupEventListeners() {
+        evBus.on(GEV.GAME_RESET, this.reset_.bind(this));
+        evBus.on(GEV.GAME_START, () => {
+            this.start_();
+        });
+        evBus.on(GEV.GAME_OVER, () => {
+            this.stop_();
+        });
     }
 
     reset_() {

@@ -11,7 +11,6 @@ export default defineConfig({
             },
         },
         outDir: "dist",
-        // assetsDir: "public",
         minify: true,
         sourcemap: true,
     },

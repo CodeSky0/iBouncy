@@ -1,6 +1,6 @@
 import { Ellipse } from "leafer-game";
 import X_BallTrailing from "../elements_extensions/X_BallTrailing";
-import { GI, GP, leafer, Timing } from "../core/instances";
+import { evBus, GEV, GI, GP, leafer, Timing } from "../core/instances";
 import { GameConf, UIConf } from "../config";
 
 export default class E_Ball extends Ellipse {
@@ -18,6 +18,11 @@ export default class E_Ball extends Ellipse {
             fill: UIConf.Ball.FILL,
         });
         this.trailing = new X_BallTrailing();
+        this.#$setupEventListeners();
+    }
+
+    #$setupEventListeners() {
+        evBus.on(GEV.GAME_RESET, this.reset_.bind(this));
     }
 
     reset_() {

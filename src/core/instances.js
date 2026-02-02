@@ -1,9 +1,17 @@
 import { Leafer } from "leafer-game";
-import extendUI from "../utils/UIExtensions";
-import { GameConf } from "../config";
+import { GameConf, UIConf } from "../config";
+
+// core
+export { evBus } from "./EventBus";
+export { GEV } from "./EventTypes";
 import Processor from "./processor";
 import Interaction from "./interaction";
+
+// utils
+import extendUI from "../utils/UIExtensions";
 import EmbeddedTimer from "../utils/EmbeddedTimer";
+
+// elements
 import E_Mask from "../elements/E_Mask";
 import E_MainMenu from "../elements/E_MainMenu";
 import E_OptionsMenu from "../elements/E_OptionsMenu";
@@ -31,17 +39,18 @@ extendUI();
 
 export const leafer = new Leafer({
     view: document.querySelector("canvas"),
-    fill: "#EFF",
+    fill: UIConf.BACKGROUND_FILL,
     pointer: {
         preventDefaultMenu: true,
     },
 });
 
+const defFrameInterval = 1000 / GameConf.DEFAULT_REFRESH_RATE;
 export const GP = new Processor({
     refreshRate: GameConf.DEFAULT_REFRESH_RATE,
-    actUnitInterval: 1000 / GameConf.DEFAULT_REFRESH_RATE,
-    stdUnitInterval: 1000 / GameConf.DEFAULT_REFRESH_RATE,
-    fixedStep: 1000 / GameConf.DEFAULT_REFRESH_RATE,
+    actUnitInterval: defFrameInterval,
+    stdUnitInterval: defFrameInterval,
+    fixedStep: defFrameInterval,
     maxStepPerFrame: GameConf.MAX_STEP_PER_FRAME,
     paddingTop: GameConf.PADDING.TOP,
     paddingSide: GameConf.PADDING.SIDE,

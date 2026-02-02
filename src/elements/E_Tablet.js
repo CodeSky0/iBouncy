@@ -1,5 +1,5 @@
 import { Rect, Keyboard } from "leafer-game";
-import { GI, GP, Tablet } from "../core/instances";
+import { evBus, GEV, GI, GP, Tablet } from "../core/instances";
 import { GameConf, UIConf } from "../config";
 
 export default class E_Tablet extends Rect {
@@ -17,6 +17,11 @@ export default class E_Tablet extends Rect {
             height: UIConf.Tablet.HEIGHT,
             fill: UIConf.Tablet.FILL,
         });
+        this.#$setupEventListeners();
+    }
+
+    #$setupEventListeners() {
+        evBus.on(GEV.GAME_RESET, this.reset_.bind(this));
     }
 
     reset_() {

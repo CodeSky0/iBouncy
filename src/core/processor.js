@@ -1,13 +1,12 @@
 import {
-    setPrevTimeStamp,
+    evBus,
+    GEV,
     loading,
     Ball,
     ForbiddenZone,
     FPS,
     GP,
-    timer,
     leafer,
-    Mask,
     MainMenu,
     OptionsMenu,
     Scoring,
@@ -107,7 +106,7 @@ export default class Processor {
                 document.fonts.add(font2);
                 leafer.forceRender();
             } catch (e) {
-                console.error(e);
+                console.error(`An error has occurred while initializing font ${name}:`, e);
             }
         }
     }
@@ -117,63 +116,40 @@ export default class Processor {
         Resource.setImage(`leafer://${name}`, img);
     }
 
-    resetMain(removeMask = true) {
-        removeMask && Mask.hide_();
-        Settlement.hide_();
-        Timing.reset_();
-        Scoring.reset_();
-        Tablet.reset_();
-        Ball.reset_();
-    }
-
-    mainMenu() {
-        MainMenu.reset_();
-        this.resetMain(false);
-        if (Mask.fill !== "#FFF" || Mask.opacity !== 0.4) {
-            Mask.fill = "#FFF";
-            Mask.fadeTo_(0.4, 0.5);
-        }
-        MainMenu.show_();
-    }
-
-    optionsMenu() {
-        OptionsMenu.reset_();
-        if (Mask.fill !== "#FFF" || Mask.opacity !== 0.4) {
-            Mask.fill = "#FFF";
-            Mask.fadeTo_(0.4, 0.5);
-        }
-        OptionsMenu.show_();
+    prepared() {
+        GP.state("prepared");
+        evBus.emit(GEV.GAME_PREPARED);
+        GP.loadingFadeOut();
     }
 
     start() {
-        Mask.hide_();
-        MainMenu.hide_();
+        GP.state("playing");
+        evBus.emit(GEV.GAME_START);
+    }
+
+    restart() {
+        GP.state("playing");
+        evBus.emit(GEV.GAME_RESTART);
     }
 
     pause() {
         if (this.at("paused", "prepared", "over") || this.#SM.startsWith("init")) return;
         this.state("paused");
-        timer.pauseAll();
-        Mask.show_("#FFF", 0, 0.4, 0.8);
-        this.optionsMenu();
+        evBus.emit(GEV.GAME_PAUSE);
     }
 
     resume() {
         if (this.at("playing", "prepared", "over") || this.#SM.startsWith("init")) return;
         this.state("playing");
-        setPrevTimeStamp(performance.now());
-        timer.resumeAll();
-        Mask.hide_();
-        OptionsMenu.hide_();
+        evBus.emit(GEV.GAME_RESUME);
     }
 
     gameOver(win = false) {
         if (this.at("over")) return true;
         this.state("over");
-        Timing.stop_();
-        Mask.show_("#FFF", 0, 0.4, 0.8);
-        if (win) Settlement.win_();
-        else Settlement.fail_();
+        evBus.emit(GEV.GAME_OVER, {
+            win: win,
+        });
         return true;
     }
 
