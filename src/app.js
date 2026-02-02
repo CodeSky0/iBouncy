@@ -1,8 +1,6 @@
 import evBridge from "./core/EventBridge";
 import { GameConf } from "./config";
 import {
-    evBus,
-    GEV,
     setPrevTimeStamp,
     F,
     D,
@@ -35,7 +33,6 @@ let accumulated = 0;
 
 Mask.render_();
 Mask.show_("#FFF", 1, 0.7, 0.4);
-evBus.emit(GEV.GAME_RESET);
 GP.renderAll();
 requestAnimationFrame(firstFrame);
 timer.newInterval(() => FPS.assign_(timer.FPS), GameConf.FPS_DETECT_INTERVAL * 1000);

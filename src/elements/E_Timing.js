@@ -38,6 +38,7 @@ export default class E_Timing extends Group {
         });
         this.add([this.IconG, this.Text]);
         this.#$setupEventListeners();
+        this.reset_();
     }
 
     #$setupEventListeners() {

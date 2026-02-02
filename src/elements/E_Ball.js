@@ -19,6 +19,7 @@ export default class E_Ball extends Ellipse {
         });
         this.trailing = new X_BallTrailing();
         this.#$setupEventListeners();
+        this.reset_();
     }
 
     #$setupEventListeners() {

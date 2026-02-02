@@ -18,6 +18,7 @@ export default class E_Tablet extends Rect {
             fill: UIConf.Tablet.FILL,
         });
         this.#$setupEventListeners();
+        this.reset_();
     }
 
     #$setupEventListeners() {
