@@ -159,6 +159,8 @@ export default class Processor {
         ], {
             duration: 300,
             fill: "both",
+        }).finished.then(function () {
+            loading.style.display = "none";
         });
     }
 }
