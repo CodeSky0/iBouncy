@@ -2,14 +2,16 @@ import { Leafer } from "leafer-game";
 import { GameConf, UIConf } from "../config";
 
 // core
-export { evBus } from "./EventBus";
-export { GEV } from "./EventTypes";
+export { eventBus as evBus } from "./EventBus";
+export { GEV as GEV } from "./EventTypes";
 import Processor from "./processor";
 import Interaction from "./interaction";
 
 // utils
+import KeyboardSolution from "../utils/KeyboardSolution";
 import extendUI from "../utils/UIExtensions";
 import EmbeddedTimer from "../utils/EmbeddedTimer";
+import ML from "../utils/MaskLayer";
 
 // elements
 import E_Mask from "../elements/E_Mask";
@@ -73,3 +75,6 @@ export const Timing = new E_Timing();
 export const Scoring = new E_Scoring();
 export const Tablet = new E_Tablet();
 export const Ball = new E_Ball();
+
+ML.$init(MainMenu, OptionsMenu, Settlement);
+export const KS = new KeyboardSolution();

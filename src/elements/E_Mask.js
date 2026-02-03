@@ -24,25 +24,7 @@ export default class E_Mask extends Rect {
     }
 
     #$setupEventListeners() {
-        evBus.on(GEV.GAME_RESET, (...args) => {
-            const rm = args[0]?.removeMask ? args[0].removeMask : false;
-            rm && this.hide_();
-        });
-        evBus.on(GEV.GAME_PREPARED, () => {
-            this.show_("#FFF", 0, 0.4, 0.5);
-        });
-        evBus.on(GEV.GAME_START, () => {
-            this.hide_();
-        });
-        evBus.on(GEV.GAME_PAUSE, () => {
-            this.show_("#FFF", 0, 0.4, 0.8);
-        });
-        evBus.on(GEV.GAME_RESUME, () => {
-            this.hide_();
-        });
-        evBus.on(GEV.GAME_OVER, () => {
-            this.show_("#FFF", 0, 0.4, 0.8);
-        });
+        evBus.on(GEV.RESIZE, (...args) => this.relocate_(args[0].data));
     }
 
     relocate_(e) {

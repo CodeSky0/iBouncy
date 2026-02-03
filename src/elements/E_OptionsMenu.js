@@ -48,13 +48,8 @@ export default class E_OptionsMenu extends Group {
     }
 
     #$setupEventListeners() {
-        evBus.on(GEV.GAME_PAUSE, () => {
-            this.reset_();
-            this.show_();
-        });
-        evBus.on(GEV.GAME_RESUME, () => {
-            this.hide_();
-        });
+        evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
+        evBus.on(GEV.RESIZE, (...args) => this.relocate_(args[0].data));
     }
 
     relocate_(e) {
@@ -71,6 +66,7 @@ export default class E_OptionsMenu extends Group {
     }
 
     show_() {
+        this.reset_();
         this.visible = true;
         this.relocate_({ width: GP.bw, height: GP.bh });
         this.fadeIn_(0);

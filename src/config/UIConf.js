@@ -27,6 +27,7 @@ Units:
  */
 export const UIConf = {
     BACKGROUND_FILL: ColorConf.LIGHT_WHITE,
+    LOADING_FADE_OUT_DURATION: 0.3,
     Ball: {
         X_RATIO: 1 / 2,
         Y_RATIO: 1 / 4,

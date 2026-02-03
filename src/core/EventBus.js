@@ -32,7 +32,7 @@ class EventBus {
             try {
                 callback(...args);
             } catch (err) {
-                console.error(`Error in event handler for ${ev}:`, err);
+                console.error(`Error in event handler for "${ev}":\n`, err);
             }
         });
     }
@@ -42,5 +42,5 @@ class EventBus {
     }
 }
 
-export const evBus = new EventBus();
-export default evBus;
+export const eventBus = new EventBus();
+export default eventBus;

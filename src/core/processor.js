@@ -2,19 +2,14 @@ import {
     evBus,
     GEV,
     loading,
-    Ball,
-    ForbiddenZone,
-    FPS,
     GP,
     leafer,
     MainMenu,
-    OptionsMenu,
     Scoring,
     Settlement,
-    Tablet,
-    Timing,
 } from "./instances";
 import { Platform, Resource } from "leafer-game";
+import { UIConf } from "../config";
 
 export default class Processor {
     #SM = "init"; // state machine
@@ -51,15 +46,8 @@ export default class Processor {
         ]);
     }
 
-    renderAll() {
-        OptionsMenu.render_();
-        Settlement.render_();
-        ForbiddenZone.render_();
-        Tablet.render_();
-        Ball.render_();
-        Timing.render_();
-        Scoring.render_();
-        FPS.render_();
+    renderElse() {
+        evBus.emit(GEV.UI_RENDER_ELSE);
     }
 
     secondRender() {
@@ -157,7 +145,7 @@ export default class Processor {
         loading.animate([
             { opacity: 0 },
         ], {
-            duration: 300,
+            duration: UIConf.LOADING_FADE_OUT_DURATION * 1000,
             fill: "both",
         }).finished.then(function () {
             loading.style.display = "none";

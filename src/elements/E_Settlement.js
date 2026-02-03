@@ -51,9 +51,8 @@ export default class E_Settlement extends Group {
     }
 
     #$setupEventListeners() {
-        evBus.on(GEV.GAME_RESET, () => {
-            this.hide_();
-        });
+        evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
+        evBus.on(GEV.RESIZE, (...args) => this.relocate_(args[0].data));
         evBus.on(GEV.GAME_OVER, (...args) => {
             if (args[0].win) this.win_();
             else this.fail_();

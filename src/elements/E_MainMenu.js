@@ -57,13 +57,7 @@ export default class E_MainMenu extends Group {
     }
 
     #$setupEventListeners() {
-        evBus.on(GEV.MAIN_MENU_SHOW, () => {
-            this.reset_();
-            this.show_();
-        });
-        evBus.on(GEV.MAIN_MENU_HIDE, () => {
-            this.hide_();
-        });
+        evBus.on(GEV.RESIZE, (...args) => this.relocate_(args[0].data));
     }
 
     async init() {
@@ -92,6 +86,7 @@ export default class E_MainMenu extends Group {
     }
 
     show_() {
+        this.reset_();
         this.visible = true;
         this.relocate_({ width: GP.bw, height: GP.bh });
         this.Brand.animate([

@@ -12,6 +12,7 @@ export default class E_Timing extends Group {
         super({
             x: UIConf.Timing.X_OFFSET,
             y: UIConf.Timing.Y_OFFSET,
+            zIndex: 880,
         });
         this.Icon = new Path({
             path: "M511.488 0C228.864 0 0 229.376 0 512s228.864 512 511.488 512C794.624 1024 1024 794.624 1024 512s-229.376-512-512.512-512z m21.76 556.416V219.52H438.912v392.32h1.472l243.84 140.8 47.296-81.728-198.144-114.432zM512 921.6A409.472 409.472 0 0 1 102.4 512c0-226.304 183.296-409.6 409.6-409.6 226.304 0 409.6 183.296 409.6 409.6 0 226.304-183.296 409.6-409.6 409.6z",
@@ -42,13 +43,11 @@ export default class E_Timing extends Group {
     }
 
     #$setupEventListeners() {
+        evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
         evBus.on(GEV.GAME_RESET, this.reset_.bind(this));
-        evBus.on(GEV.GAME_START, () => {
-            this.start_();
-        });
-        evBus.on(GEV.GAME_OVER, () => {
-            this.stop_();
-        });
+        evBus.on(GEV.GAME_START, this.start_.bind(this));
+        evBus.on(GEV.GAME_OVER, this.stop_.bind(this));
+        evBus.on(GEV.GAME_PAUSE, this.pauseAnimation_.bind(this));
     }
 
     reset_() {
@@ -60,11 +59,16 @@ export default class E_Timing extends Group {
     }
 
     start_() {
+        this.alarm && timer.cancelInterval(this.alarm);
         this.alarm = timer.newInterval(this.#loopPerSecond.bind(this), 1000);
     }
 
     stop_() {
-        timer.cancelInterval(this.alarm);
+        timer.pause(this.alarm);
+        this.pauseAnimation_();
+    }
+
+    pauseAnimation_() {
         if (this.animatingFlag) {
             this.animatingFlag = false;
             this.IconG.killAnimate();

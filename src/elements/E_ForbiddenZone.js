@@ -1,5 +1,5 @@
 import { Polygon } from "leafer-game";
-import { GP } from "../core/instances";
+import { evBus, GEV, GP } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_ForbiddenZone extends Polygon {
@@ -17,6 +17,12 @@ export default class E_ForbiddenZone extends Polygon {
             ],
             fill: UIConf.ForbiddenZone.FILL,
         });
+        this.#$setupEventListeners();
+    }
+
+    #$setupEventListeners() {
+        evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
+        evBus.on(GEV.RESIZE, (...args) => this.relocate_(args[0].data));
     }
 
     relocate_(e) {

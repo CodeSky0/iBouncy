@@ -1,30 +1,25 @@
 import evBridge from "./core/EventBridge";
 import { GameConf } from "./config";
 import {
+    GEV,
+    evBus,
+    KS,
     setPrevTimeStamp,
     F,
     D,
     prevTimeStamp,
     loading,
-    leafer,
     GI,
     GP,
     timer,
     Mask,
-    MainMenu,
     OptionsMenu,
     Settlement,
     FPS,
-    ForbiddenZone,
     Scoring,
     Tablet,
     Ball,
 } from "./core/instances";
-
-import {
-    ResizeEvent,
-    KeyEvent,
-} from "leafer-game";
 
 evBridge.setup();
 loading.addEventListener("dragstart", e => e.preventDefault());
@@ -33,7 +28,7 @@ let accumulated = 0;
 
 Mask.render_();
 Mask.show_("#FFF", 1, 0.7, 0.4);
-GP.renderAll();
+GP.renderElse();
 requestAnimationFrame(firstFrame);
 timer.newInterval(() => FPS.assign_(timer.FPS), GameConf.FPS_DETECT_INTERVAL * 1000);
 GP.initializeAll()
@@ -83,19 +78,10 @@ function gameLoop(timeStamp) {
     requestAnimationFrame(gameLoop);
 }
 
-document.addEventListener("visibilitychange", function () {
-    document.hidden && GP.pause();
+evBus.on(GEV.VISIBILITY_CHANGE, (...args) => {
+    !args[0].visible && GP.pause();
 });
-leafer.on(ResizeEvent.RESIZE, function (e) {
-    Mask.relocate_(e);
-    MainMenu.relocate_(e);
-    OptionsMenu.relocate_(e);
-    Settlement.relocate_(e);
-    FPS.relocate_(e);
-    ForbiddenZone.relocate_(e);
-    Scoring.relocate_(e);
-});
-leafer.on(KeyEvent.HOLD, function (e) {
+KS.whenHold(e => {
     switch (e.code) {
         case "Semicolon":
             FPS.toggle_();
@@ -106,7 +92,7 @@ leafer.on(KeyEvent.HOLD, function (e) {
             break;
     }
 });
-leafer.on(KeyEvent.UP, function (e) {
+KS.whenUp(e => {
     switch (e.code) {
         case "Space":
             if (GP.at("prepared")) {

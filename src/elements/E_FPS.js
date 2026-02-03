@@ -1,5 +1,5 @@
 import { Text } from "leafer-game";
-import { GP } from "../core/instances";
+import { evBus, GEV, GP } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_FPS extends Text {
@@ -14,6 +14,12 @@ export default class E_FPS extends Text {
             text: "FPS: --",
             zIndex: 1001,
         });
+        this.#$setupEventListeners();
+    }
+
+    #$setupEventListeners() {
+        evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
+        evBus.on(GEV.RESIZE, (...args) => this.relocate_(args[0].data));
     }
 
     relocate_(e) {

@@ -5,6 +5,9 @@ export const GEV = {
     VISIBILITY_CHANGE: "system:visibility:change",
     KEYBOARD_EVENT: "system:keyboard:event",
 
+    // UI
+    UI_RENDER_ELSE: "ui:render:else",
+
     // game states
     GAME_PREPARED: "game:prepared",
     GAME_START: "game:start",

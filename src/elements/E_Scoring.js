@@ -10,6 +10,7 @@ export default class E_Scoring extends Group {
         super({
             x: GP.bw / 2 - 120,
             y: 0,
+            zIndex: 880,
         });
         this.Panel = new Path({
             path: "m -120 0\n" +
@@ -50,6 +51,8 @@ export default class E_Scoring extends Group {
     }
 
     #$setupEventListeners() {
+        evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
+        evBus.on(GEV.RESIZE, (...args) => this.relocate_(args[0].data));
         evBus.on(GEV.GAME_RESET, this.reset_.bind(this));
     }
 
