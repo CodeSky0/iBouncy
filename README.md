@@ -32,7 +32,7 @@
 ### 安装步骤
 ```bash
 # 克隆项目
-git clone https://github.com/你的用户名/iBouncy.git
+git clone https://github.com/Horean0574/iBouncy.git
 cd iBouncy
 
 # 安装依赖
