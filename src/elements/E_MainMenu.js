@@ -1,7 +1,8 @@
-import { AnimateEvent, Group, Image, PointerEvent, Text } from "leafer-game";
+import { AnimateEvent, Group, Image, PointerEvent, Rect, Text } from "leafer-game";
 import { evBus, GEV, GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf, DIFFICULTY_LEVELS, setDifficulty, getDifficultyKey } from "../config";
+import { getBestScore, getHistory } from "../utils/scoreStorage";
 
 export default class E_MainMenu extends Group {
     confUI = UIConf.MainMenu;
@@ -73,8 +74,138 @@ export default class E_MainMenu extends Group {
             this.difficultyButtons.push(t);
         });
         this.DifficultyGroup.opacity = 0;
-        this.add([this.Brand, this.DifficultyGroup, this.Hint1, this.Hint2]);
+        const bestConf = this.confUI.BestScore;
+        this.BestScoreText = new Text({
+            x: GP.bw * this.confUI.X_RATIO,
+            y: GP.bh * bestConf.Y_RATIO,
+            around: "center",
+            text: "",
+            fontSize: bestConf.FONT_SIZE,
+            fill: bestConf.FILL,
+            visible: false,
+        });
+        const histBtnConf = this.confUI.HistoryButton;
+        this.HistoryButton = new Text({
+            x: GP.bw * this.confUI.X_RATIO,
+            y: GP.bh * histBtnConf.Y_RATIO + histBtnConf.Y_OFFSET,
+            around: "center",
+            text: "历史成绩",
+            fontSize: histBtnConf.FONT_SIZE,
+            fill: histBtnConf.FILL,
+            cursor: "pointer",
+        });
+        this.HistoryButton.opacity = 0;
+        this.HistoryButton.on(PointerEvent.TAP, () => this.#showHistory_());
+        this.HistoryButton.hoverStyle = { fill: histBtnConf.FILL_HOVER };
+        this.HistoryPanel = this.#createHistoryPanel_();
+        this.add([this.Brand, this.DifficultyGroup, this.BestScoreText, this.Hint1, this.Hint2, this.HistoryButton, this.HistoryPanel]);
         this.#$setupEventListeners();
+    }
+
+    #createHistoryPanel_() {
+        const conf = this.confUI.ScoreHistory;
+        const panel = new Group({
+            x: 0,
+            y: 0,
+            width: GP.bw,
+            height: GP.bh,
+            visible: false,
+            opacity: 0,
+        });
+        const bg = new Rect({
+            x: 0, y: 0, width: GP.bw, height: GP.bh,
+            fill: UIConf.BACKGROUND_FILL,
+            opacity: 0.95,
+        });
+        panel.add(bg);
+        const title = new Text({
+            x: GP.bw / 2,
+            y: GP.bh * 0.18,
+            around: "center",
+            text: "历史成绩",
+            fontSize: conf.TITLE_FONT_SIZE,
+            fill: conf.TITLE_FILL,
+        });
+        panel.add(title);
+        this.HistoryRows = new Group({ x: GP.bw / 2, y: GP.bh * 0.32, around: "center" });
+        panel.add(this.HistoryRows);
+        const closeBtn = new Text({
+            x: GP.bw / 2,
+            y: GP.bh * 0.82,
+            around: "center",
+            text: "关闭",
+            fontSize: conf.CLOSE_FONT_SIZE,
+            fill: conf.CLOSE_FILL,
+            cursor: "pointer",
+        });
+        closeBtn.on(PointerEvent.TAP, () => this.#hideHistory_());
+        closeBtn.hoverStyle = { fill: this.confUI.HistoryButton.FILL_HOVER };
+        panel.add(closeBtn);
+        return panel;
+    }
+
+    #formatScore_(score) {
+        const v = Math.round(score * 10);
+        return `${Math.floor(v / 10)}.${v % 10}`;
+    }
+
+    #formatDate_(ts) {
+        const d = new Date(ts);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    }
+
+    #showHistory_() {
+        const conf = this.confUI.ScoreHistory;
+        const records = getHistory().slice(0, conf.MAX_ROWS);
+        this.HistoryRows.removeAll();
+        if (records.length === 0) {
+            const empty = new Text({
+                x: 0, y: 0, around: "center",
+                text: "暂无记录",
+                fontSize: conf.ROW_FONT_SIZE,
+                fill: conf.ROW_FILL,
+            });
+            this.HistoryRows.add(empty);
+        } else {
+            const header = new Text({
+                x: 0,
+                y: 0,
+                around: "center",
+                text: "分数　　难度　　时间",
+                fontSize: conf.ROW_FONT_SIZE,
+                fill: conf.HEADER_FILL,
+            });
+            this.HistoryRows.add(header);
+            records.forEach((r, i) => {
+                const row = new Text({
+                    x: 0,
+                    y: (i + 1) * conf.ROW_HEIGHT,
+                    around: "center",
+                    text: `${this.#formatScore_(r.score)}　　${DIFFICULTY_LEVELS[r.difficulty]?.name ?? r.difficulty}　　${this.#formatDate_(r.timestamp)}`,
+                    fontSize: conf.ROW_FONT_SIZE,
+                    fill: conf.ROW_FILL,
+                });
+                this.HistoryRows.add(row);
+            });
+        }
+        this.HistoryPanel.visible = true;
+        this.HistoryPanel.opacity = 0;
+        this.HistoryPanel.animate([{ opacity: 1 }], { duration: 0.25 });
+    }
+
+    #hideHistory_() {
+        this.HistoryPanel.animate([{ opacity: 0 }], { duration: 0.2 })
+            .once(AnimateEvent.COMPLETED, () => this.HistoryPanel.visible = false);
+    }
+
+    #updateBestScore_() {
+        const best = getBestScore();
+        if (best != null) {
+            this.BestScoreText.text = `最佳成绩：${this.#formatScore_(best)}`;
+            this.BestScoreText.visible = true;
+        } else {
+            this.BestScoreText.visible = false;
+        }
     }
 
     #onDifficultyTap(key) {
@@ -107,8 +238,16 @@ export default class E_MainMenu extends Group {
         this.cx = e.width * this.confUI.X_RATIO;
         this.Brand.y = e.height * this.confUI.Brand.Y_RATIO;
         this.DifficultyGroup.y = e.height * this.confUI.Difficulty.Y_RATIO;
+        this.BestScoreText.y = e.height * this.confUI.BestScore.Y_RATIO;
         this.Hint1.y = e.height * this.confUI.Hint1.Y_RATIO + this.confUI.Hint1.Y_OFFSET;
         this.Hint2.y = e.height * this.confUI.Hint2.Y_RATIO + this.confUI.Hint2.Y_OFFSET;
+        this.HistoryButton.y = e.height * this.confUI.HistoryButton.Y_RATIO + this.confUI.HistoryButton.Y_OFFSET;
+        if (this.HistoryPanel.visible && this.HistoryPanel.children.length > 0) {
+            this.HistoryPanel.width = e.width;
+            this.HistoryPanel.height = e.height;
+            this.HistoryPanel.children[0].width = e.width;
+            this.HistoryPanel.children[0].height = e.height;
+        }
     }
 
     reset_() {
@@ -118,8 +257,12 @@ export default class E_MainMenu extends Group {
         this.Brand.offsetY = this.confUI.Brand.Y_OFFSET;
         this.DifficultyGroup.opacity = 0;
         this.#updateDifficultySelection();
+        this.#updateBestScore_();
         this.Hint1.opacity = 0;
         this.Hint2.opacity = 0;
+        this.HistoryButton.opacity = 0;
+        this.HistoryPanel.visible = false;
+        this.HistoryPanel.opacity = 0;
     }
 
     show_() {
@@ -145,6 +288,7 @@ export default class E_MainMenu extends Group {
         this.DifficultyGroup.fadeIn_(0.6, 0.15);
         this.Hint1.fadeIn_(0.8, 0.2);
         this.Hint2.fadeIn_(0.8, 0.4);
+        this.HistoryButton.fadeIn_(0.6, 0.5);
     }
 
     hide_() {

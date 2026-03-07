@@ -26,6 +26,7 @@ export default class E_Tablet extends Rect {
     #$setupEventListeners() {
         evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
         evBus.on(GEV.GAME_RESET, this.reset_.bind(this));
+        evBus.on(GEV.GAME_START, this.reset_.bind(this));
     }
 
     reset_() {
