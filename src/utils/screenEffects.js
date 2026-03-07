@@ -1,4 +1,5 @@
-import { GP, timer } from "../core/instances";
+import { GP, Mask, timer } from "../core/instances";
+import { UIConf } from "../config";
 
 let canvas;
 let shaking = false;
@@ -31,5 +32,18 @@ export function shakeScreen(intensity = 8, duration = 220) {
         const dy = (Math.random() * 2 - 1) * intensity * damp;
         el.style.transform = `translate(${dx}px, ${dy}px) ${baseTransform}`;
     }, 16);
+}
+
+export function playIntroScene() {
+    if (!GP.at("playing")) return;
+    Mask.show_(UIConf.BACKGROUND_FILL, 1, 0.85, 0.28);
+    timer.newTimeout(() => {
+        if (!GP.at("playing")) return;
+        Mask.show_("#00E5FF", 0.85, 0.25, 0.35);
+    }, 260);
+    timer.newTimeout(() => {
+        if (!GP.at("playing")) return;
+        Mask.hide_();
+    }, 260 + 360);
 }
 

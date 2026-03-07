@@ -30,7 +30,7 @@ Units:
     time: second (s)
  */
 export const UIConf = {
-    BACKGROUND_FILL: ColorConf.BG_DARK,
+    BACKGROUND_FILL: ColorConf.LIGHT_WHITE,
     LOADING_FADE_OUT_DURATION: 0.3,
     Ball: {
         X_RATIO: 1 / 2,

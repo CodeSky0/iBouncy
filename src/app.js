@@ -20,7 +20,7 @@ import {
     Tablet,
     Ball,
 } from "./core/instances";
-import { shakeScreen } from "./utils/screenEffects";
+import { playIntroScene, shakeScreen } from "./utils/screenEffects";
 
 evBridge.setup();
 loading.addEventListener("dragstart", e => e.preventDefault());
@@ -106,6 +106,7 @@ KS.whenUp(e => {
         case "Space":
             if (GP.at("prepared")) {
                 GP.start();
+                playIntroScene();
             } else if (GP.at("over")) {
                 GP.restart();
             } else if (GP.at("paused")) {
