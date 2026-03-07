@@ -177,6 +177,12 @@ export const UIConf = {
             FADE_OUT_DURATION: 0.5,
         },
     },
+    DifficultyDisplay: {
+        RIGHT: 15,
+        Y_OFFSET: 15,
+        FONT_SIZE: 14,
+        FILL: ColorConf.GRAY,
+    },
     Timing: {
         X_OFFSET: 15,
         Y_OFFSET: 15,
