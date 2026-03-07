@@ -1,7 +1,8 @@
 import { AnimateEvent, Group, Text } from "leafer-game";
-import { evBus, GEV, GP } from "../core/instances";
+import { evBus, GEV, GP, Scoring } from "../core/instances";
 import TextLine from "../utils/TextLine";
-import { UIConf } from "../config";
+import { UIConf, getDifficultyKey } from "../config";
+import { addScore } from "../utils/scoreStorage";
 
 export default class E_Settlement extends Group {
     confUI = UIConf.Settlement;
@@ -54,6 +55,8 @@ export default class E_Settlement extends Group {
         evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
         evBus.on(GEV.RESIZE, (...args) => this.relocate_(args[0].data));
         evBus.on(GEV.GAME_OVER, (...args) => {
+            const displayScore = Scoring.v / 10;
+            addScore(displayScore, getDifficultyKey());
             if (args[0].win) this.win_();
             else this.fail_();
         });
