@@ -1,6 +1,6 @@
 import { Rect, Keyboard } from "leafer-game";
 import { evBus, GEV, GI, GP, Tablet } from "../core/instances";
-import { GameConf, UIConf } from "../config";
+import { GameConf, UIConf, getDifficulty } from "../config";
 
 export default class E_Tablet extends Rect {
     confUI = UIConf.Tablet;
@@ -17,6 +17,8 @@ export default class E_Tablet extends Rect {
             height: UIConf.Tablet.HEIGHT,
             fill: UIConf.Tablet.FILL,
         });
+        this.baseWidth = UIConf.Tablet.WIDTH;
+        this.baseHeight = UIConf.Tablet.HEIGHT;
         this.#$setupEventListeners();
         this.reset_();
     }
@@ -27,6 +29,9 @@ export default class E_Tablet extends Rect {
     }
 
     reset_() {
+        const scale = getDifficulty().tabletWidthScale;
+        this.width = Math.round(this.baseWidth * scale);
+        this.height = this.baseHeight;
         this.vxMax = this.confGm.VX;
         this.vyMax = this.confGm.VY;
         this.vx = 0;

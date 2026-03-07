@@ -81,6 +81,13 @@ export const UIConf = {
             FILL: ColorConf.LIGHT_GRAY,
             FONT_SIZE: 12,
         },
+        Difficulty: {
+            Y_RATIO: 3.2 / 7,
+            FONT_SIZE: 18,
+            FILL: ColorConf.GRAY,
+            FILL_SELECTED: ColorConf.PRIMARY,
+            GAP: 24,
+        },
     },
     OptionsMenu: {
         X_RATIO: 1 / 2,

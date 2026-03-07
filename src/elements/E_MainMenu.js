@@ -1,7 +1,7 @@
-import { AnimateEvent, Group, Image } from "leafer-game";
+import { AnimateEvent, Group, Image, PointerEvent, Text } from "leafer-game";
 import { evBus, GEV, GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
-import { UIConf } from "../config";
+import { UIConf, DIFFICULTY_LEVELS, setDifficulty, getDifficultyKey } from "../config";
 
 export default class E_MainMenu extends Group {
     confUI = UIConf.MainMenu;
@@ -52,8 +52,42 @@ export default class E_MainMenu extends Group {
             .$append("W/A/S/D", 3, void 0, void 0, "bold")
             .$append("来控制平板的移动");
         this.Hint2.opacity = 0;
-        this.add([this.Brand, this.Hint1, this.Hint2]);
+        const dConf = this.confUI.Difficulty;
+        this.DifficultyGroup = new Group({ x: GP.bw * this.confUI.X_RATIO, y: 0, around: "center" });
+        this.difficultyButtons = [];
+        const keys = ["EASY", "NORMAL", "HARD"];
+        const xOffsets = [-(dConf.GAP + 32), 0, dConf.GAP + 32];
+        keys.forEach((key, i) => {
+            const t = new Text({
+                x: xOffsets[i],
+                y: 0,
+                around: "center",
+                text: DIFFICULTY_LEVELS[key].name,
+                fontSize: dConf.FONT_SIZE,
+                fill: key === getDifficultyKey() ? dConf.FILL_SELECTED : dConf.FILL,
+                cursor: "pointer",
+            });
+            t.$difficultyKey = key;
+            t.on(PointerEvent.TAP, () => this.#onDifficultyTap(key));
+            this.DifficultyGroup.add(t);
+            this.difficultyButtons.push(t);
+        });
+        this.DifficultyGroup.opacity = 0;
+        this.add([this.Brand, this.DifficultyGroup, this.Hint1, this.Hint2]);
         this.#$setupEventListeners();
+    }
+
+    #onDifficultyTap(key) {
+        setDifficulty(key);
+        this.#updateDifficultySelection();
+    }
+
+    #updateDifficultySelection() {
+        const current = getDifficultyKey();
+        const dConf = this.confUI.Difficulty;
+        this.difficultyButtons.forEach(t => {
+            t.fill = t.$difficultyKey === current ? dConf.FILL_SELECTED : dConf.FILL;
+        });
     }
 
     #$setupEventListeners() {
@@ -72,6 +106,7 @@ export default class E_MainMenu extends Group {
     relocate_(e) {
         this.cx = e.width * this.confUI.X_RATIO;
         this.Brand.y = e.height * this.confUI.Brand.Y_RATIO;
+        this.DifficultyGroup.y = e.height * this.confUI.Difficulty.Y_RATIO;
         this.Hint1.y = e.height * this.confUI.Hint1.Y_RATIO + this.confUI.Hint1.Y_OFFSET;
         this.Hint2.y = e.height * this.confUI.Hint2.Y_RATIO + this.confUI.Hint2.Y_OFFSET;
     }
@@ -81,6 +116,8 @@ export default class E_MainMenu extends Group {
         this.Brand.opacity = 0;
         this.Brand.scale = 0;
         this.Brand.offsetY = this.confUI.Brand.Y_OFFSET;
+        this.DifficultyGroup.opacity = 0;
+        this.#updateDifficultySelection();
         this.Hint1.opacity = 0;
         this.Hint2.opacity = 0;
     }
@@ -105,6 +142,7 @@ export default class E_MainMenu extends Group {
                 },
             };
         });
+        this.DifficultyGroup.fadeIn_(0.6, 0.15);
         this.Hint1.fadeIn_(0.8, 0.2);
         this.Hint2.fadeIn_(0.8, 0.4);
     }

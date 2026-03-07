@@ -1,7 +1,7 @@
 import { Ellipse } from "leafer-game";
 import X_BallTrailing from "../elements_extensions/X_BallTrailing";
 import { evBus, GEV, GI, GP, leafer, Timing } from "../core/instances";
-import { GameConf, UIConf } from "../config";
+import { GameConf, UIConf, getDifficulty } from "../config";
 
 export default class E_Ball extends Ellipse {
     confUI = UIConf.Ball;
@@ -29,10 +29,11 @@ export default class E_Ball extends Ellipse {
 
     reset_() {
         const { VX_MAX, VX_MIN, VY, AX, AY } = this.confGm;
-        this.vx = (Math.random() * (VX_MAX - VX_MIN) + VX_MIN) * (Math.random() > 0.5 ? 1 : -1);
-        this.vy = VY;
-        this.ax = AX;
-        this.ay = AY;
+        const scale = getDifficulty().ballSpeedScale;
+        this.vx = (Math.random() * (VX_MAX - VX_MIN) + VX_MIN) * (Math.random() > 0.5 ? 1 : -1) * scale;
+        this.vy = VY * scale;
+        this.ax = AX * scale;
+        this.ay = AY * scale;
         this.cx = GP.bw * this.confUI.X_RATIO;
         this.cy = GP.bh * this.confUI.Y_RATIO;
     }
