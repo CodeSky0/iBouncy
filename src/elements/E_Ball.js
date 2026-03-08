@@ -62,4 +62,24 @@ export default class E_Ball extends Ellipse {
         });
         this.trailing.frameLoop(this.timeDivisor);
     }
+
+    /** 每帧调用一次，避免在物理子步中重复更新视觉 */
+    updateVisual_() {
+        const speed = Math.sqrt(this.vx ** 2 + this.vy ** 2);
+        const baseSpeed = this.confGm.VY;
+        const maxSpeed = this.confGm.VY * 3;
+        const t = Math.max(0, Math.min((speed - baseSpeed) / (maxSpeed - baseSpeed || 1), 1));
+        const ui = this.confUI;
+        const scale = 1 + t * (ui.GLOW_MAX_SCALE - 1);
+        const blur = ui.GLOW_MIN_BLUR + (ui.GLOW_MAX_BLUR - ui.GLOW_MIN_BLUR) * t;
+        if (this.scaleX !== scale) this.scaleX = this.scaleY = scale;
+        if (this.shadow?.blur !== blur || this.shadow?.color !== ui.FILL) {
+            this.shadow = {
+                x: 0,
+                y: 0,
+                blur,
+                color: ui.FILL,
+            };
+        }
+    }
 }

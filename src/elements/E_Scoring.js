@@ -2,9 +2,12 @@ import { Group, Path, Text } from "leafer-game";
 import { Ball, evBus, F, GEV, GP, timer } from "../core/instances";
 import { UIConf } from "../config";
 
+const MAX_CONCURRENT_TIPS = 5; // 限制同时显示的加分提示数量，避免性能下降
+
 export default class E_Scoring extends Group {
     confUI = UIConf.Scoring;
     v = 0;
+    #activeTips = 0;
 
     constructor() {
         super({
@@ -57,6 +60,7 @@ export default class E_Scoring extends Group {
     }
 
     reset_() {
+        this.#activeTips = 0;
         this.assign_(0);
     }
 
@@ -86,10 +90,13 @@ export default class E_Scoring extends Group {
         const prevV = this.v;
         this.v += Math.round(x * 10);
         this.#newScore_();
+        this.#bounce_();
         return E_Scoring.stringify_(this.v - prevV);
     }
 
     tip_(delta) {
+        if (this.#activeTips >= MAX_CONCURRENT_TIPS) return;
+        this.#activeTips++;
         const tipConf = this.confUI.tip;
         const aniConf = tipConf.ANIMATION;
         const [initialOffsetX, transitionX, transitionY] = this.#getTipData_();
@@ -145,8 +152,9 @@ export default class E_Scoring extends Group {
         ], {
             join: true,
         });
-        timer.newTimeout(function () {
+        timer.newTimeout(() => {
             tip.destroy();
+            this.#activeTips--;
         }, tipConf.DURATION * 1000);
     }
 
@@ -172,6 +180,20 @@ export default class E_Scoring extends Group {
         this.Decimal.text = "." + this.v % 10;
         this.Integer.x = (240 - this.Integer.w - this.Decimal.w) / 2;
         this.Decimal.x = this.Integer.ox;
+    }
+
+    #bounce_() {
+        this.animate(
+            [
+                { scale: 1.06 },
+                { scale: 1 },
+            ],
+            {
+                duration: 0.18,
+                easing: "quad-out",
+                join: true,
+            },
+        );
     }
 
     static stringify_(v) {
