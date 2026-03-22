@@ -1,0 +1,78 @@
+import { Ellipse } from "leafer-game";
+import X_BallTrailing from "../elements_extensions/X_BallTrailing";
+import type { BoundsEntity, BoundaryCallbacks } from "../core/interaction";
+import { evBus, GEV, GI, GP, leafer, Timing } from "../core/instances";
+import { GameConf, UIConf } from "../config";
+
+export default class E_Ball extends Ellipse {
+    confUI = UIConf.Ball;
+    confGm = GameConf.Ball;
+    trailing: X_BallTrailing;
+    vx!: number;
+    vy!: number;
+    ax!: number;
+    ay!: number;
+    timeDivisor = 1;
+
+    /** 复用元组与选项对象，避免每子步在 `boundaryDetect` 中分配数组 / `bind` */
+    private readonly ballBoundaryPaddings: [number, number, number, number] = [0, 0, 0, 0];
+    private readonly boundaryCallbacks: BoundaryCallbacks;
+    private readonly ballBoundaryOpts: {
+        bounce: boolean;
+        paddings: [number, number, number, number];
+        callbacks: BoundaryCallbacks;
+    };
+
+    constructor() {
+        super({
+            width: UIConf.Ball.RADIUS * 2,
+            height: UIConf.Ball.RADIUS * 2,
+            fill: UIConf.Ball.FILL,
+        });
+        this.boundaryCallbacks = [null, null, GP.gameOver.bind(GP), null];
+        this.ballBoundaryOpts = {
+            bounce: true,
+            paddings: this.ballBoundaryPaddings,
+            callbacks: this.boundaryCallbacks,
+        };
+        this.trailing = new X_BallTrailing();
+        this.#$setupEventListeners();
+        this.reset_();
+    }
+
+    #$setupEventListeners(): void {
+        evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
+        evBus.on(GEV.GAME_RESET, this.reset_.bind(this));
+    }
+
+    reset_(): void {
+        const { VX_MAX, VX_MIN, VY, AX, AY } = this.confGm;
+        this.vx = (Math.random() * (VX_MAX - VX_MIN) + VX_MIN) * (Math.random() > 0.5 ? 1 : -1);
+        this.vy = VY;
+        this.ax = AX;
+        this.ay = AY;
+        this.cx = GP.bw * this.confUI.X_RATIO;
+        this.cy = GP.bh * this.confUI.Y_RATIO;
+    }
+
+    render_(): void {
+        this.trailing.render();
+        leafer.add(this);
+    }
+
+    prepare_(): void {
+        this.trailing.prepare();
+    }
+
+    frameLoop_(prog: number): void {
+        if (Timing.remaining > this.confGm.ACCELERATION.TO && Timing.remaining <= this.confGm.ACCELERATION.FROM) {
+            this.vx += Math.sign(this.vx) * this.ax * prog;
+            this.vy += Math.sign(this.vy) * this.ay * prog;
+        }
+        this.x! += this.vx * prog;
+        this.y! += this.vy * prog;
+        this.ballBoundaryPaddings[2] = -this.h * 3;
+        GI.boundaryDetect(this as BoundsEntity, this.ballBoundaryOpts);
+        this.trailing.frameLoop(this.timeDivisor);
+    }
+}

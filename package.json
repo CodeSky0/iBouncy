@@ -2,11 +2,12 @@
   "name": "ibouncy",
   "version": "1.0.0",
   "description": "Brand font: Akaya Telivigala",
-  "main": "src/app.js",
+  "main": "src/app.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -21,6 +22,7 @@
   },
   "homepage": "https://github.com/Horean0574/iBouncy#readme",
   "devDependencies": {
+    "typescript": "^5.8.2",
     "vite": "^7.3.1"
   },
   "dependencies": {
