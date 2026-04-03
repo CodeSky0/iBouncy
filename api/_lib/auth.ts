@@ -1,4 +1,4 @@
-import * as jwt from "jsonwebtoken";
+import * as jwtModule from "jsonwebtoken";
 import * as cookie from "cookie";
 
 const COOKIE_NAME = "ibouncy_token";
@@ -12,6 +12,12 @@ function getJwtSecret(): string {
     }
     return secret;
 }
+
+// `jsonwebtoken` 在 CJS/ESM 下导出形态不完全一致：
+// - 有时需要用 default
+// - 有时需要直接使用模块本体
+// 这里做兼容，保证 `sign/verify` 可用。
+const jwt: any = (jwtModule as any).default ?? jwtModule;
 
 export function signToken(payload: { userId: number; email: string }): string {
     return jwt.sign(payload, getJwtSecret(), { expiresIn: "30d" });
