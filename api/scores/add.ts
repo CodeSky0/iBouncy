@@ -1,7 +1,7 @@
-import { getSql, ensureSchema } from "../_lib/db";
-import { readJsonBody } from "../_lib/body";
-import { ok, badRequest, unauthorized, methodNotAllowed, serverError } from "../_lib/response";
-import { getUserFromRequest } from "../_lib/auth";
+import { getSql, ensureSchema } from "../_lib/db.js";
+import { readJsonBody } from "../_lib/body.js";
+import { ok, badRequest, unauthorized, methodNotAllowed, serverError } from "../_lib/response.js";
+import { getUserFromRequest } from "../_lib/auth.js";
 
 export default async function handler(req: any, res: any) {
     if (req.method !== "POST") return methodNotAllowed(res, "POST");

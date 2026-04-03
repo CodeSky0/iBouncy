@@ -1,6 +1,6 @@
-import { getSql, ensureSchema } from "../_lib/db";
-import { ok, unauthorized, methodNotAllowed, serverError } from "../_lib/response";
-import { getUserFromRequest } from "../_lib/auth";
+import { getSql, ensureSchema } from "../_lib/db.js";
+import { ok, unauthorized, methodNotAllowed, serverError } from "../_lib/response.js";
+import { getUserFromRequest } from "../_lib/auth.js";
 
 type TrendPoint = { day: string; games: number; bestScore: number; totalScore: number };
 

@@ -1,5 +1,5 @@
-import { ok, methodNotAllowed, serverError } from "../_lib/response";
-import { buildLogoutCookie } from "../_lib/auth";
+import { ok, methodNotAllowed, serverError } from "../_lib/response.js";
+import { buildLogoutCookie } from "../_lib/auth.js";
 
 export default async function handler(req: any, res: any) {
     if (req.method !== "POST") return methodNotAllowed(res, "POST");

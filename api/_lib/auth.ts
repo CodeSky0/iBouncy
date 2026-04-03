@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken";
-import { parse as parseCookie, serialize as serializeCookie } from "cookie";
+import * as jwt from "jsonwebtoken";
+import * as cookie from "cookie";
 
 const COOKIE_NAME = "ibouncy_token";
 
@@ -20,7 +20,7 @@ export function signToken(payload: { userId: number; email: string }): string {
 function readTokenFromRequest(req: any): string | null {
     const header = req.headers && (req.headers.cookie || req.headers.Cookie);
     if (!header) return null;
-    const cookies = parseCookie(Array.isArray(header) ? header.join(";") : header);
+    const cookies = cookie.parse(Array.isArray(header) ? header.join(";") : header);
     return cookies[COOKIE_NAME] || null;
 }
 
@@ -45,7 +45,7 @@ export function getUserFromRequest(req: any): { userId: number; email: string } 
 
 export function buildAuthCookie(token: string): string {
     const isProd = process.env.NODE_ENV === "production";
-    return serializeCookie(COOKIE_NAME, token, {
+    return cookie.serialize(COOKIE_NAME, token, {
         httpOnly: true,
         secure: isProd,
         sameSite: "lax",
@@ -56,7 +56,7 @@ export function buildAuthCookie(token: string): string {
 
 export function buildLogoutCookie(): string {
     const isProd = process.env.NODE_ENV === "production";
-    return serializeCookie(COOKIE_NAME, "", {
+    return cookie.serialize(COOKIE_NAME, "", {
         httpOnly: true,
         secure: isProd,
         sameSite: "lax",

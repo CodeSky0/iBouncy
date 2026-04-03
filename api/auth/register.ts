@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
-import { getSql, ensureSchema } from "../_lib/db";
-import { readJsonBody } from "../_lib/body";
-import { ok, badRequest, methodNotAllowed, serverError } from "../_lib/response";
-import { signToken, buildAuthCookie } from "../_lib/auth";
+import { getSql, ensureSchema } from "../_lib/db.js";
+import { readJsonBody } from "../_lib/body.js";
+import { ok, badRequest, methodNotAllowed, serverError } from "../_lib/response.js";
+import { signToken, buildAuthCookie } from "../_lib/auth.js";
 
 function normalizeEmail(email: unknown) {
     return String(email || "").trim().toLowerCase();
