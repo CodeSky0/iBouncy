@@ -14,6 +14,7 @@
             width: 100vw;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
         }
 
         canvas {
@@ -26,12 +27,224 @@
             position: fixed;
             transform: translate(calc(50vw - 117px), calc(50vh - 50px)) scale(1.2);
         }
+
+        /* Cloud UI (Auth/History) - Glassmorphism + Flat Design */
+        #cloud-ui-root {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2000;
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+            user-select: text;
+        }
+
+        #cloud-ui-root * {
+            user-select: text;
+            -webkit-user-drag: none;
+        }
+
+        #cloud-ui-root .cloud-fab {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        #cloud-ui-root .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 999px;
+            color: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: rgba(20, 20, 28, 0.32);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+        }
+
+        #cloud-ui-root button {
+            appearance: none;
+            border: 0;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        #cloud-ui-root .btn {
+            border-radius: 999px;
+            padding: 9px 12px;
+            color: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            transition: transform .12s ease, background .12s ease;
+        }
+
+        #cloud-ui-root .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.16); }
+        #cloud-ui-root .btn:active { transform: translateY(0px); background: rgba(255,255,255,0.10); }
+        #cloud-ui-root .btn.primary { background: rgba(83, 103, 255, 0.55); border-color: rgba(83,103,255,0.6); }
+        #cloud-ui-root .btn.primary:hover { background: rgba(83, 103, 255, 0.68); }
+        #cloud-ui-root .btn.danger { background: rgba(255, 77, 77, 0.18); border-color: rgba(255, 77, 77, 0.28); }
+
+        #cloud-ui-root .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.10);
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+
+        #cloud-ui-root .modal-backdrop {
+            position: absolute;
+            inset: 0;
+            display: none;
+            place-items: center;
+            pointer-events: auto;
+            background: rgba(0,0,0,0.35);
+        }
+        #cloud-ui-root .modal-backdrop.open { display: grid; }
+
+        #cloud-ui-root .modal {
+            width: min(520px, calc(100vw - 32px));
+            border-radius: 22px;
+            padding: 18px;
+            color: rgba(255,255,255,0.92);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: linear-gradient(180deg, rgba(24,24,34,0.52), rgba(16,16,24,0.42));
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: 0 20px 70px rgba(0,0,0,0.5);
+        }
+
+        #cloud-ui-root .modal h2 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        #cloud-ui-root .row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #cloud-ui-root .tabs {
+            display: inline-flex;
+            gap: 8px;
+            padding: 6px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.14);
+        }
+
+        #cloud-ui-root .tab {
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: transparent;
+            color: rgba(255,255,255,0.75);
+            border: 1px solid transparent;
+        }
+        #cloud-ui-root .tab.active {
+            background: rgba(255,255,255,0.14);
+            color: rgba(255,255,255,0.94);
+            border-color: rgba(255,255,255,0.16);
+        }
+
+        #cloud-ui-root .field {
+            margin-top: 12px;
+            display: grid;
+            gap: 8px;
+        }
+
+        #cloud-ui-root label { font-size: 12px; color: rgba(255,255,255,0.72); }
+        #cloud-ui-root input {
+            width: 100%;
+            padding: 12px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.92);
+            outline: none;
+        }
+        #cloud-ui-root input:focus { border-color: rgba(83,103,255,0.7); box-shadow: 0 0 0 3px rgba(83,103,255,0.16); }
+
+        #cloud-ui-root .hint {
+            margin-top: 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.72);
+            line-height: 1.5;
+        }
+
+        #cloud-ui-root .error {
+            margin-top: 10px;
+            font-size: 12px;
+            color: rgba(255, 165, 165, 0.95);
+            background: rgba(255, 77, 77, 0.12);
+            border: 1px solid rgba(255, 77, 77, 0.22);
+            padding: 8px 10px;
+            border-radius: 14px;
+            display: none;
+        }
+        #cloud-ui-root .error.show { display: block; }
+
+        #cloud-ui-root .list {
+            margin-top: 10px;
+            display: grid;
+            gap: 10px;
+            max-height: min(52vh, 420px);
+            overflow: auto;
+            padding-right: 6px;
+        }
+
+        #cloud-ui-root .cards {
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        #cloud-ui-root .card {
+            padding: 12px 12px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.14);
+        }
+        #cloud-ui-root .card .k { font-size: 12px; color: rgba(255,255,255,0.72); }
+        #cloud-ui-root .card .v { margin-top: 6px; font-weight: 800; font-size: 18px; letter-spacing: 0.2px; }
+        #cloud-ui-root .card.wide { grid-column: 1 / -1; }
+        #cloud-ui-root .spark {
+            width: 100%;
+            height: 52px;
+            margin-top: 8px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.12);
+            border: 1px solid rgba(255,255,255,0.10);
+        }
+        #cloud-ui-root .item {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 12px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.14);
+        }
+        #cloud-ui-root .item .score { font-weight: 800; letter-spacing: .2px; }
+        #cloud-ui-root .item .time { font-size: 12px; color: rgba(255,255,255,0.70); }
     </style>
-  <script type="module" crossorigin src="/assets/index-CFWfGD0L.js"></script>
+  <script type="module" crossorigin src="/assets/index-B56OmCIv.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/leafer-BCB2pN9R.js">
 </head>
 <body>
 <canvas></canvas>
-<img id="loading" src="/assets/loading-D-prH_-Y.svg" alt="Loading..." draggable="false">
+<img id="loading" src="/assets/loading-D-prH_-Y.svg" alt="Loading..." draggable="false">
+<div id="cloud-ui-root"></div>
 </body>
 </html>

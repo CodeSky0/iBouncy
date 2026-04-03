@@ -76,8 +76,13 @@ export default class Interaction {
 
         const overlapX = Math.min(Ball.ox!, Tablet.ox!) - Math.max(Ball.x!, Tablet.x!);
         const overlapY = Math.min(Ball.oy!, Tablet.oy!) - Math.max(Ball.y!, Tablet.y!);
-        const sameXDirection = (bvx ^ (bcx - tcx)) > 0;
-        const sameYDirection = (bvy ^ (bcy - tcy)) > 0;
+
+        // 原实现用位运算 `^` 做方向判断，但速度/坐标是浮点数时会被截断为 32-bit int，
+        // 方向逻辑可能不可靠。这里改为基于正负号的判断，语义更稳定也更可读。
+        const relX = bcx - tcx;
+        const relY = bcy - tcy;
+        const sameXDirection = (bvx > 0 && relX > 0) || (bvx < 0 && relX < 0);
+        const sameYDirection = (bvy > 0 && relY > 0) || (bvy < 0 && relY < 0);
         if (sameXDirection && sameYDirection) {
             Ball.x! += bvx * 1.5;
             Ball.y! += bvy * 1.5;

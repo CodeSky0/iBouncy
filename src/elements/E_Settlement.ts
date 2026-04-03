@@ -77,13 +77,14 @@ export default class E_Settlement extends Group {
     }
 
     async #loadFont_(): Promise<void> {
-        const fontURL = new URL("/public/fonts/HYBeiBingYang-W.woff2", import.meta.url).href;
+        // `public/*` 在 Vite 下会直接映射到站点根路径（如 `/fonts/...`）。
+        const fontURL = "/fonts/HYBeiBingYang-W.woff2";
         await GP.fontInitializer("HYBeiBingYang-W", fontURL);
     }
 
     async #preloadImage_(): Promise<void> {
-        const winJPG = new URL("/public/img/GL.jpg", import.meta.url).href;
-        const failJPG = new URL("/public/img/DL.jpg", import.meta.url).href;
+        const winJPG = "/img/GL.jpg";
+        const failJPG = "/img/DL.jpg";
         await Promise.all([GP.ImageInitializer("GL.jpg", winJPG), GP.ImageInitializer("DL.jpg", failJPG)]);
     }
 

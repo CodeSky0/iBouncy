@@ -78,6 +78,14 @@ export class GameEventBus {
     clear(): void {
         this.events.clear();
     }
+
+    /**
+     * 兼容 guide 的命名：用于应用卸载时统一释放所有监听器，避免长时间运行造成的监听器残留。
+     * 等价于 {@link clear}。
+     */
+    destroy(): void {
+        this.clear();
+    }
 }
 
 /** 单例：全游戏共享一条总线 */

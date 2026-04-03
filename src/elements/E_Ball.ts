@@ -1,7 +1,7 @@
 import { Ellipse } from "leafer-game";
 import X_BallTrailing from "../elements_extensions/X_BallTrailing";
 import type { BoundsEntity, BoundaryCallbacks } from "../core/interaction";
-import { evBus, GEV, GI, GP, leafer, Timing } from "../core/instances";
+import { effectsEnabled, evBus, GEV, GI, GP, leafer, Timing } from "../core/instances";
 import { GameConf, UIConf } from "../config";
 
 export default class E_Ball extends Ellipse {
@@ -73,6 +73,7 @@ export default class E_Ball extends Ellipse {
         this.y! += this.vy * prog;
         this.ballBoundaryPaddings[2] = -this.h * 3;
         GI.boundaryDetect(this as BoundsEntity, this.ballBoundaryOpts);
-        this.trailing.frameLoop(this.timeDivisor);
+        // 卡顿时关闭视觉拖尾，保障核心物理计算更稳定。
+        if (effectsEnabled) this.trailing.frameLoop(this.timeDivisor);
     }
 }

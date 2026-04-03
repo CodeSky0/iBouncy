@@ -110,8 +110,13 @@ export default class Processor {
     }
 
     async ImageInitializer(name: string, src: string): Promise<void> {
-        const img = await Platform.origin!.loadImage(src);
-        Resource.setImage(`leafer://${name}`, img);
+        try {
+            const img = await Platform.origin!.loadImage(src);
+            Resource.setImage(`leafer://${name}`, img);
+        } catch (e) {
+            // 资源加载失败不应阻断游戏初始化（避免首屏空白）。
+            console.error(`An error has occurred while initializing image "${name}":`, e);
+        }
     }
 
     prepared(): void {
@@ -147,6 +152,7 @@ export default class Processor {
         this.state("over");
         evBus.emit(GEV.GAME_OVER, {
             win: win,
+            score: Scoring.v,
         });
         return true;
     }

@@ -1,5 +1,6 @@
 import { Group, Path, Text } from "leafer-game";
-import { Ball, evBus, F, GEV, GP, timer } from "../core/instances";
+import type { IAnimate } from "@leafer-ui/interface";
+import { Ball, evBus, effectsEnabled, F, GEV, GP, leafer, timer } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_Scoring extends Group {
@@ -8,6 +9,12 @@ export default class E_Scoring extends Group {
     Integer: Text;
     Decimal: Text;
     v = 0;
+    /** 复用得分提示文本，避免碰撞时频繁 new/destroy 带来的 GC 抖动 */
+    private readonly tipPool: Text[] = [];
+    private readonly activeTips = new Set<Text>();
+    private readonly tipTimeouts = new Map<Text, symbol>();
+    private readonly tipAnis = new Map<Text, IAnimate[]>();
+    private readonly tipPoolLimit = 24;
 
     constructor() {
         super({
@@ -75,7 +82,8 @@ export default class E_Scoring extends Group {
     }
 
     async #loadFont_(): Promise<void> {
-        const fontURL = new URL("/public/fonts/HYDiSiKe-U.woff2", import.meta.url).href;
+        // `public/*` 在 Vite 下会直接映射到站点根路径（如 `/fonts/...`）。
+        const fontURL = "/fonts/HYDiSiKe-U.woff2";
         await GP.fontInitializer("HYDiSiKe-U", fontURL);
         this.#newScore_();
     }
@@ -94,46 +102,41 @@ export default class E_Scoring extends Group {
     }
 
     tip_(delta: string): void {
+        if (!effectsEnabled) return;
         const tipConf = this.confUI.tip;
         const aniConf = tipConf.ANIMATION;
         const [initialOffsetX, transitionX, transitionY] = this.#getTipData_();
-        const tip = new Text({
+        const tip = this.#acquireTip_();
+
+        this.#killTipAnimations_(tip);
+        this.#resetTipState_(tip, {
             x: Ball.cx + initialOffsetX,
             y: Ball.oy,
-            around: "center",
             text: "+" + delta,
-            fill: tipConf.FILL,
-            stroke: tipConf.STROKE,
-            fontSize: tipConf.FONT_SIZE,
-            fontFamily: this.confUI.FONT_FAMILY,
-            opacity: tipConf.OPACITY,
-            shadow: {
-                x: 1,
-                y: 1,
-                blur: 10,
-                color: tipConf.SHADOW_COLOR,
-            },
-            animation: {
-                keyframes: [
-                    {
-                        style: { opacity: tipConf.OPACITY, fontSize: aniConf.FONT_SIZE1 },
-                        duration: aniConf.STYLE_DURATION1,
-                    },
-                    {
-                        style: { opacity: 0, fontSize: aniConf.FONT_SIZE2 },
-                        duration: aniConf.STYLE_DURATION2,
-                    },
-                ],
-                join: true,
-            },
+            initialOpacity: tipConf.OPACITY,
+            initialFontSize: aniConf.FONT_SIZE1,
         });
-        tip.render_();
-        tip.animate([{ offsetX: transitionX }], {
+        tip.visible = true;
+
+        const aniStyle = tip.animate(
+            [
+                {
+                    style: { opacity: tipConf.OPACITY, fontSize: aniConf.FONT_SIZE1 },
+                    duration: aniConf.STYLE_DURATION1,
+                },
+                {
+                    style: { opacity: 0, fontSize: aniConf.FONT_SIZE2 },
+                    duration: aniConf.STYLE_DURATION2,
+                },
+            ],
+            { join: true },
+        );
+        const aniX = tip.animate([{ offsetX: 0 }, { offsetX: transitionX }], {
             duration: aniConf.X_DURATION,
             easing: "sine-out",
             join: true,
         });
-        tip.animate(
+        const aniY = tip.animate(
             [
                 {
                     style: { offsetY: aniConf.Y_OFFSET1 },
@@ -146,13 +149,106 @@ export default class E_Scoring extends Group {
                     easing: "quad-in-out",
                 },
             ],
-            {
-                join: true,
-            },
+            { join: true },
         );
-        timer.newTimeout(() => {
+
+        this.tipAnis.set(tip, [aniStyle, aniX, aniY]);
+
+        const to = timer.newTimeout(() => this.#releaseTip_(tip), tipConf.DURATION * 1000);
+        this.tipTimeouts.set(tip, to);
+    }
+
+    #acquireTip_(): Text {
+        const fromPool = this.tipPool.pop();
+        if (fromPool) {
+            this.activeTips.add(fromPool);
+            return fromPool;
+        }
+        if (this.activeTips.size >= this.tipPoolLimit) {
+            const reuse = this.activeTips.values().next().value as Text | undefined;
+            if (reuse) return reuse;
+        }
+
+        const tipConf = this.confUI.tip;
+        const tip = new Text({
+            x: 0,
+            y: 0,
+            around: "center",
+            text: "",
+            fill: tipConf.FILL,
+            stroke: tipConf.STROKE,
+            fontSize: tipConf.FONT_SIZE,
+            fontFamily: this.confUI.FONT_FAMILY,
+            opacity: tipConf.OPACITY,
+            shadow: {
+                x: 1,
+                y: 1,
+                blur: 10,
+                color: tipConf.SHADOW_COLOR,
+            },
+            visible: false,
+        });
+        tip.render_();
+        this.activeTips.add(tip);
+        return tip;
+    }
+
+    #resetTipState_(
+        tip: Text,
+        {
+            x,
+            y,
+            text,
+            initialOpacity,
+            initialFontSize,
+        }: {
+            x: number;
+            y: number;
+            text: string;
+            initialOpacity: number;
+            initialFontSize: number;
+        },
+    ): void {
+        tip.x = x;
+        tip.y = y;
+        tip.text = text;
+        tip.opacity = initialOpacity;
+        tip.fontSize = initialFontSize;
+
+        // Leafer 的 translate 使用 `offsetX/offsetY`，这里强制把起点归零，避免复用时从上次动画终点开始。
+        // 由于类型声明可能不包含 offsetX/offsetY，这里通过类型断言写回。
+        (tip as unknown as { offsetX?: number }).offsetX = 0;
+        (tip as unknown as { offsetY?: number }).offsetY = 0;
+    }
+
+    #killTipAnimations_(tip: Text): void {
+        const anis = this.tipAnis.get(tip);
+        if (anis) {
+            for (const ani of anis) leafer.killAnimate(ani as never);
+        }
+        this.tipAnis.delete(tip);
+
+        const to = this.tipTimeouts.get(tip);
+        if (to) {
+            timer.cancelTimeout(to);
+            this.tipTimeouts.delete(tip);
+        }
+    }
+
+    #releaseTip_(tip: Text): void {
+        this.tipTimeouts.delete(tip);
+        this.#killTipAnimations_(tip);
+
+        tip.visible = false;
+        tip.text = "";
+
+        if (this.tipPool.length < this.tipPoolLimit) {
+            this.activeTips.delete(tip);
+            this.tipPool.push(tip);
+        } else {
+            this.activeTips.delete(tip);
             tip.destroy();
-        }, tipConf.DURATION * 1000);
+        }
     }
 
     #getTipData_(): [number, number, number] {

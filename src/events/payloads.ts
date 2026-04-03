@@ -17,7 +17,7 @@ export type GameEventPayloadMap = {
     [GEV.GAME_START]: undefined;
     [GEV.GAME_PAUSE]: undefined;
     [GEV.GAME_RESUME]: undefined;
-    [GEV.GAME_OVER]: { win: boolean };
+    [GEV.GAME_OVER]: { win: boolean; score: number };
     [GEV.GAME_RESTART]: undefined;
     [GEV.GAME_RESET]: { removeMask: boolean };
     [GEV.PLAYER_SCORE]: undefined;

@@ -48,6 +48,63 @@ npm run dev
 ```
 访问 [http://localhost:5173](http://localhost:5173)
 
+## 👤 登录/注册 + 云端历史成绩（Postgres）
+
+本项目已内置一套**轻量云端账号系统**，用于：
+
+- **注册 / 登录**：用邮箱 + 密码创建账号并登录
+- **云端保存成绩**：每局结束后，会把本局最终得分写入数据库
+- **历史记录**：在右上角「历史记录」查看最近成绩（也可按 `H`）
+
+### 1) 环境变量
+
+你需要提供两项环境变量（本地与 Vercel 都要配置）：
+
+- **`POSTGRES_URL`**：你的 Postgres 连接串（适配 Serverless 数据库，如 Neon / Vercel Postgres）
+- **`JWT_SECRET`**：JWT 签名密钥（随便一段足够长的随机字符串）
+
+本地开发可在根目录新建 `.env.local`：
+
+```bash
+POSTGRES_URL="postgres://USER:PASSWORD@HOST:5432/DB?sslmode=require"
+JWT_SECRET="please-change-me-to-a-long-random-string"
+```
+
+> 说明：后端接口运行在 Vercel `api/` Serverless Functions 中，使用 **HttpOnly Cookie** 保存登录态。
+
+### 2) 使用方式（玩家视角）
+
+- 右上角按钮点击 **“登录 / 注册”**（也可按 `L`）
+- 登录后，右上角会显示邮箱，并出现 **“历史记录”** 与 **“退出”**
+- 游戏结束会自动上传成绩；历史记录会展示最近 20 条
+
+#### 游客模式（本地记录）与自动同步
+
+- **未登录也会记录成绩**：每局结束都会先写入浏览器本地（LocalStorage）
+- **登录后自动同步**：一旦你登录/注册，会自动把本地“未同步”的成绩上传到云端，并做去重
+- **历史记录页面**：未登录时显示本地记录；已登录时可看到云端记录 + 本地未同步提示，并提供“同步本地”按钮
+
+### 3) 数据库表结构（自动创建）
+
+首次调用任意 `/api/*` 接口时，会在数据库中自动创建表（幂等）：
+
+- `users(id, email, password_hash, created_at)`
+- `scores(id, user_id, client_id, score, created_at)`
+
+其中 `score` 为**整数**，对应游戏内 1 位小数的分数：建议按 `score * 10` 存储（本项目已按此规则上传）。
+`client_id` 用于客户端同步时的**去重**（同一用户下唯一，允许为空）。
+
+### 4) Vercel 部署
+
+1. 将仓库导入 Vercel
+2. 在项目设置里添加环境变量：`POSTGRES_URL`、`JWT_SECRET`
+3. 直接部署即可
+
+Vercel 会同时托管：
+
+- 前端静态站点（Vite 构建产物 `dist/`）
+- 后端 API（`/api/auth/*`、`/api/scores/*`）
+
 ### 生产构建
 ```bash
 npm run build

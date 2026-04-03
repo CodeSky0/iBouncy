@@ -70,7 +70,8 @@ export default class E_MainMenu extends Group {
     }
 
     async preloadImage(): Promise<void> {
-        const brandSVG = new URL("/public/svg/brand.svg", import.meta.url).href;
+        // `public/*` 在 Vite 下会直接映射到站点根路径（如 `/svg/...`）。
+        const brandSVG = "/svg/brand.svg";
         await GP.ImageInitializer("brand.svg", brandSVG);
     }
 
