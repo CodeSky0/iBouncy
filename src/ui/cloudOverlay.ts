@@ -71,6 +71,50 @@ function buildSparkline(values: number[], stroke = "rgba(83,103,255,0.92)", fill
     return svg;
 }
 
+// Create ripple effect on button click
+function addRippleEffect(button: HTMLElement, e?: MouseEvent) {
+    const ripple = document.createElement("span");
+    ripple.style.cssText = `
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        transform: scale(0);
+        animation: ripple 0.5s ease-out;
+        pointer-events: none;
+    `;
+    
+    const rect = button.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.width = ripple.style.height = `${size}px`;
+    
+    if (e) {
+        ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+        ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+    } else {
+        ripple.style.left = `${rect.width / 2 - size / 2}px`;
+        ripple.style.top = `${rect.height / 2 - size / 2}px`;
+    }
+    
+    button.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 500);
+}
+
+// Add ripple animation to document
+function addRippleStyle() {
+    if (document.getElementById("ripple-style")) return;
+    const style = document.createElement("style");
+    style.id = "ripple-style";
+    style.textContent = `
+        @keyframes ripple {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 export function initCloudOverlay(): {
     refresh: () => Promise<void>;
     openAuth: () => void;
@@ -78,9 +122,10 @@ export function initCloudOverlay(): {
     syncLocalToCloud: () => Promise<{ uploaded: number }>;
     getUser: () => cloud.CloudUser | null;
 } {
+    addRippleStyle();
+    
     const root = document.querySelector("#cloud-ui-root") as HTMLDivElement | null;
     if (!root) {
-        // 不阻断游戏；只是无法显示云端 UI
         return {
             refresh: async () => void 0,
             openAuth: () => void 0,
@@ -109,8 +154,19 @@ export function initCloudOverlay(): {
     const modalBox = el("div", "modal");
     backdrop.appendChild(modalBox);
 
+    // Success toast
+    const successToast = el("div", "success-toast");
+    successToast.textContent = "操作成功！";
+    root.appendChild(successToast);
+
     root.appendChild(fab);
     root.appendChild(backdrop);
+
+    function showSuccess(message: string) {
+        successToast.textContent = message;
+        successToast.classList.add("show");
+        setTimeout(() => successToast.classList.remove("show"), 2500);
+    }
 
     function setError(msg: string | null) {
         const n = modalBox.querySelector(".error") as HTMLDivElement | null;
@@ -122,14 +178,47 @@ export function initCloudOverlay(): {
         }
         n.textContent = msg;
         n.classList.add("show");
+        // Auto hide error after 5 seconds
+        setTimeout(() => {
+            if (n.textContent === msg) {
+                n.textContent = "";
+                n.classList.remove("show");
+            }
+        }, 5000);
     }
 
     function setBackdropOpen(open: boolean) {
-        backdrop.classList.toggle("open", open);
-        if (!open) {
-            modal = "none";
-            setError(null);
+        if (open) {
+            backdrop.classList.add("open");
+            backdrop.classList.remove("closing");
+            document.body.style.overflow = "hidden";
+        } else {
+            backdrop.classList.add("closing");
+            setTimeout(() => {
+                backdrop.classList.remove("open", "closing");
+                modal = "none";
+                setError(null);
+            }, 300);
+            document.body.style.overflow = "";
         }
+    }
+
+    function createButtonWithLoader(text: string, className: string): HTMLButtonElement {
+        const btn = el("button", className);
+        btn.type = "button";
+        
+        const textSpan = el("span", "btn-text");
+        textSpan.textContent = text;
+        
+        const loader = el("span", "btn-loader");
+        
+        btn.appendChild(textSpan);
+        btn.appendChild(loader);
+        
+        // Add ripple effect
+        btn.addEventListener("click", (e) => addRippleEffect(btn, e));
+        
+        return btn;
     }
 
     function renderFab() {
@@ -139,7 +228,10 @@ export function initCloudOverlay(): {
         if (!user) {
             badge.textContent = "未登录";
             btnAuth.textContent = "登录 / 注册";
-            btnAuth.onclick = () => openAuth();
+            btnAuth.onclick = (e) => {
+                addRippleEffect(btnAuth, e as MouseEvent);
+                openAuth();
+            };
             pill.appendChild(badge);
             pill.appendChild(btnAuth);
             fab.appendChild(pill);
@@ -151,22 +243,31 @@ export function initCloudOverlay(): {
         btnLogout.textContent = "退出";
         btnAuth.textContent = "切换账号";
 
-        btnHistory.onclick = () => openHistory();
-        btnLogout.onclick = async () => {
+        btnHistory.onclick = (e) => {
+            addRippleEffect(btnHistory, e as MouseEvent);
+            openHistory();
+        };
+        btnLogout.onclick = async (e) => {
+            addRippleEffect(btnLogout, e as MouseEvent);
             if (busy) return;
             busy = true;
+            btnLogout.classList.add("loading");
             try {
                 await cloud.logout();
                 user = null;
+                showSuccess("已退出登录");
                 renderFab();
             } catch (e) {
-                // 不弹 modal，只做 console
                 console.error(e);
             } finally {
                 busy = false;
+                btnLogout.classList.remove("loading");
             }
         };
-        btnAuth.onclick = () => openAuth();
+        btnAuth.onclick = (e) => {
+            addRippleEffect(btnAuth, e as MouseEvent);
+            openAuth();
+        };
 
         pill.appendChild(badge);
         pill.appendChild(btnHistory);
@@ -180,7 +281,7 @@ export function initCloudOverlay(): {
         setBackdropOpen(true);
         setError(null);
 
-        const titleRow = el("div", "row");
+        const titleRow = el("div", "row title-row");
         const title = el("h2");
         title.textContent = "云端账号";
 
@@ -194,9 +295,7 @@ export function initCloudOverlay(): {
         tabs.appendChild(tabLogin);
         tabs.appendChild(tabRegister);
 
-        const closeBtn = el("button", "btn");
-        closeBtn.type = "button";
-        closeBtn.textContent = "关闭";
+        const closeBtn = createButtonWithLoader("关闭", "btn");
         closeBtn.onclick = () => setBackdropOpen(false);
 
         titleRow.appendChild(title);
@@ -225,18 +324,22 @@ export function initCloudOverlay(): {
         const errBox = el("div", "error");
 
         const actions = el("div", "row");
+        actions.style.marginTop = "20px";
         const left = el("div");
         const right = el("div");
         right.style.display = "flex";
         right.style.gap = "10px";
 
-        const submitBtn = el("button", "btn primary");
-        submitBtn.type = "button";
-        submitBtn.textContent = mode === "register" ? "创建账号并登录" : "登录";
+        const submitBtn = createButtonWithLoader(
+            mode === "register" ? "创建账号并登录" : "登录", 
+            "btn primary"
+        );
 
         const hint = el("div", "hint");
-        hint.textContent =
-            "提示：登录后你每局的最终成绩会自动保存到云端，并可在「历史记录」里查看。";
+        hint.innerHTML = `
+            <strong>💡 提示</strong><br>
+            登录后你每局的最终成绩会自动保存到云端，并可在「历史记录」里查看。
+        `;
 
         const doSubmit = async () => {
             if (busy) return;
@@ -247,17 +350,20 @@ export function initCloudOverlay(): {
             if (!password || password.length < 6) return setError("密码至少 6 位");
 
             busy = true;
-            submitBtn.textContent = "处理中...";
+            submitBtn.classList.add("loading");
             try {
-                user = mode === "register" ? await cloud.register(email, password) : await cloud.login(email, password);
+                user = mode === "register" 
+                    ? await cloud.register(email, password) 
+                    : await cloud.login(email, password);
                 renderFab();
                 await syncLocalToCloud();
+                showSuccess(mode === "register" ? "注册成功！" : "登录成功！");
                 setBackdropOpen(false);
             } catch (e) {
                 setError(e instanceof Error ? e.message : String(e));
             } finally {
                 busy = false;
-                submitBtn.textContent = mode === "register" ? "创建账号并登录" : "登录";
+                submitBtn.classList.remove("loading");
             }
         };
 
@@ -265,15 +371,17 @@ export function initCloudOverlay(): {
         emailInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
         pwdInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
 
-        tabLogin.onclick = () => {
+        tabLogin.onclick = (e) => {
+            addRippleEffect(tabLogin, e as MouseEvent);
             mode = "login";
             renderAuthModal();
-            emailInput.focus();
+            setTimeout(() => emailInput.focus(), 50);
         };
-        tabRegister.onclick = () => {
+        tabRegister.onclick = (e) => {
+            addRippleEffect(tabRegister, e as MouseEvent);
             mode = "register";
             renderAuthModal();
-            emailInput.focus();
+            setTimeout(() => emailInput.focus(), 50);
         };
 
         tabLogin.classList.toggle("active", mode === "login");
@@ -285,7 +393,9 @@ export function initCloudOverlay(): {
         actions.appendChild(right);
 
         modalBox.replaceChildren(titleRow, fieldEmail, fieldPwd, errBox, actions, hint);
-        emailInput.focus();
+        
+        // Focus email input with animation delay
+        setTimeout(() => emailInput.focus(), 100);
     }
 
     async function renderHistoryModal() {
@@ -293,12 +403,10 @@ export function initCloudOverlay(): {
         setBackdropOpen(true);
         setError(null);
 
-        const titleRow = el("div", "row");
+        const titleRow = el("div", "row title-row");
         const title = el("h2");
         title.textContent = "历史成绩";
-        const closeBtn = el("button", "btn");
-        closeBtn.type = "button";
-        closeBtn.textContent = "关闭";
+        const closeBtn = createButtonWithLoader("关闭", "btn");
         closeBtn.onclick = () => setBackdropOpen(false);
         titleRow.appendChild(title);
         titleRow.appendChild(closeBtn);
@@ -307,19 +415,16 @@ export function initCloudOverlay(): {
         const cards = el("div", "cards");
         const list = el("div", "list");
         const actions = el("div", "row");
+        actions.style.marginTop = "16px";
         const left = el("div");
         const right = el("div");
         right.style.display = "flex";
         right.style.gap = "10px";
 
-        const refreshBtn = el("button", "btn");
-        refreshBtn.type = "button";
-        refreshBtn.textContent = "刷新";
+        const refreshBtn = createButtonWithLoader("刷新", "btn");
         refreshBtn.onclick = () => void load();
 
-        const syncBtn = el("button", "btn primary");
-        syncBtn.type = "button";
-        syncBtn.textContent = "同步本地";
+        const syncBtn = createButtonWithLoader("同步本地", "btn primary");
         syncBtn.onclick = () => void sync();
 
         actions.appendChild(left);
@@ -332,7 +437,7 @@ export function initCloudOverlay(): {
         const load = async () => {
             if (busy) return;
             busy = true;
-            refreshBtn.textContent = "加载中...";
+            refreshBtn.classList.add("loading");
             cards.replaceChildren();
             list.replaceChildren();
             try {
@@ -355,7 +460,8 @@ export function initCloudOverlay(): {
 
                     const c3 = el("div", "card wide");
                     const c3k = el("div", "k"); c3k.textContent = "游客 · 近7天（每日最高分）";
-                    const c3v = el("div", "v"); c3v.textContent = `最近一次：${fmtScore(last)} · 累计：${fmtScore(total)}`;
+                    const c3v = el("div", "v"); 
+                    c3v.textContent = `最近一次：${fmtScore(last)} · 累计：${fmtScore(total)}`;
                     const sparkWrap = el("div", "spark");
                     const values = (() => {
                         const m = new Map<string, number>();
@@ -383,7 +489,10 @@ export function initCloudOverlay(): {
 
                     if (local.length === 0) {
                         const empty = el("div", "hint");
-                        empty.textContent = "你还没登录，当前只有本地记录（目前为空）。按 L 登录后可云端保存。";
+                        empty.innerHTML = `
+                            <strong>📋 暂无记录</strong><br>
+                            你还没登录，当前只有本地记录（目前为空）。按 <kbd style="background:rgba(83,103,255,0.3);padding:2px 8px;border-radius:4px;">L</kbd> 登录后可云端保存。
+                        `;
                         list.appendChild(empty);
                     } else {
                         for (const r of local) {
@@ -433,23 +542,29 @@ export function initCloudOverlay(): {
 
                 if (localPending.length > 0) {
                     const hint = el("div", "hint");
-                    hint.textContent = `本地有 ${localPending.length} 条未同步成绩，点“同步本地”即可上传到云端（已做去重）。`;
+                    hint.innerHTML = `
+                        <strong>🔄 待同步</strong><br>
+                        本地有 ${localPending.length} 条未同步成绩，点击「同步本地」即可上传到云端（已做去重）。
+                    `;
                     list.appendChild(hint);
                 }
 
                 if (records.length === 0 && localPending.length === 0) {
                     const empty = el("div", "hint");
-                    empty.textContent = "还没有历史成绩，去玩一局吧。";
+                    empty.innerHTML = `
+                        <strong>🎮 开始游戏</strong><br>
+                        还没有历史成绩，去玩一局吧！
+                    `;
                     list.appendChild(empty);
                 } else {
-                    // 先展示本地未同步（更“新鲜”），并打个标签
+                    // 先展示本地未同步（更"新鲜"），并打个标签
                     for (const r of localPending) {
                         const item = el("div", "item");
                         const leftCol = el("div");
                         const score = el("div", "score");
                         score.textContent = fmtScore(r.score);
                         const time = el("div", "time");
-                        time.textContent = `${fmtTime(r.createdAt)} · 本地未同步`;
+                        time.innerHTML = `${fmtTime(r.createdAt)} <span class="sync-badge">本地未同步</span>`;
                         leftCol.appendChild(score);
                         leftCol.appendChild(time);
                         item.appendChild(leftCol);
@@ -472,7 +587,7 @@ export function initCloudOverlay(): {
                 setError(e instanceof Error ? e.message : String(e));
             } finally {
                 busy = false;
-                refreshBtn.textContent = "刷新";
+                refreshBtn.classList.remove("loading");
             }
         };
 
@@ -480,19 +595,21 @@ export function initCloudOverlay(): {
             if (!user) return setError("请先登录");
             if (busy) return;
             busy = true;
-            syncBtn.textContent = "同步中...";
+            syncBtn.classList.add("loading");
             try {
                 const r = await syncLocalToCloud();
                 if (r.uploaded > 0) {
-                    // 清理已同步的本地记录，避免列表里一直显示
                     clearSynced();
+                    showSuccess(`成功同步 ${r.uploaded} 条记录！`);
+                } else {
+                    showSuccess("所有记录已同步！");
                 }
                 await load();
             } catch (e) {
                 setError(e instanceof Error ? e.message : String(e));
             } finally {
                 busy = false;
-                syncBtn.textContent = "同步本地";
+                syncBtn.classList.remove("loading");
             }
         };
 
@@ -539,12 +656,9 @@ export function initCloudOverlay(): {
         for (const r of pending) {
             try {
                 await cloud.addScore(r.score, r.clientId);
-                // 上传成功就标记，留给 clearSynced() 清除
-                // 这样即使中途失败也不会丢失未同步数据
                 markSynced(r.clientId);
                 uploaded++;
             } catch (e) {
-                // 单条失败不阻断后续；比如偶发网络错误
                 console.error("sync score failed:", e);
             }
         }
@@ -562,4 +676,3 @@ export function initCloudOverlay(): {
         getUser: () => user,
     };
 }
-
