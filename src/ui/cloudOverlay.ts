@@ -115,11 +115,17 @@ function addRippleStyle() {
     document.head.appendChild(style);
 }
 
+export type SyncLocalResult = {
+    uploaded: number;
+    pendingAtStart: number;
+    lastError?: string;
+};
+
 export function initCloudOverlay(): {
     refresh: () => Promise<void>;
     openAuth: () => void;
     openHistory: () => void;
-    syncLocalToCloud: () => Promise<{ uploaded: number }>;
+    syncLocalToCloud: () => Promise<SyncLocalResult>;
     getUser: () => cloud.CloudUser | null;
 } {
     addRippleStyle();
@@ -130,7 +136,7 @@ export function initCloudOverlay(): {
             refresh: async () => void 0,
             openAuth: () => void 0,
             openHistory: () => void 0,
-            syncLocalToCloud: async () => ({ uploaded: 0 }),
+            syncLocalToCloud: async () => ({ uploaded: 0, pendingAtStart: 0 }),
             getUser: () => null,
         };
     }
@@ -710,11 +716,20 @@ export function initCloudOverlay(): {
                 const r = await syncLocalToCloud();
                 if (r.uploaded > 0) {
                     clearSynced();
-                    showSuccess(`成功同步 ${r.uploaded} 条记录！`);
-                } else {
-                    showSuccess("所有记录已同步！");
                 }
-                syncOk = true;
+                if (r.pendingAtStart === 0) {
+                    showSuccess("所有记录已同步！");
+                    syncOk = true;
+                } else if (r.uploaded === r.pendingAtStart) {
+                    showSuccess(r.uploaded === 1 ? "同步成功！" : `成功同步 ${r.uploaded} 条记录！`);
+                    syncOk = true;
+                } else if (r.uploaded > 0) {
+                    showSuccess(`已同步 ${r.uploaded} 条`);
+                    setError(r.lastError || "部分记录未能同步，请重试");
+                    syncOk = true;
+                } else {
+                    setError(r.lastError || "同步失败，请检查网络或登录状态后重试");
+                }
             } catch (e) {
                 setError(e instanceof Error ? e.message : String(e));
             } finally {
@@ -758,22 +773,25 @@ export function initCloudOverlay(): {
         renderFab();
     }
 
-    async function syncLocalToCloud(): Promise<{ uploaded: number }> {
-        if (!user) return { uploaded: 0 };
+    async function syncLocalToCloud(): Promise<SyncLocalResult> {
+        if (!user) return { uploaded: 0, pendingAtStart: 0 };
         const pending = pendingLocalScores();
-        if (pending.length === 0) return { uploaded: 0 };
+        if (pending.length === 0) return { uploaded: 0, pendingAtStart: 0 };
 
         let uploaded = 0;
+        let lastError: string | undefined;
         for (const r of pending) {
             try {
                 await cloud.addScore(r.score, r.clientId);
                 markSynced(r.clientId);
                 uploaded++;
             } catch (e) {
+                const msg = e instanceof Error ? e.message : String(e);
                 console.error("sync score failed:", e);
+                lastError = msg;
             }
         }
-        return { uploaded };
+        return { uploaded, pendingAtStart: pending.length, lastError };
     }
 
     void refresh();

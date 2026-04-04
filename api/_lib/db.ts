@@ -34,7 +34,22 @@ export async function ensureSchema(sql: Sql) {
 
     await sql`ALTER TABLE scores ADD COLUMN IF NOT EXISTS client_id TEXT;`;
     await sql`CREATE INDEX IF NOT EXISTS idx_scores_user_created_at ON scores(user_id, created_at DESC);`;
-    await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_scores_user_client_id ON scores(user_id, client_id) WHERE client_id IS NOT NULL;`;
+    // 部分唯一索引会导致部分环境下 ON CONFLICT (user_id, client_id) 无法正确 upsert；改为完整唯一索引（PG 允许多行 client_id IS NULL）
+    await sql`
+        DO $mig$
+        DECLARE
+            def text;
+        BEGIN
+            SELECT indexdef INTO def
+            FROM pg_indexes
+            WHERE schemaname = 'public' AND indexname = 'uq_scores_user_client_id';
+            IF def IS NOT NULL AND def ILIKE '%WHERE%' THEN
+                DROP INDEX IF EXISTS uq_scores_user_client_id;
+            END IF;
+        END
+        $mig$;
+    `;
+    await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_scores_user_client_id ON scores (user_id, client_id);`;
 
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT;`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS nickname TEXT;`;
