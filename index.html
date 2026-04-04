@@ -224,6 +224,7 @@
 
         /* Enhanced Modal Design */
         #cloud-ui-root .modal {
+            position: relative;
             width: min(480px, calc(100vw - 32px));
             max-height: calc(100vh - 40px);
             border-radius: 24px;
@@ -244,6 +245,193 @@
             opacity: 0;
             transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             overflow-y: auto;
+        }
+
+        #cloud-ui-root .modal-auth {
+            width: min(420px, calc(100vw - 32px));
+            border-color: rgba(83, 103, 255, 0.42);
+            background: linear-gradient(168deg,
+                rgba(32, 34, 58, 0.94) 0%,
+                rgba(24, 26, 48, 0.9) 45%,
+                rgba(14, 18, 36, 0.92) 100%);
+            box-shadow:
+                0 28px 90px rgba(0, 0, 0, 0.58),
+                0 0 0 1px rgba(6, 214, 160, 0.12),
+                0 0 48px rgba(83, 103, 255, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.09);
+        }
+
+        #cloud-ui-root .modal-history {
+            width: min(520px, calc(100vw - 32px));
+            border-color: rgba(139, 92, 246, 0.38);
+            background: linear-gradient(168deg,
+                rgba(34, 30, 56, 0.94) 0%,
+                rgba(22, 24, 44, 0.91) 50%,
+                rgba(16, 20, 40, 0.93) 100%);
+            box-shadow:
+                0 28px 90px rgba(0, 0, 0, 0.58),
+                0 0 0 1px rgba(139, 92, 246, 0.14),
+                0 0 40px rgba(6, 214, 160, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        #cloud-ui-root .auth-head {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+            margin-bottom: 4px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #cloud-ui-root .tabs.tabs-auth {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 5px;
+        }
+
+        #cloud-ui-root .tabs.tabs-auth .tab {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+
+        #cloud-ui-root .auth-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        #cloud-ui-root .auth-actions {
+            margin-top: 22px;
+            padding-top: 4px;
+            align-items: center;
+        }
+
+        #cloud-ui-root .auth-actions-right {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        #cloud-ui-root .field.auth-stagger {
+            animation: authFieldIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+            animation-delay: calc(var(--i, 0) * 55ms);
+        }
+
+        @keyframes authFieldIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #cloud-ui-root .auth-hint {
+            margin-top: 18px;
+            background: linear-gradient(135deg, rgba(83, 103, 255, 0.1), rgba(6, 214, 160, 0.06));
+            border-color: rgba(6, 214, 160, 0.22);
+            color: rgba(196, 210, 254, 0.88);
+        }
+
+        #cloud-ui-root .optional-field label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #cloud-ui-root .optional-tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(6, 214, 160, 0.15);
+            border: 1px solid rgba(6, 214, 160, 0.35);
+            color: rgba(110, 231, 200, 0.95);
+        }
+
+        #cloud-ui-root .history-head {
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        #cloud-ui-root .history-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        #cloud-ui-root .history-title-accent {
+            width: 48px;
+            height: 3px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #5367FF, #06D6A0);
+            opacity: 0.9;
+        }
+
+        #cloud-ui-root .history-actions {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        #cloud-ui-root .history-actions-right {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        #cloud-ui-root .history-cards .card {
+            background: linear-gradient(135deg, rgba(83, 103, 255, 0.14), rgba(6, 214, 160, 0.06));
+            border-color: rgba(139, 92, 246, 0.22);
+        }
+
+        #cloud-ui-root .history-list .item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(83, 103, 255, 0.04));
+            border-color: rgba(255, 255, 255, 0.09);
+        }
+
+        #cloud-ui-root .modal-loading {
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            display: grid;
+            place-items: center;
+            border-radius: inherit;
+            background: rgba(10, 12, 26, 0.55);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.28s ease;
+        }
+
+        #cloud-ui-root .modal-loading.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #cloud-ui-root .modal-loading-spinner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.12);
+            border-top-color: #06D6A0;
+            border-right-color: #5367FF;
+            animation: historySpin 0.75s linear infinite;
+        }
+
+        @keyframes historySpin {
+            to { transform: rotate(360deg); }
         }
 
         #cloud-ui-root .modal-backdrop.open .modal {
@@ -291,6 +479,8 @@
         }
 
         #cloud-ui-root .tab {
+            position: relative;
+            overflow: hidden;
             padding: 10px 18px;
             border-radius: 999px;
             background: transparent;
@@ -298,13 +488,17 @@
             border: 1px solid transparent;
             font-size: 13px;
             font-weight: 500;
-            transition: all 0.25s ease;
+            transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease, transform 0.12s ease, box-shadow 0.25s ease;
             cursor: pointer;
         }
 
         #cloud-ui-root .tab:hover {
             color: rgba(255, 255, 255, 0.85);
             background: rgba(255, 255, 255, 0.05);
+        }
+
+        #cloud-ui-root .tab:active {
+            transform: scale(0.97);
         }
 
         #cloud-ui-root .tab.active {
@@ -355,6 +549,13 @@
             box-shadow: 
                 0 0 0 4px rgba(83, 103, 255, 0.15),
                 0 0 20px rgba(83, 103, 255, 0.2);
+        }
+
+        #cloud-ui-root .modal-auth input:focus {
+            border-color: rgba(6, 214, 160, 0.45);
+            box-shadow:
+                0 0 0 4px rgba(6, 214, 160, 0.12),
+                0 0 22px rgba(83, 103, 255, 0.18);
         }
 
         #cloud-ui-root .hint {

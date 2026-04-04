@@ -8,31 +8,62 @@ function normalizeEmail(email: unknown) {
     return String(email || "").trim().toLowerCase();
 }
 
+function userPayload(row: { id: unknown; email: string; username: string | null; nickname: string | null }) {
+    const nickname = row.nickname ? String(row.nickname).trim() : "";
+    const username = row.username ? String(row.username).trim() : "";
+    const displayName = nickname || username || row.email;
+    return {
+        id: Number(row.id),
+        email: row.email,
+        username: username || null,
+        nickname: nickname || null,
+        displayName,
+    };
+}
+
 export default async function handler(req: any, res: any) {
     if (req.method !== "POST") return methodNotAllowed(res, "POST");
     try {
         const body = await readJsonBody(req);
-        const email = normalizeEmail(body.email);
+        const raw = String(body.identifier ?? body.email ?? "").trim();
         const password = String(body.password || "");
 
-        if (!email || !email.includes("@")) return badRequest(res, "邮箱格式不正确");
+        if (!raw) return badRequest(res, "请输入用户名或邮箱");
         if (!password) return badRequest(res, "请输入密码");
 
         const sql = getSql();
         await ensureSchema(sql);
 
-        const rows = await sql`SELECT id, email, password_hash FROM users WHERE email = ${email} LIMIT 1`;
-        const user = rows?.[0];
-        if (!user) return unauthorized(res, "邮箱或密码不正确");
+        let rows;
+        if (raw.includes("@")) {
+            const email = normalizeEmail(raw);
+            if (!email || !email.includes("@")) return badRequest(res, "邮箱格式不正确");
+            rows = await sql`
+                SELECT id, email, username, nickname, password_hash
+                FROM users WHERE email = ${email} LIMIT 1
+            `;
+        } else {
+            const uname = raw.toLowerCase();
+            if (!/^[a-z0-9_]{3,20}$/.test(uname)) {
+                return badRequest(res, "用户名须为 3–20 位小写字母、数字或下划线，或使用邮箱登录");
+            }
+            rows = await sql`
+                SELECT id, email, username, nickname, password_hash
+                FROM users WHERE LOWER(username) = ${uname} LIMIT 1
+            `;
+        }
 
-        const okPwd = await bcrypt.compare(password, user.password_hash);
-        if (!okPwd) return unauthorized(res, "邮箱或密码不正确");
+        const row = rows?.[0];
+        if (!row) return unauthorized(res, "用户名/邮箱或密码不正确");
 
-        const token = signToken({ userId: Number(user.id), email: user.email });
+        const okPwd = await bcrypt.compare(password, row.password_hash);
+        if (!okPwd) return unauthorized(res, "用户名/邮箱或密码不正确");
+
+        const user = userPayload(row);
+        const token = signToken({ userId: user.id, email: user.email });
         const cookie = buildAuthCookie(token);
-        return ok(res, { user: { id: Number(user.id), email: user.email }, tokenSet: true }, { "Set-Cookie": cookie });
+        return ok(res, { user, tokenSet: true }, { "Set-Cookie": cookie });
     } catch (e) {
         return serverError(res, e);
     }
 }
-

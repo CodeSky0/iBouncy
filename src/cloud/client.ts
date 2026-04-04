@@ -1,6 +1,13 @@
 import { apiFetch } from "./http";
 
-export type CloudUser = { id: number; email: string };
+export type CloudUser = {
+    id: number;
+    email: string;
+    username: string | null;
+    nickname: string | null;
+    displayName: string;
+};
+
 export type ScoreRecord = { id: number; score: number; createdAt: string };
 export type TrendPoint = { day: string; games: number; bestScore: number; totalScore: number };
 export type ScoreSummary = { games: number; bestScore: number; totalScore: number; lastScore: number; lastAt: string | null };
@@ -10,18 +17,28 @@ export async function me(): Promise<CloudUser | null> {
     return r.user;
 }
 
-export async function register(email: string, password: string): Promise<CloudUser> {
+export async function register(params: {
+    username: string;
+    nickname?: string;
+    email: string;
+    password: string;
+}): Promise<CloudUser> {
     const r = await apiFetch<{ user: CloudUser }>("/api/auth/register", {
         method: "POST",
-        json: { email, password },
+        json: {
+            username: params.username,
+            nickname: params.nickname || "",
+            email: params.email,
+            password: params.password,
+        },
     });
     return r.user;
 }
 
-export async function login(email: string, password: string): Promise<CloudUser> {
+export async function login(identifier: string, password: string): Promise<CloudUser> {
     const r = await apiFetch<{ user: CloudUser }>("/api/auth/login", {
         method: "POST",
-        json: { email, password },
+        json: { identifier, password },
     });
     return r.user;
 }
@@ -46,4 +63,3 @@ export async function summary(): Promise<{ summary: ScoreSummary; trend7d: Trend
     const r = await apiFetch<{ summary: ScoreSummary; trend7d: TrendPoint[] }>("/api/scores/summary");
     return { summary: r.summary, trend7d: r.trend7d };
 }
-
