@@ -1,5 +1,6 @@
 import * as cloud from "../cloud/client";
 import { clearSynced, listLocalScores, markSynced, pendingLocalScores } from "../cloud/localScores";
+import { eventBus, GEV } from "../events";
 
 type Mode = "login" | "register";
 type Modal = "none" | "auth" | "history";
@@ -167,6 +168,13 @@ export function initCloudOverlay(): {
 
     root.appendChild(fab);
     root.appendChild(backdrop);
+
+    eventBus.on(GEV.GAME_START, () => {
+        fab.classList.add("cloud-fab--game-hidden");
+    });
+    eventBus.on(GEV.GAME_OVER, () => {
+        fab.classList.remove("cloud-fab--game-hidden");
+    });
 
     function showSuccess(message: string) {
         successToast.textContent = message;

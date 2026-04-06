@@ -61,6 +61,25 @@
             gap: 8px;
             align-items: center;
             pointer-events: auto;
+            transform-origin: top right;
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0);
+            transition:
+                opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.38s cubic-bezier(0.34, 1.2, 0.64, 1),
+                filter 0.38s ease;
+        }
+
+        #cloud-ui-root .cloud-fab.cloud-fab--game-hidden {
+            opacity: 0;
+            transform: scale(0.62);
+            pointer-events: none;
+            filter: blur(2px);
+            transition:
+                opacity 0.32s cubic-bezier(0.4, 0, 0.55, 1),
+                transform 0.32s cubic-bezier(0.4, 0, 0.55, 1),
+                filter 0.28s ease;
         }
 
         #cloud-ui-root .pill {
