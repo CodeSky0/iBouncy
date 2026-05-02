@@ -1,4 +1,4 @@
-import { getSql, ensureSchema } from "../_lib/db.js";
+import { getSql, ensureSchema, firstSqlRow } from "../_lib/db.js";
 import { readJsonBody } from "../_lib/body.js";
 import { ok, badRequest, unauthorized, methodNotAllowed, serverError } from "../_lib/response.js";
 import { getUserFromRequest } from "../_lib/auth.js";
@@ -34,7 +34,9 @@ export default async function handler(req: any, res: any) {
                   RETURNING id, score, created_at
               `;
 
-        const row = rows?.[0];
+        type ScoreRow = { id: unknown; score: unknown; created_at: unknown };
+        const row = firstSqlRow<ScoreRow>(rows);
+        if (!row) return serverError(res, new Error("保存分数失败"));
         return ok(res, { saved: true, record: { id: Number(row.id), score: Number(row.score), createdAt: row.created_at } });
     } catch (e) {
         return serverError(res, e);

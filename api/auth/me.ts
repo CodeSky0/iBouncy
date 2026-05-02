@@ -1,6 +1,8 @@
 import { ok, methodNotAllowed, serverError } from "../_lib/response.js";
 import { getUserFromRequest } from "../_lib/auth.js";
-import { getSql, ensureSchema } from "../_lib/db.js";
+import { getSql, ensureSchema, firstSqlRow } from "../_lib/db.js";
+
+type MeUserRow = { id: unknown; email: string; username: string | null; nickname: string | null };
 
 function userPayload(row: { id: unknown; email: string; username: string | null; nickname: string | null }) {
     const nickname = row.nickname ? String(row.nickname).trim() : "";
@@ -26,7 +28,7 @@ export default async function handler(req: any, res: any) {
         const rows = await sql`
             SELECT id, email, username, nickname FROM users WHERE id = ${jwtUser.userId} LIMIT 1
         `;
-        const row = rows?.[0];
+        const row = firstSqlRow<MeUserRow>(rows);
         if (!row) return ok(res, { user: null });
 
         return ok(res, { user: userPayload(row) });

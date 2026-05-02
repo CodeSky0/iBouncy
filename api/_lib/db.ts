@@ -2,6 +2,31 @@ import { neon } from "@neondatabase/serverless";
 
 export type Sql = ReturnType<typeof neon>;
 
+/**
+ * Neon `sql` 的返回类型在 TS 里是 `Record<string, any>[] | any[][] | FullQueryResults<...>` 的并集，
+ * 直接用 `[0]` 会触发 strict 下的索引错误。本项目只用默认的对象行（非 arrayMode / 非 fullResults）。
+ */
+export function sqlRows<T extends Record<string, unknown> = Record<string, unknown>>(result: unknown): T[] {
+    if (result == null) return [];
+    if (Array.isArray(result)) {
+        if (result.length === 0) return [];
+        const head = result[0];
+        if (Array.isArray(head)) return [];
+        return result as T[];
+    }
+    if (typeof result === "object" && "rows" in result) {
+        const rows = (result as { rows: unknown }).rows;
+        if (!Array.isArray(rows) || rows.length === 0) return [];
+        if (Array.isArray(rows[0])) return [];
+        return rows as T[];
+    }
+    return [];
+}
+
+export function firstSqlRow<T extends Record<string, unknown> = Record<string, unknown>>(result: unknown): T | undefined {
+    return sqlRows<T>(result)[0];
+}
+
 export function getSql(): Sql {
     const url = process.env.POSTGRES_URL;
     if (!url) {

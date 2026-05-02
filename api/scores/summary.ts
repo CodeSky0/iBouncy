@@ -1,4 +1,4 @@
-import { getSql, ensureSchema } from "../_lib/db.js";
+import { getSql, ensureSchema, firstSqlRow, sqlRows } from "../_lib/db.js";
 import { ok, unauthorized, methodNotAllowed, serverError } from "../_lib/response.js";
 import { getUserFromRequest } from "../_lib/auth.js";
 
@@ -26,7 +26,8 @@ export default async function handler(req: any, res: any) {
             FROM scores
             WHERE user_id = ${user.userId}
         `;
-        const agg = aggRows?.[0] || { games: 0, best_score: 0, total_score: 0 };
+        type AggRow = { games: unknown; best_score: unknown; total_score: unknown };
+        const agg = firstSqlRow<AggRow>(aggRows) || { games: 0, best_score: 0, total_score: 0 };
 
         const lastRows = await sql`
             SELECT score, created_at
@@ -35,7 +36,8 @@ export default async function handler(req: any, res: any) {
             ORDER BY created_at DESC
             LIMIT 1
         `;
-        const last = lastRows?.[0] || null;
+        type LastScoreRow = { score: unknown; created_at: unknown };
+        const last = firstSqlRow<LastScoreRow>(lastRows) || null;
 
         // 近 7 天趋势：按 UTC day 聚合（serverless 环境更稳定）
         const trendRows = await sql`
@@ -51,13 +53,14 @@ export default async function handler(req: any, res: any) {
             ORDER BY 1 ASC
         `;
 
+        type TrendSqlRow = { day: unknown; games: unknown; best_score: unknown; total_score: unknown };
         const map = new Map<string, TrendPoint>();
-        for (const r of trendRows || []) {
-            map.set(String((r as any).day), {
-                day: String((r as any).day),
-                games: Number((r as any).games),
-                bestScore: Number((r as any).best_score),
-                totalScore: Number((r as any).total_score),
+        for (const r of sqlRows<TrendSqlRow>(trendRows)) {
+            map.set(String(r.day), {
+                day: String(r.day),
+                games: Number(r.games),
+                bestScore: Number(r.best_score),
+                totalScore: Number(r.total_score),
             });
         }
 
@@ -75,8 +78,8 @@ export default async function handler(req: any, res: any) {
                 games: Number(agg.games),
                 bestScore: Number(agg.best_score),
                 totalScore: Number(agg.total_score),
-                lastScore: last ? Number((last as any).score) : 0,
-                lastAt: last ? (last as any).created_at : null,
+                lastScore: last ? Number(last.score) : 0,
+                lastAt: last ? last.created_at : null,
             },
             trend7d: days,
         });

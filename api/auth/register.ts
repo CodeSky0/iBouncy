@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { getSql, ensureSchema } from "../_lib/db.js";
+import { getSql, ensureSchema, firstSqlRow } from "../_lib/db.js";
 import { readJsonBody } from "../_lib/body.js";
 import { ok, badRequest, methodNotAllowed, serverError } from "../_lib/response.js";
 import { signToken, buildAuthCookie } from "../_lib/auth.js";
@@ -16,6 +16,8 @@ function normalizeNickname(n: unknown) {
     const s = String(n || "").trim();
     return s.length ? s.slice(0, 32) : "";
 }
+
+type RegisterUserRow = { id: unknown; email: string; username: string | null; nickname: string | null };
 
 function userPayload(row: { id: unknown; email: string; username: string | null; nickname: string | null }) {
     const nickname = row.nickname ? String(row.nickname).trim() : "";
@@ -57,7 +59,8 @@ export default async function handler(req: any, res: any) {
             RETURNING id, email, username, nickname, created_at
         `;
 
-        const row = rows?.[0];
+        const row = firstSqlRow<RegisterUserRow>(rows);
+        if (!row) return serverError(res, new Error("注册后未返回用户行"));
         const user = userPayload(row);
         const token = signToken({ userId: user.id, email: user.email });
         const cookie = buildAuthCookie(token);

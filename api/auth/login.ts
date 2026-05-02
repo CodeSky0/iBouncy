@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { getSql, ensureSchema } from "../_lib/db.js";
+import { getSql, ensureSchema, firstSqlRow } from "../_lib/db.js";
 import { readJsonBody } from "../_lib/body.js";
 import { ok, badRequest, unauthorized, methodNotAllowed, serverError } from "../_lib/response.js";
 import { signToken, buildAuthCookie } from "../_lib/auth.js";
@@ -7,6 +7,14 @@ import { signToken, buildAuthCookie } from "../_lib/auth.js";
 function normalizeEmail(email: unknown) {
     return String(email || "").trim().toLowerCase();
 }
+
+type LoginUserRow = {
+    id: unknown;
+    email: string;
+    username: string | null;
+    nickname: string | null;
+    password_hash: string;
+};
 
 function userPayload(row: { id: unknown; email: string; username: string | null; nickname: string | null }) {
     const nickname = row.nickname ? String(row.nickname).trim() : "";
@@ -53,7 +61,7 @@ export default async function handler(req: any, res: any) {
             `;
         }
 
-        const row = rows?.[0];
+        const row = firstSqlRow<LoginUserRow>(rows);
         if (!row) return unauthorized(res, "用户名/邮箱或密码不正确");
 
         const okPwd = await bcrypt.compare(password, row.password_hash);

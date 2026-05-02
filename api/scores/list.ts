@@ -1,4 +1,4 @@
-import { getSql, ensureSchema } from "../_lib/db.js";
+import { getSql, ensureSchema, sqlRows } from "../_lib/db.js";
 import { ok, unauthorized, methodNotAllowed, serverError } from "../_lib/response.js";
 import { getUserFromRequest } from "../_lib/auth.js";
 
@@ -23,7 +23,8 @@ export default async function handler(req: any, res: any) {
             LIMIT ${limit}
         `;
 
-        const records = (rows || []).map((r: any) => ({
+        type ListScoreRow = { id: unknown; score: unknown; created_at: unknown };
+        const records = sqlRows<ListScoreRow>(rows).map((r) => ({
             id: Number(r.id),
             score: Number(r.score),
             createdAt: r.created_at,
