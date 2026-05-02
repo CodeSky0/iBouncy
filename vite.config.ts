@@ -5,8 +5,10 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                manualChunks: {
-                    leafer: ["leafer-game"],
+                manualChunks(id) {
+                    if (id.includes("leafer-game")) {
+                        return "leafer";
+                    }
                 },
             },
         },
