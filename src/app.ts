@@ -1,5 +1,5 @@
 import { createEventBridge } from "./events";
-import { GameConf } from "./config";
+import { GameConf, UIConf } from "./config";
 import {
     GEV,
     evBus,
@@ -26,7 +26,17 @@ import { initCloudOverlay } from "./ui/cloudOverlay";
 import { addScore } from "./cloud/client";
 import { addLocalScore, clearSynced, markSynced } from "./cloud/localScores";
 
-createEventBridge({ leafer, timer, setPrevTimeStamp }).setup();
+/** 碰撞加分公式用：板宽恒定，提出循环外避免每子步除法。 */
+const TABLET_2PI_OVER_W = (Math.PI * 2) / UIConf.Tablet.WIDTH;
+const BV_ANGLE_SCALE = Math.PI / 30;
+
+createEventBridge({
+    leafer,
+    timer,
+    setPrevTimeStamp,
+    syncViewport: (w, h) => GP.syncViewport(w, h),
+}).setup();
+GP.syncViewport(document.body.clientWidth, document.body.clientHeight);
 loading.addEventListener("dragstart", (e) => e.preventDefault());
 
 const cloudUI = initCloudOverlay();
@@ -52,6 +62,11 @@ window.addEventListener("unload", () => {
 });
 
 function firstFrame(timeStamp: number): void {
+    const lw = leafer.width ?? 0;
+    const lh = leafer.height ?? 0;
+    const w = lw > 0 ? lw : document.body.clientWidth;
+    const h = lh > 0 ? lh : document.body.clientHeight;
+    GP.syncViewport(w, h);
     setPrevTimeStamp(timeStamp);
     gameLoop(timeStamp);
 }
@@ -89,6 +104,7 @@ function gameLoop(timeStamp: number): void {
         accumulated += Math.min(deltaTime, GameConf.MAX_ACCUMULATED * 1000);
         Ball.timeDivisor = Math.min(F(accumulated / GP.ENV.fixedStep), GP.ENV.maxStepPerFrame);
         const unitProg = GP.ENV.fixedStep / GP.ENV.stdUnitInterval;
+        let lastTipDelta: string | null = null;
         while (accumulated >= GP.ENV.fixedStep && steps <= GP.ENV.maxStepPerFrame) {
             // sub-stepping loop
             accumulated -= GP.ENV.fixedStep;
@@ -96,13 +112,14 @@ function gameLoop(timeStamp: number): void {
             Ball.frameLoop_(unitProg);
             Tablet.frameLoop(unitProg);
             if (GI.collisionDetect() && Ball.vy < 0) {
-                const bv = Math.sqrt(Ball.vx ** 2 + Ball.vy ** 2);
-                const bvP = Math.log2(bv) + 1 / Math.cos((Math.PI / 30) * bv);
+                const bv = Math.hypot(Ball.vx, Ball.vy);
+                const bvP = Math.log2(bv) + 1 / Math.cos(BV_ANGLE_SCALE * bv);
                 const d = D(Tablet.cx - Ball.cx);
-                const dP = Math.cos((Math.PI / Tablet.w) * 2 * d) + 0.5;
-                Scoring.tip_(Scoring.delta_(0.4 * bvP + 0.16 * dP));
+                const dP = Math.cos(TABLET_2PI_OVER_W * d) + 0.5;
+                lastTipDelta = Scoring.delta_(0.4 * bvP + 0.16 * dP);
             }
         }
+        if (lastTipDelta !== null) Scoring.tip_(lastTipDelta);
     }
 
     rafId = requestAnimationFrame(gameLoop);

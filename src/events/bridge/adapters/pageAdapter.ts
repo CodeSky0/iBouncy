@@ -7,9 +7,10 @@ import type { EventBridgeDeps } from "../deps";
  * 将浏览器 / Leafer 层事件映射到应用 {@link GEV}。
  */
 export function wirePageEventBridge(deps: EventBridgeDeps): void {
-    const { leafer } = deps;
+    const { leafer, syncViewport } = deps;
 
     leafer.on(ResizeEvent.RESIZE, (e) => {
+        syncViewport(e.width, e.height);
         eventBus.emit(GEV.RESIZE, { data: e });
     });
 

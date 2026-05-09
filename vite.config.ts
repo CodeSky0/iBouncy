@@ -9,12 +9,15 @@ export default defineConfig({
                     if (id.includes("leafer-game")) {
                         return "leafer";
                     }
+                    if (id.includes("@leafer-ui")) {
+                        return "leafer-ui";
+                    }
                 },
             },
         },
         outDir: "dist",
         minify: true,
-        sourcemap: true,
+        sourcemap: false,
     },
     server: {
         port: 5173,

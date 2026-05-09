@@ -29,18 +29,28 @@ export default class Processor {
     measured = 0;
     refreshRateBucket = new Map<number, number>();
     ENV: ProcessorEnvironment;
+    /** 与 Leafer 画布一致，避免子步物理循环反复读 `document.body` 触发布局。 */
+    #viewportW = 0;
+    #viewportH = 0;
 
     constructor(ENV: Partial<ProcessorEnvironment> & Record<string, unknown>) {
         this.ENV = ENV as ProcessorEnvironment;
         this.gameOver = this.gameOver.bind(this);
     }
 
+    syncViewport(width: number, height: number): void {
+        if (width > 0 && height > 0) {
+            this.#viewportW = width;
+            this.#viewportH = height;
+        }
+    }
+
     get bw(): number {
-        return document.body.clientWidth;
+        return this.#viewportW > 0 ? this.#viewportW : document.body.clientWidth;
     }
 
     get bh(): number {
-        return document.body.clientHeight;
+        return this.#viewportH > 0 ? this.#viewportH : document.body.clientHeight;
     }
 
     state(newState: GameState | string): void {
