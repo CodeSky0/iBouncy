@@ -59,6 +59,7 @@ export async function ensureSchema(sql: Sql) {
 
     await sql`ALTER TABLE scores ADD COLUMN IF NOT EXISTS client_id TEXT;`;
     await sql`CREATE INDEX IF NOT EXISTS idx_scores_user_created_at ON scores(user_id, created_at DESC);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_scores_user_score ON scores (user_id, score DESC);`;
     // 部分唯一索引会导致部分环境下 ON CONFLICT (user_id, client_id) 无法正确 upsert；改为完整唯一索引（PG 允许多行 client_id IS NULL）
     await sql`
         DO $mig$

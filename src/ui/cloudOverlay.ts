@@ -3,7 +3,7 @@ import { clearSynced, listLocalScores, markSynced, pendingLocalScores } from "..
 import { eventBus, GEV } from "../events";
 
 type Mode = "login" | "register";
-type Modal = "none" | "auth" | "history";
+type Modal = "none" | "auth" | "history" | "leaderboard";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string): HTMLElementTagNameMap[K] {
     const n = document.createElement(tag);
@@ -126,6 +126,7 @@ export function initCloudOverlay(): {
     refresh: () => Promise<void>;
     openAuth: () => void;
     openHistory: () => void;
+    openLeaderboard: () => void;
     syncLocalToCloud: () => Promise<SyncLocalResult>;
     getUser: () => cloud.CloudUser | null;
 } {
@@ -137,6 +138,7 @@ export function initCloudOverlay(): {
             refresh: async () => void 0,
             openAuth: () => void 0,
             openHistory: () => void 0,
+            openLeaderboard: () => void 0,
             syncLocalToCloud: async () => ({ uploaded: 0, pendingAtStart: 0 }),
             getUser: () => null,
         };
@@ -151,9 +153,11 @@ export function initCloudOverlay(): {
     const pill = el("div", "pill");
     const badge = el("span", "badge");
     const btnAuth = el("button", "btn primary");
+    const btnLeaderboard = el("button", "btn");
     const btnHistory = el("button", "btn");
     const btnLogout = el("button", "btn danger");
     btnAuth.type = "button";
+    btnLeaderboard.type = "button";
     btnHistory.type = "button";
     btnLogout.type = "button";
 
@@ -241,18 +245,29 @@ export function initCloudOverlay(): {
 
         if (!user) {
             badge.textContent = "未登录";
+            btnLeaderboard.textContent = "排行榜";
+            btnLeaderboard.onclick = (e) => {
+                addRippleEffect(btnLeaderboard, e as MouseEvent);
+                openLeaderboard();
+            };
             btnAuth.textContent = "登录 / 注册";
             btnAuth.onclick = (e) => {
                 addRippleEffect(btnAuth, e as MouseEvent);
                 openAuth();
             };
             pill.appendChild(badge);
+            pill.appendChild(btnLeaderboard);
             pill.appendChild(btnAuth);
             fab.appendChild(pill);
             return;
         }
 
         badge.textContent = user.displayName;
+        btnLeaderboard.textContent = "排行榜";
+        btnLeaderboard.onclick = (e) => {
+            addRippleEffect(btnLeaderboard, e as MouseEvent);
+            openLeaderboard();
+        };
         btnHistory.textContent = "历史记录";
         btnLogout.textContent = "退出";
         btnAuth.textContent = "切换账号";
@@ -284,6 +299,7 @@ export function initCloudOverlay(): {
         };
 
         pill.appendChild(badge);
+        pill.appendChild(btnLeaderboard);
         pill.appendChild(btnHistory);
         pill.appendChild(btnAuth);
         pill.appendChild(btnLogout);
@@ -750,6 +766,108 @@ export function initCloudOverlay(): {
         await load();
     }
 
+    async function renderLeaderboardModal() {
+        modal = "leaderboard";
+        modalBox.className = "modal modal-history modal-leaderboard";
+        setBackdropOpen(true);
+        setError(null);
+
+        const loadingOverlay = el("div", "modal-loading");
+        const loadingRing = el("div", "modal-loading-spinner");
+        loadingOverlay.appendChild(loadingRing);
+
+        const titleRow = el("div", "row title-row history-head");
+        const titleBlock = el("div", "history-title-block");
+        const title = el("h2");
+        title.textContent = "排行榜";
+        const titleAccent = el("div", "history-title-accent");
+        titleBlock.appendChild(title);
+        titleBlock.appendChild(titleAccent);
+        const closeBtn = createButtonWithLoader("关闭", "btn");
+        closeBtn.onclick = () => setBackdropOpen(false);
+        titleRow.appendChild(titleBlock);
+        titleRow.appendChild(closeBtn);
+
+        const errBox = el("div", "error");
+        const list = el("div", "list history-list leaderboard-list");
+        const footer = el("div", "leaderboard-footer");
+        const actions = el("div", "row history-actions");
+        const left = el("div");
+        const right = el("div");
+        right.className = "history-actions-right";
+        const refreshBtn = createButtonWithLoader("刷新", "btn");
+        refreshBtn.onclick = () => void load();
+        actions.appendChild(left);
+        right.appendChild(refreshBtn);
+        actions.appendChild(right);
+
+        modalBox.replaceChildren(titleRow, errBox, list, footer, actions, loadingOverlay);
+
+        const load = async () => {
+            if (busy) return;
+            busy = true;
+            refreshBtn.classList.add("loading");
+            loadingOverlay.classList.add("show");
+            list.replaceChildren();
+            footer.replaceChildren();
+            footer.style.display = "none";
+            try {
+                const entries = await cloud.fetchLeaderboard(50);
+                if (user) {
+                    try {
+                        const { summary: s } = await cloud.summary();
+                        const hint = el("div", "hint leaderboard-my-best");
+                        hint.textContent = `我的最佳：${fmtScore(s.bestScore)}`;
+                        footer.appendChild(hint);
+                        footer.style.display = "";
+                    } catch {
+                        /* 忽略统计失败，仍展示榜单 */
+                    }
+                }
+
+                if (entries.length === 0) {
+                    const empty = el("div", "hint");
+                    empty.innerHTML = "<strong>暂无数据</strong><br>还没有玩家上传成绩。";
+                    list.appendChild(empty);
+                    return;
+                }
+
+                const selfId = user?.id;
+                for (const ent of entries) {
+                    const item = el("div", "item item--leaderboard");
+                    if (selfId !== undefined && ent.userId === selfId) item.classList.add("item--self");
+
+                    const rankEl = el("div", "lb-rank");
+                    rankEl.textContent = String(ent.rank);
+
+                    const main = el("div", "lb-main");
+                    const nameEl = el("div", "lb-name");
+                    nameEl.textContent = ent.displayName;
+                    const timeEl = el("div", "time");
+                    timeEl.textContent = fmtTime(ent.bestAt);
+                    main.appendChild(nameEl);
+                    main.appendChild(timeEl);
+
+                    const scoreEl = el("div", "score");
+                    scoreEl.textContent = fmtScore(ent.bestScore);
+
+                    item.appendChild(rankEl);
+                    item.appendChild(main);
+                    item.appendChild(scoreEl);
+                    list.appendChild(item);
+                }
+            } catch (e) {
+                setError(e instanceof Error ? e.message : String(e));
+            } finally {
+                busy = false;
+                refreshBtn.classList.remove("loading");
+                loadingOverlay.classList.remove("show");
+            }
+        };
+
+        await load();
+    }
+
     function openAuth() {
         mode = "login";
         renderAuthModal();
@@ -757,6 +875,10 @@ export function initCloudOverlay(): {
 
     function openHistory() {
         void renderHistoryModal();
+    }
+
+    function openLeaderboard() {
+        void renderLeaderboardModal();
     }
 
     backdrop.addEventListener("click", (e) => {
@@ -770,6 +892,7 @@ export function initCloudOverlay(): {
         if (e.key === "Escape" && modal !== "none") setBackdropOpen(false);
         if ((e.key === "l" || e.key === "L") && modal === "none") openAuth();
         if ((e.key === "h" || e.key === "H") && modal === "none") openHistory();
+        if ((e.key === "b" || e.key === "B") && modal === "none") openLeaderboard();
     });
 
     async function refresh() {
@@ -809,6 +932,7 @@ export function initCloudOverlay(): {
         refresh,
         openAuth,
         openHistory,
+        openLeaderboard,
         syncLocalToCloud,
         getUser: () => user,
     };
