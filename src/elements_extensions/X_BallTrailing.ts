@@ -1,5 +1,6 @@
 import { AnimateEvent, Ellipse } from "leafer-game";
-import { Ball, C, F, GP, leafer } from "../core/instances";
+import { Ball, GP, leafer } from "../core/instances";
+import { C, F } from "../utils/math";
 import { UIConf } from "../config";
 import type { IAnimate } from "@leafer-ui/interface";
 

@@ -1,6 +1,9 @@
 import { Group, Path, Text } from "leafer-game";
 import type { IAnimate } from "@leafer-ui/interface";
-import { Ball, evBus, effectsEnabled, F, GEV, GP, leafer, timer } from "../core/instances";
+import { Ball, GP, leafer, timer } from "../core/instances";
+import { effectsEnabled } from "../core/effects";
+import { evBus, GEV } from "../events";
+import { F } from "../utils/math";
 import { UIConf } from "../config";
 
 export default class E_Scoring extends Group {

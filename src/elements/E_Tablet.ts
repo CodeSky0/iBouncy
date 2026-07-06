@@ -1,6 +1,7 @@
 import { Rect, Keyboard } from "leafer-game";
 import type { BoundsEntity } from "../core/interaction";
-import { evBus, GEV, GI, GP } from "../core/instances";
+import { evBus, GEV } from "../events";
+import { GI, GP } from "../core/instances";
 import { GameConf, UIConf } from "../config";
 
 export default class E_Tablet extends Rect {

@@ -1,6 +1,6 @@
-import { evBus, GEV, loading, GP, leafer, MainMenu, Scoring, Settlement } from "./instances";
+import type { Leafer } from "leafer-game";
 import { Platform, Resource } from "leafer-game";
-import { UIConf } from "../config";
+import { evBus, GEV } from "../events";
 
 export type GameState =
     | "init"
@@ -32,12 +32,19 @@ export default class Processor {
     /** 与 Leafer 画布一致，避免子步物理循环反复读 `document.body` 触发布局。 */
     #viewportW = 0;
     #viewportH = 0;
+    #leafer: Leafer;
+    #scoreSource: () => number = () => 0;
 
-    constructor(ENV: Partial<ProcessorEnvironment> & Record<string, unknown>) {
+    constructor(ENV: Partial<ProcessorEnvironment> & Record<string, unknown>, leafer: Leafer) {
         this.ENV = ENV as ProcessorEnvironment;
+        this.#leafer = leafer;
         this.gameOver = this.gameOver.bind(this);
         evBus.on(GEV.GAME_BALL_LOST, () => this.gameOver(false));
         evBus.on(GEV.GAME_TIME_UP, () => this.gameOver(true));
+    }
+
+    setScoreSource(source: () => number): void {
+        this.#scoreSource = source;
     }
 
     syncViewport(width: number, height: number): void {
@@ -64,16 +71,8 @@ export default class Processor {
         return false;
     }
 
-    async initializeAll(): Promise<void> {
-        await Promise.all([MainMenu.init(), Scoring.init_(), Settlement.init_()]);
-    }
-
     renderElse(): void {
         evBus.emit(GEV.UI_RENDER_ELSE);
-    }
-
-    secondRender(): void {
-        MainMenu.render_();
     }
 
     measureRefreshRate(prog: number): void {
@@ -95,10 +94,10 @@ export default class Processor {
                 }
             }
             this.refreshRateBucket.clear();
-            GP.ENV.refreshRate = k4maxV;
-            GP.ENV.fixedStep = 1000 / k4maxV;
-            GP.ENV.actUnitInterval = (1000 / k4maxV).toFixed(1);
-            GP.state("init2");
+            this.ENV.refreshRate = k4maxV;
+            this.ENV.fixedStep = 1000 / k4maxV;
+            this.ENV.actUnitInterval = (1000 / k4maxV).toFixed(1);
+            this.state("init2");
         }
     }
 
@@ -108,13 +107,13 @@ export default class Processor {
         try {
             await font.load();
             document.fonts.add(font);
-            leafer.forceRender();
+            this.#leafer.forceRender();
         } catch {
             const font2 = new FontFace(name, `url(${src}.woff)`);
             try {
                 await font2.load();
                 document.fonts.add(font2);
-                leafer.forceRender();
+                this.#leafer.forceRender();
             } catch (e) {
                 console.error(`An error has occurred while initializing font ${name}:`, e);
             }
@@ -132,18 +131,17 @@ export default class Processor {
     }
 
     prepared(): void {
-        GP.state("prepared");
+        this.state("prepared");
         evBus.emit(GEV.GAME_PREPARED);
-        GP.loadingFadeOut();
     }
 
     start(): void {
-        GP.state("playing");
+        this.state("playing");
         evBus.emit(GEV.GAME_START);
     }
 
     restart(): void {
-        GP.state("playing");
+        this.state("playing");
         evBus.emit(GEV.GAME_RESTART);
     }
 
@@ -164,19 +162,8 @@ export default class Processor {
         this.state("over");
         evBus.emit(GEV.GAME_OVER, {
             win: win,
-            score: Scoring.v,
+            score: this.#scoreSource(),
         });
         return true;
-    }
-
-    loadingFadeOut(): void {
-        loading
-            .animate([{ opacity: 0 }], {
-                duration: UIConf.LOADING_FADE_OUT_DURATION * 1000,
-                fill: "both",
-            })
-            .finished.then(function () {
-                loading.style.display = "none";
-            });
     }
 }

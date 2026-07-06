@@ -1,6 +1,7 @@
 import { AnimateEvent, Rect } from "leafer-game";
 import type { IResizeEvent } from "@leafer/interface";
-import { evBus, GEV, GP } from "../core/instances";
+import { evBus, GEV } from "../events";
+import { GP } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_Mask extends Rect {

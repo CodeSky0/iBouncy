@@ -1,5 +1,9 @@
-import { Ball, D, GP, Tablet, timer } from "./instances";
+import { D } from "../utils/math";
 import { GameConf } from "../config";
+import type EmbeddedTimer from "../utils/EmbeddedTimer";
+import type E_Ball from "../elements/E_Ball";
+import type E_Tablet from "../elements/E_Tablet";
+import type Processor from "./processor";
 
 type Axis = "x" | "y";
 
@@ -21,6 +25,17 @@ export default class Interaction {
     collisionStat = 0;
     accelerateCD = GameConf.Ball.ACCELERATION.COOLDOWN * 1000;
     prevAccTime: [number, number] = [0, 0];
+    #Ball: E_Ball;
+    #Tablet: E_Tablet;
+    #timer: EmbeddedTimer;
+    #GP: Processor;
+
+    constructor(deps: { Ball: E_Ball; Tablet: E_Tablet; timer: EmbeddedTimer; GP: Processor }) {
+        this.#Ball = deps.Ball;
+        this.#Tablet = deps.Tablet;
+        this.#timer = deps.timer;
+        this.#GP = deps.GP;
+    }
 
     boundaryDetect(
         ge: BoundsEntity,
@@ -40,9 +55,9 @@ export default class Interaction {
                 ge.x = paddings[3];
                 ge.vx *= bounceRatio;
             }
-        } else if (ge.ox > GP.bw - paddings[1]) {
+        } else if (ge.ox > this.#GP.bw - paddings[1]) {
             if (callbacks[1]?.() === void 0) {
-                ge.ox = GP.bw - paddings[1];
+                ge.ox = this.#GP.bw - paddings[1];
                 ge.vx *= bounceRatio;
             }
         }
@@ -51,9 +66,9 @@ export default class Interaction {
                 ge.y = paddings[0];
                 ge.vy *= bounceRatio;
             }
-        } else if (ge.oy > GP.bh - paddings[2]) {
+        } else if (ge.oy > this.#GP.bh - paddings[2]) {
             if (callbacks[2]?.() === void 0) {
-                ge.oy = GP.bh - paddings[2];
+                ge.oy = this.#GP.bh - paddings[2];
                 ge.vy *= bounceRatio;
             }
         }
@@ -67,15 +82,15 @@ export default class Interaction {
         if (this.collisionStat) return false;
         this.collisionStat = 1;
 
-        const bvx = Ball.vx!;
-        const bvy = Ball.vy!;
-        const bcx = Ball.cx!;
-        const bcy = Ball.cy!;
-        const tcx = Tablet.cx!;
-        const tcy = Tablet.cy!;
+        const bvx = this.#Ball.vx!;
+        const bvy = this.#Ball.vy!;
+        const bcx = this.#Ball.cx!;
+        const bcy = this.#Ball.cy!;
+        const tcx = this.#Tablet.cx!;
+        const tcy = this.#Tablet.cy!;
 
-        const overlapX = Math.min(Ball.ox!, Tablet.ox!) - Math.max(Ball.x!, Tablet.x!);
-        const overlapY = Math.min(Ball.oy!, Tablet.oy!) - Math.max(Ball.y!, Tablet.y!);
+        const overlapX = Math.min(this.#Ball.ox!, this.#Tablet.ox!) - Math.max(this.#Ball.x!, this.#Tablet.x!);
+        const overlapY = Math.min(this.#Ball.oy!, this.#Tablet.oy!) - Math.max(this.#Ball.y!, this.#Tablet.y!);
 
         // 原实现用位运算 `^` 做方向判断，但速度/坐标是浮点数时会被截断为 32-bit int，
         // 方向逻辑可能不可靠。这里改为基于正负号的判断，语义更稳定也更可读。
@@ -84,20 +99,20 @@ export default class Interaction {
         const sameXDirection = (bvx > 0 && relX > 0) || (bvx < 0 && relX < 0);
         const sameYDirection = (bvy > 0 && relY > 0) || (bvy < 0 && relY < 0);
         if (sameXDirection && sameYDirection) {
-            Ball.x! += bvx * 1.5;
-            Ball.y! += bvy * 1.5;
-            Ball.vx! += Math.sign(bvx) * this.tempAccelerate("x");
-            Ball.vy! += Math.sign(bvy) * this.tempAccelerate("y");
+            this.#Ball.x! += bvx * 1.5;
+            this.#Ball.y! += bvy * 1.5;
+            this.#Ball.vx! += Math.sign(bvx) * this.tempAccelerate("x");
+            this.#Ball.vy! += Math.sign(bvy) * this.tempAccelerate("y");
         } else if (sameYDirection || (overlapX < overlapY && !sameXDirection)) {
-            if (bcx < tcx) Ball.ox = Tablet.x!;
-            else Ball.x = Tablet.ox!;
-            Ball.vx! += Math.sign(Ball.vx!) * this.tempAccelerate("x");
-            Ball.vx! *= -1;
+            if (bcx < tcx) this.#Ball.ox = this.#Tablet.x!;
+            else this.#Ball.x = this.#Tablet.ox!;
+            this.#Ball.vx! += Math.sign(this.#Ball.vx!) * this.tempAccelerate("x");
+            this.#Ball.vx! *= -1;
         } else {
-            if (bcy < tcy) Ball.oy = Tablet.y!;
-            else Ball.y = Tablet.oy!;
-            Ball.vy! += Math.sign(Ball.vy!) * this.tempAccelerate("y");
-            Ball.vy! *= -1;
+            if (bcy < tcy) this.#Ball.oy = this.#Tablet.y!;
+            else this.#Ball.y = this.#Tablet.oy!;
+            this.#Ball.vy! += Math.sign(this.#Ball.vy!) * this.tempAccelerate("y");
+            this.#Ball.vy! *= -1;
         }
         return true;
     }
@@ -111,16 +126,16 @@ export default class Interaction {
         const { RATIO_X1, RATIO_X2, RATIO_Y1, RATIO_Y2, DECAY_DELAY, DECAY_TIMES } = GameConf.Ball.ACCELERATION;
         const ratio1 = direction === "x" ? RATIO_X1 : RATIO_Y1;
         const ratio2 = direction === "x" ? RATIO_X2 : RATIO_Y2;
-        const ballV = direction === "x" ? Ball.vx : Ball.vy;
-        const tabletV = direction === "x" ? Tablet.vx : Tablet.vy;
-        const tabletMax = direction === "x" ? Tablet.vxMax : Tablet.vyMax;
+        const ballV = direction === "x" ? this.#Ball.vx : this.#Ball.vy;
+        const tabletV = direction === "x" ? this.#Tablet.vx : this.#Tablet.vy;
+        const tabletMax = direction === "x" ? this.#Tablet.vxMax : this.#Tablet.vyMax;
         const vBuffRatio = ratio1 - Math.sign(ballV) * tabletV * ratio2 / tabletMax;
         const vBuff = D(ballV * (vBuffRatio - 1));
         const vUnitNerf = vBuff / DECAY_TIMES;
-        timer.newInterval(
+        this.#timer.newInterval(
             () => {
-                if (direction === "x") Ball.vx -= Math.sign(Ball.vx) * vUnitNerf;
-                else Ball.vy -= Math.sign(Ball.vy) * vUnitNerf;
+                if (direction === "x") this.#Ball.vx -= Math.sign(this.#Ball.vx) * vUnitNerf;
+                else this.#Ball.vy -= Math.sign(this.#Ball.vy) * vUnitNerf;
             },
             0,
             {
@@ -132,25 +147,25 @@ export default class Interaction {
     }
 
     #preciselyDetect(): boolean {
-        const bx = Ball.x!;
-        const box = Ball.ox!;
-        const by = Ball.y!;
-        const boy = Ball.oy!;
-        const tx = Tablet.x!;
-        const tox = Tablet.ox!;
-        const ty = Tablet.y!;
-        const toy = Tablet.oy!;
+        const bx = this.#Ball.x!;
+        const box = this.#Ball.ox!;
+        const by = this.#Ball.y!;
+        const boy = this.#Ball.oy!;
+        const tx = this.#Tablet.x!;
+        const tox = this.#Tablet.ox!;
+        const ty = this.#Tablet.y!;
+        const toy = this.#Tablet.oy!;
         if (box < tx || bx > tox || boy < ty || by > toy) return false;
 
-        const bcx = Ball.cx!;
-        const bcy = Ball.cy!;
-        const tcx = Tablet.cx!;
-        const tcy = Tablet.cy!;
+        const bcx = this.#Ball.cx!;
+        const bcy = this.#Ball.cy!;
+        const tcx = this.#Tablet.cx!;
+        const tcy = this.#Tablet.cy!;
         if ((bcx >= tx && bcx <= tox) || (bcy >= ty && bcy <= toy)) return true;
 
         const dx = bcx - (bcx < tcx ? tx : tox);
         const dy = bcy - (bcy < tcy ? ty : toy);
-        const r = Ball.w! / 2;
+        const r = this.#Ball.w! / 2;
         return dx * dx + dy * dy <= r * r;
     }
 }

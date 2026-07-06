@@ -1,4 +1,5 @@
-import { Mask, evBus, GEV } from "../core/instances";
+import { evBus, GEV } from "../events";
+import { Mask } from "../ui/elements";
 
 type OverlayPage = { show_(): void; hide_(): void };
 

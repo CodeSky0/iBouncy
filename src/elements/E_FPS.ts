@@ -1,6 +1,7 @@
 import type { IResizeEvent } from "@leafer/interface";
 import { Text } from "leafer-game";
-import { evBus, GEV, GP } from "../core/instances";
+import { evBus, GEV } from "../events";
+import { GP } from "../core/instances";
 import { UIConf } from "../config";
 
 export default class E_FPS extends Text {

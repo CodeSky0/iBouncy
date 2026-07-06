@@ -1,5 +1,6 @@
 import { AnimateEvent, Group, Image } from "leafer-game";
-import { evBus, GEV, GP } from "../core/instances";
+import { evBus, GEV } from "../events";
+import { GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
 

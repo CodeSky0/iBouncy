@@ -1,7 +1,9 @@
 import { Ellipse } from "leafer-game";
 import X_BallTrailing from "../elements_extensions/X_BallTrailing";
 import type { BoundsEntity, BoundaryCallbacks } from "../core/interaction";
-import { effectsEnabled, evBus, GEV, GI, GP, leafer, Timing } from "../core/instances";
+import { effectsEnabled } from "../core/effects";
+import { evBus, GEV } from "../events";
+import { GI, GP, leafer, Timing } from "../core/instances";
 import { GameConf, UIConf } from "../config";
 
 export default class E_Ball extends Ellipse {

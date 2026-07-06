@@ -1,5 +1,6 @@
 import type { KeyboardRoutedType } from "../events";
-import { evBus, GEV, leafer } from "../core/instances";
+import { evBus, GEV } from "../events";
+import { leafer } from "../core/instances";
 import { KeyEvent } from "leafer-game";
 
 export type RoutedKeyboardPayload = {

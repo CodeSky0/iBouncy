@@ -1,5 +1,7 @@
 import { Group, Path, Text } from "leafer-game";
-import { evBus, F, GEV, GP, timer } from "../core/instances";
+import { evBus, GEV } from "../events";
+import { F } from "../utils/math";
+import { GP, timer } from "../core/instances";
 import { UIConf } from "../config";
 import type EmbeddedTimer from "../utils/EmbeddedTimer";
 

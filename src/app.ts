@@ -1,24 +1,11 @@
-import { createEventBridge } from "./events";
+import { initializeApp, KS } from "./app/bootstrap";
 import { GameConf, UIConf } from "./config";
-import {
-    GEV,
-    evBus,
-    KS,
-    setPrevTimeStamp,
-    F,
-    D,
-    prevTimeStamp,
-    loading,
-    GI,
-    GP,
-    timer,
-    leafer,
-    Mask,
-    FPS,
-    setEffectsEnabled,
-    Tablet,
-    Ball,
-} from "./core/instances";
+import { evBus, GEV } from "./events";
+import { D, F } from "./utils/math";
+import { effectsEnabled, setEffectsEnabled } from "./core/effects";
+import { prevTimeStamp, setPrevTimeStamp } from "./app/timing";
+import { GI, GP, timer, leafer, Ball, Tablet } from "./core/instances";
+import { Mask, FPS } from "./ui/elements";
 import { initCloudOverlay } from "./ui/cloudOverlay";
 import { addScore } from "./cloud/client";
 import { addLocalScore, clearSynced, markSynced } from "./cloud/localScores";
@@ -26,15 +13,6 @@ import { addLocalScore, clearSynced, markSynced } from "./cloud/localScores";
 /** 碰撞加分公式用：板宽恒定，提出循环外避免每子步除法。 */
 const TABLET_2PI_OVER_W = (Math.PI * 2) / UIConf.Tablet.WIDTH;
 const BV_ANGLE_SCALE = Math.PI / 30;
-
-createEventBridge({
-    leafer,
-    timer,
-    setPrevTimeStamp,
-    syncViewport: (w, h) => GP.syncViewport(w, h),
-}).setup();
-GP.syncViewport(document.body.clientWidth, document.body.clientHeight);
-loading.addEventListener("dragstart", (e) => e.preventDefault());
 
 const cloudUI = initCloudOverlay();
 
@@ -47,10 +25,7 @@ Mask.show_("#FFF", 1, 0.7, 0.4);
 GP.renderElse();
 rafId = requestAnimationFrame(firstFrame);
 timer.newInterval(() => FPS.assign_(timer.FPS), GameConf.FPS_DETECT_INTERVAL * 1000);
-GP.initializeAll()
-    .then(GP.secondRender)
-    .then(() => GP.state("init1"))
-    .catch((err) => console.error("Initialization failed...\n", err));
+initializeApp().catch((err) => console.error("Initialization failed...\n", err));
 
 window.addEventListener("unload", () => {
     if (rafId) cancelAnimationFrame(rafId);
