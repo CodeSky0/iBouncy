@@ -1,4 +1,3 @@
-import "../app/initUI";
 import { Leafer } from "leafer-game";
 import { GameConf, UIConf } from "../config";
 import Processor from "./processor";
