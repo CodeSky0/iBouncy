@@ -29,7 +29,7 @@ export default class E_Ball extends Ellipse {
             height: UIConf.Ball.RADIUS * 2,
             fill: UIConf.Ball.FILL,
         });
-        this.boundaryCallbacks = [null, null, GP.gameOver.bind(GP), null];
+        this.boundaryCallbacks = [null, null, () => evBus.emit(GEV.GAME_BALL_LOST), null];
         this.ballBoundaryOpts = {
             bounce: true,
             paddings: this.ballBoundaryPaddings,

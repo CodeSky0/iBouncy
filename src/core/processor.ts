@@ -36,6 +36,8 @@ export default class Processor {
     constructor(ENV: Partial<ProcessorEnvironment> & Record<string, unknown>) {
         this.ENV = ENV as ProcessorEnvironment;
         this.gameOver = this.gameOver.bind(this);
+        evBus.on(GEV.GAME_BALL_LOST, () => this.gameOver(false));
+        evBus.on(GEV.GAME_TIME_UP, () => this.gameOver(true));
     }
 
     syncViewport(width: number, height: number): void {

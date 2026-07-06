@@ -102,6 +102,6 @@ export default class E_Timing extends Group {
             this.Icon.fill = this.Text.fill = this.confUI.ALARM_FILL;
             this.Text.fontWeight = "bold";
         }
-        if (this.remaining <= 0) GP.gameOver(true);
+        if (this.remaining <= 0) evBus.emit(GEV.GAME_TIME_UP);
     }
 }

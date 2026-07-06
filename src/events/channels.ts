@@ -31,6 +31,10 @@ export const GEV = {
     GAME_RESTART: "game:restart",
     /** 回到可玩/菜单前的一次性重置（如遮罩与 HUD） */
     GAME_RESET: "game:reset",
+    /** 弹球掉落触底，由 Processor 决定最终是否判负 */
+    GAME_BALL_LOST: "game:ball:lost",
+    /** 倒计时归零，由 Processor 决定最终是否判胜 */
+    GAME_TIME_UP: "game:time:up",
 
     // --- player (reserved) ---
     PLAYER_SCORE: "player:score",

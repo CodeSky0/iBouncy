@@ -17,7 +17,9 @@ export const GAME_EVENT_CATALOG: Record<GameEventName, string> = {
     [GEV.GAME_OVER]: "本局结束；载荷含是否胜利",
     [GEV.GAME_RESTART]: "从结算等回到再开一局（桥接会再发 GAME_RESET + GAME_START）",
     [GEV.GAME_RESET]: "重置 HUD/遮罩等；载荷决定是否移除主遮罩层",
-    [GEV.PLAYER_SCORE]: "预留：统一玩家得分入口",
+    [GEV.GAME_BALL_LOST]: "弹球掉落触底，Processor 据此调用 gameOver(false)",
+    [GEV.GAME_TIME_UP]: "倒计时归零，Processor 据此调用 gameOver(true)",
+    [GEV.PLAYER_SCORE]: "玩家得分入口；载荷为本次碰撞的原始增量 delta",
     [GEV.MAIN_MENU_SHOW]: "预留：主菜单展示",
     [GEV.MAIN_MENU_HIDE]: "预留：主菜单隐藏",
 };

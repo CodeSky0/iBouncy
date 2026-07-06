@@ -14,11 +14,8 @@ import {
     timer,
     leafer,
     Mask,
-    OptionsMenu,
-    Settlement,
     FPS,
     setEffectsEnabled,
-    Scoring,
     Tablet,
     Ball,
 } from "./core/instances";
@@ -104,7 +101,6 @@ function gameLoop(timeStamp: number): void {
         accumulated += Math.min(deltaTime, GameConf.MAX_ACCUMULATED * 1000);
         Ball.timeDivisor = Math.min(F(accumulated / GP.ENV.fixedStep), GP.ENV.maxStepPerFrame);
         const unitProg = GP.ENV.fixedStep / GP.ENV.stdUnitInterval;
-        let lastTipDelta: string | null = null;
         while (accumulated >= GP.ENV.fixedStep && steps <= GP.ENV.maxStepPerFrame) {
             // sub-stepping loop
             accumulated -= GP.ENV.fixedStep;
@@ -116,10 +112,9 @@ function gameLoop(timeStamp: number): void {
                 const bvP = Math.log2(bv) + 1 / Math.cos(BV_ANGLE_SCALE * bv);
                 const d = D(Tablet.cx - Ball.cx);
                 const dP = Math.cos(TABLET_2PI_OVER_W * d) + 0.5;
-                lastTipDelta = Scoring.delta_(0.4 * bvP + 0.16 * dP);
+                evBus.emit(GEV.PLAYER_SCORE, { delta: 0.4 * bvP + 0.16 * dP });
             }
         }
-        if (lastTipDelta !== null) Scoring.tip_(lastTipDelta);
     }
 
     rafId = requestAnimationFrame(gameLoop);
@@ -167,11 +162,7 @@ KS.whenUp((e) => {
             break;
         case "Enter":
         case "NumpadEnter":
-            if (GP.at("over")) {
-                Settlement.hide_();
-                GP.prepared();
-            } else if (GP.at("paused")) {
-                OptionsMenu.hide_();
+            if (GP.at("over") || GP.at("paused")) {
                 GP.prepared();
             }
             break;

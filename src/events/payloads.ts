@@ -20,7 +20,9 @@ export type GameEventPayloadMap = {
     [GEV.GAME_OVER]: { win: boolean; score: number };
     [GEV.GAME_RESTART]: undefined;
     [GEV.GAME_RESET]: { removeMask: boolean };
-    [GEV.PLAYER_SCORE]: undefined;
+    [GEV.GAME_BALL_LOST]: undefined;
+    [GEV.GAME_TIME_UP]: undefined;
+    [GEV.PLAYER_SCORE]: { delta: number };
     [GEV.MAIN_MENU_SHOW]: undefined;
     [GEV.MAIN_MENU_HIDE]: undefined;
 };

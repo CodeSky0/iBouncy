@@ -65,6 +65,10 @@ export default class E_Scoring extends Group {
         evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
         evBus.on(GEV.RESIZE, (payload) => this.relocate_(payload.data));
         evBus.on(GEV.GAME_RESET, this.reset_.bind(this));
+        evBus.on(GEV.PLAYER_SCORE, (payload) => {
+            const deltaStr = this.delta_(payload.delta);
+            this.tip_(deltaStr);
+        });
     }
 
     reset_(): void {
