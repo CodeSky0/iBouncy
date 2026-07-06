@@ -9,7 +9,7 @@ import { GameConf, UIConf } from "../config";
 export default class E_Ball extends Ellipse {
     confUI = UIConf.Ball;
     confGm = GameConf.Ball;
-    trailing: X_BallTrailing;
+    trailing?: X_BallTrailing;
     vx!: number;
     vy!: number;
     ax!: number;
@@ -37,7 +37,6 @@ export default class E_Ball extends Ellipse {
             paddings: this.ballBoundaryPaddings,
             callbacks: this.boundaryCallbacks,
         };
-        this.trailing = new X_BallTrailing();
         this.#$setupEventListeners();
         this.reset_();
     }
@@ -58,11 +57,14 @@ export default class E_Ball extends Ellipse {
     }
 
     render_(): void {
-        this.trailing.render();
+        this.trailing?.render();
         leafer.add(this);
     }
 
     prepare_(): void {
+        if (!this.trailing) {
+            this.trailing = new X_BallTrailing();
+        }
         this.trailing.prepare();
     }
 
@@ -76,6 +78,6 @@ export default class E_Ball extends Ellipse {
         this.ballBoundaryPaddings[2] = -this.h * 3;
         GI.boundaryDetect(this as BoundsEntity, this.ballBoundaryOpts);
         // 卡顿时关闭视觉拖尾，保障核心物理计算更稳定。
-        if (effectsEnabled) this.trailing.frameLoop(this.timeDivisor);
+        if (effectsEnabled) this.trailing?.frameLoop(this.timeDivisor);
     }
 }
