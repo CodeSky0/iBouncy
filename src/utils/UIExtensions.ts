@@ -1,5 +1,11 @@
 import { UI } from "leafer-game";
-import { leafer } from "../core/instances";
+import type { Leafer } from "leafer-game";
+
+let leaferRef: Leafer | null = null;
+
+export function setLeafer(leafer: Leafer): void {
+    leaferRef = leafer;
+}
 
 export default function extendUI(): void {
     const extensions: PropertyDescriptorMap = {
@@ -112,7 +118,7 @@ export default function extendUI(): void {
         render_: {
             value: function (this: UI) {
                 if (this.rendered_) return;
-                leafer.add(this);
+                leaferRef!.add(this);
                 this.rendered_ = true;
             },
             writable: true,
@@ -122,7 +128,7 @@ export default function extendUI(): void {
         cull_: {
             value: function (this: UI) {
                 if (!this.rendered_) return;
-                leafer.remove(this);
+                leaferRef!.remove(this);
                 this.rendered_ = false;
             },
             writable: true,

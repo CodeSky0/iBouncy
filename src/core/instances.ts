@@ -1,3 +1,7 @@
+import extendUI from "../utils/UIExtensions";
+
+extendUI();
+
 import { Leafer } from "leafer-game";
 import { GameConf, UIConf } from "../config";
 import Processor from "./processor";
@@ -14,6 +18,9 @@ export const leafer = new Leafer({
         preventDefaultMenu: true,
     },
 });
+
+import { setLeafer } from "../utils/UIExtensions";
+setLeafer(leafer);
 
 const defFrameInterval = 1000 / GameConf.DEFAULT_REFRESH_RATE;
 export const GP = new Processor(
