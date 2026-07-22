@@ -22,7 +22,14 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: linear-gradient(
+                160deg,
+                #0D0D1B 0%,
+                #111128 25%,
+                #0E0E22 50%,
+                #0A0A1E 75%,
+                #0D0D20 100%
+            );
         }
 
         canvas {
@@ -37,20 +44,49 @@
         }
 
         /* ============================================
-           Cloud UI (Auth/History) - Enhanced Design
-           Theme Colors:
-           - Primary: #5367FF (Bright Blue)
-           - Secondary: #8B5CF6 (Purple)
-           - Accent: #06D6A0 (Teal)
-           - Background: Dark gradient
+           Cloud UI - Liquid Glass Design System
+           (iOS 26 inspired: translucency, dynamic light,
+            soft gradients, spatial depth, iridescence)
            ============================================ */
+
+        /* -----------------------------------------------
+           Liquid Glass Global Properties / Root Setup
+           ----------------------------------------------- */
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-bg-hover: rgba(255, 255, 255, 0.11);
+            --glass-bg-active: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-border-focus: rgba(180, 180, 255, 0.35);
+            --glass-blur: saturate(200%) blur(40px);
+            --glass-blur-light: saturate(180%) blur(24px);
+            --glass-blur-heavy: saturate(220%) blur(60px);
+            --glass-highlight: inset 0 0.5px 0 rgba(255,255,255,0.18);
+            --glass-edge: inset 0 0 0 0.5px rgba(255,255,255,0.1);
+            --depth-near: 0 4px 24px rgba(0,0,0,0.35);
+            --depth-mid: 0 12px 48px rgba(0,0,0,0.45);
+            --depth-far: 0 24px 80px rgba(0,0,0,0.55);
+            --accent-1: #9B9BFF;
+            --accent-2: #B8A9FF;
+            --accent-3: #C5B8FF;
+            --accent-cyan: #7EE8D0;
+            --accent-rose: #FFB3B8;
+            --accent-gold: #F5D78C;
+            --radius-xl: 28px;
+            --radius-lg: 20px;
+            --radius-md: 16px;
+            --radius-sm: 14px;
+            --radius-full: 999px;
+        }
+
         #cloud-ui-root {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: 2000;
-            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif;
             user-select: text;
+            -webkit-font-smoothing: antialiased;
         }
 
         #cloud-ui-root * {
@@ -58,7 +94,9 @@
             -webkit-user-drag: none;
         }
 
-        /* Floating Action Button */
+        /* -----------------------------------------------
+           Floating Action Button (FAB) - Liquid Glass Pill
+           ----------------------------------------------- */
         #cloud-ui-root .cloud-fab {
             position: absolute;
             top: 14px;
@@ -69,46 +107,80 @@
             pointer-events: auto;
             transform-origin: top right;
             opacity: 1;
-            transform: scale(1);
+            transform: scale(1) translateZ(0);
             filter: blur(0);
             transition:
-                opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-                transform 0.38s cubic-bezier(0.34, 1.2, 0.64, 1),
+                opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
                 filter 0.38s ease;
+            perspective: 800px;
         }
 
         #cloud-ui-root .cloud-fab.cloud-fab--game-hidden {
             opacity: 0;
-            transform: scale(0.62);
+            transform: scale(0.58) translateY(8px);
             pointer-events: none;
-            filter: blur(2px);
+            filter: blur(3px);
             transition:
                 opacity 0.32s cubic-bezier(0.4, 0, 0.55, 1),
                 transform 0.32s cubic-bezier(0.4, 0, 0.55, 1),
                 filter 0.28s ease;
         }
 
+        /* FAB Pill - Main glass container */
         #cloud-ui-root .pill {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 7px 11px;
-            border-radius: 999px;
-            color: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(83, 103, 255, 0.35);
-            background: linear-gradient(135deg, rgba(83, 103, 255, 0.25), rgba(139, 92, 246, 0.15));
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: 0 6px 26px rgba(83, 103, 255, 0.22),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            animation: pillGlow 3s ease-in-out infinite;
+            padding: 6px 6px 6px 14px;
+            border-radius: var(--radius-full);
+            color: rgba(255, 255, 255, 0.93);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            box-shadow: var(--depth-near),
+                        var(--glass-highlight),
+                        inset 0 -1px 0 rgba(0,0,0,0.06);
+            animation: pillFloat 6s ease-in-out infinite, pillIridesce 8s ease-in-out infinite;
+            transform-style: preserve-3d;
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.35s ease;
         }
 
-        @keyframes pillGlow {
-            0%, 100% { box-shadow: 0 6px 26px rgba(83, 103, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1); }
-            50% { box-shadow: 0 6px 26px rgba(83, 103, 255, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.14); }
+        #cloud-ui-root .pill:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: var(--depth-mid),
+                        var(--glass-highlight),
+                        0 0 40px rgba(155,155,255,0.15),
+                        inset 0 -1px 0 rgba(0,0,0,0.06);
         }
 
+        /* Floating / breathing animation */
+        @keyframes pillFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        /* Iridescent edge glow animation */
+        @keyframes pillIridesce {
+            0%, 100% {
+                border-color: rgba(180,180,255,0.18);
+                box-shadow: var(--depth-near), var(--glass-highlight);
+            }
+            33% {
+                border-color: rgba(180,200,255,0.25);
+                box-shadow: var(--depth-near), var(--glass-highlight),
+                            0 0 28px rgba(155,155,255,0.08);
+            }
+            66% {
+                border-color: rgba(200,170,255,0.22);
+                box-shadow: var(--depth-near), var(--glass-highlight),
+                            0 0 28px rgba(180,160,255,0.06);
+            }
+        }
+
+        /* Button reset */
         #cloud-ui-root button {
             appearance: none;
             border: 0;
@@ -116,22 +188,66 @@
             font: inherit;
             position: relative;
             overflow: hidden;
+            outline: none;
         }
 
-        /* Button Base Styles with Ripple Effect */
+        /* -----------------------------------------------
+           Buttons - Liquid Glass
+           ----------------------------------------------- */
         #cloud-ui-root .btn {
-            border-radius: 999px;
-            padding: 7px 13px;
-            color: rgba(255, 255, 255, 0.95);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 500;
-            font-size: 12px;
-            letter-spacing: 0.25px;
+            border-radius: var(--radius-full);
+            padding: 8px 14px;
+            color: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: var(--glass-blur-light);
+            -webkit-backdrop-filter: var(--glass-blur-light);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.18),
+                        var(--glass-highlight);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            font-weight: 520;
+            font-size: 12.5px;
+            letter-spacing: 0.15px;
+            transform: translateZ(0);
         }
 
         #cloud-ui-root .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(
+                135deg,
+                rgba(255,255,255,0.2) 0%,
+                transparent 50%,
+                rgba(155,155,255,0.1) 100%
+            );
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            pointer-events: none;
+        }
+
+        #cloud-ui-root .btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            background: rgba(255, 255, 255, 0.13);
+            border-color: rgba(180,180,255,0.3);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.25),
+                        0 0 20px rgba(155,155,255,0.1),
+                        var(--glass-highlight);
+        }
+
+        #cloud-ui-root .btn:hover::before {
+            opacity: 1;
+        }
+
+        #cloud-ui-root .btn:active {
+            transform: translateY(0) scale(0.97);
+            background: rgba(255, 255, 255, 0.16);
+            transition: transform 0.08s ease, background 0.15s ease;
+        }
+
+        /* Glass ripple */
+        #cloud-ui-root .btn::after {
             content: '';
             position: absolute;
             top: 50%;
@@ -139,52 +255,77 @@
             width: 0;
             height: 0;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
+            background: radial-gradient(circle,
+                rgba(255,255,255,0.5) 0%,
+                rgba(200,200,255,0.2) 40%,
+                transparent 70%
+            );
             transform: translate(-50%, -50%);
-            transition: width 0.4s ease, height 0.4s ease;
+            transition: width 0.5s ease, height 0.5s ease, opacity 0.5s ease;
+            opacity: 0;
+            pointer-events: none;
         }
 
-        #cloud-ui-root .btn:active::before {
-            width: 200%;
-            height: 200%;
+        #cloud-ui-root .btn:active::after {
+            width: 250%;
+            height: 250%;
+            opacity: 1;
+            transition: width 0s, height 0s, opacity 0.3s ease;
         }
 
-        #cloud-ui-root .btn:hover { 
-            transform: translateY(-2px); 
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.1));
-            box-shadow: 0 4px 20px rgba(83, 103, 255, 0.3);
+        /* Primary button - iridescent glass */
+        #cloud-ui-root .btn.primary {
+            background: linear-gradient(
+                135deg,
+                rgba(140,140,255,0.5) 0%,
+                rgba(160,140,240,0.4) 40%,
+                rgba(180,160,255,0.3) 100%
+            );
+            border-color: rgba(180,180,255,0.35);
+            box-shadow: 0 4px 20px rgba(140,130,255,0.25),
+                        0 0 0 1px rgba(200,200,255,0.08),
+                        var(--glass-highlight);
         }
 
-        #cloud-ui-root .btn:active { 
-            transform: translateY(0); 
-            transition: transform 0.05s ease;
+        #cloud-ui-root .btn.primary:hover {
+            background: linear-gradient(
+                135deg,
+                rgba(150,150,255,0.6) 0%,
+                rgba(170,150,255,0.5) 40%,
+                rgba(180,170,255,0.4) 100%
+            );
+            border-color: rgba(200,180,255,0.5);
+            box-shadow: 0 8px 32px rgba(140,130,255,0.35),
+                        0 0 0 1px rgba(200,200,255,0.12),
+                        var(--glass-highlight);
         }
 
-        #cloud-ui-root .btn.primary { 
-            background: linear-gradient(135deg, rgba(83, 103, 255, 0.85), rgba(139, 92, 246, 0.75)); 
-            border-color: rgba(83, 103, 255, 0.5);
-            box-shadow: 0 4px 20px rgba(83, 103, 255, 0.4);
-        }
-
-        #cloud-ui-root .btn.primary:hover { 
-            background: linear-gradient(135deg, rgba(83, 103, 255, 0.95), rgba(139, 92, 246, 0.85)); 
-            box-shadow: 0 6px 28px rgba(83, 103, 255, 0.55);
-        }
-
-        #cloud-ui-root .btn.danger { 
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.7), rgba(220, 38, 38, 0.6)); 
-            border-color: rgba(239, 68, 68, 0.4);
+        /* Danger button */
+        #cloud-ui-root .btn.danger {
+            background: linear-gradient(
+                135deg,
+                rgba(255,140,140,0.35) 0%,
+                rgba(240,130,130,0.25) 100%
+            );
+            border-color: rgba(255,160,160,0.3);
         }
 
         #cloud-ui-root .btn.danger:hover {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.85), rgba(220, 38, 38, 0.75));
-            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.35);
+            background: linear-gradient(
+                135deg,
+                rgba(255,140,140,0.5) 0%,
+                rgba(240,130,130,0.38) 100%
+            );
+            border-color: rgba(255,160,160,0.45);
+            box-shadow: 0 6px 24px rgba(255,130,130,0.25),
+                        0 0 0 1px rgba(255,180,180,0.08),
+                        var(--glass-highlight);
         }
 
-        /* Loading State for Buttons */
+        /* Loading state */
         #cloud-ui-root .btn.loading {
             pointer-events: none;
-            opacity: 0.8;
+            opacity: 0.7;
         }
 
         #cloud-ui-root .btn.loading .btn-text {
@@ -196,12 +337,13 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 15px;
-            height: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: rgba(255, 255, 255, 0.95);
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: rgba(255, 255, 255, 0.9);
+            border-right-color: rgba(180,180,255,0.7);
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: glassSpin 0.75s linear infinite;
             display: none;
         }
 
@@ -209,105 +351,252 @@
             display: block;
         }
 
-        @keyframes spin {
+        @keyframes glassSpin {
             to { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
+        /* -----------------------------------------------
+           Badge - Glass chip
+           ----------------------------------------------- */
         #cloud-ui-root .badge {
             display: inline-flex;
             align-items: center;
-            padding: 3px 8px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.95);
-            background: linear-gradient(135deg, rgba(83, 103, 255, 0.35), rgba(139, 92, 246, 0.25));
-            border: 1px solid rgba(83, 103, 255, 0.3);
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 11.5px;
+            font-weight: 540;
+            color: rgba(255, 255, 255, 0.93);
+            background: rgba(180,170,255,0.18);
+            border: 1px solid rgba(180,170,255,0.22);
+            backdrop-filter: var(--glass-blur-light);
+            -webkit-backdrop-filter: var(--glass-blur-light);
+            box-shadow: var(--glass-highlight);
+            letter-spacing: 0.1px;
         }
 
-        /* Modal Backdrop with Animation */
+        /* -----------------------------------------------
+           Modal Backdrop - Deep glass frost
+           ----------------------------------------------- */
         #cloud-ui-root .modal-backdrop {
             position: absolute;
             inset: 0;
             display: none;
             place-items: center;
             pointer-events: auto;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: saturate(150%) blur(8px);
+            -webkit-backdrop-filter: saturate(150%) blur(8px);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            perspective: 1200px;
         }
 
-        #cloud-ui-root .modal-backdrop.open { 
-            display: grid; 
+        #cloud-ui-root .modal-backdrop.open {
+            display: grid;
             opacity: 1;
         }
 
         #cloud-ui-root .modal-backdrop.closing {
             opacity: 0;
+            pointer-events: none;
         }
 
-        /* Enhanced Modal Design */
+        /* -----------------------------------------------
+           Modal Panel - Liquid Glass Canvas
+           ----------------------------------------------- */
         #cloud-ui-root .modal {
             position: relative;
             width: min(480px, calc(100vw - 32px));
             max-height: calc(100vh - 40px);
-            border-radius: 24px;
-            padding: 28px;
-            color: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(83, 103, 255, 0.35);
-            background: linear-gradient(165deg, 
-                rgba(30, 30, 50, 0.95) 0%, 
-                rgba(22, 22, 38, 0.92) 50%,
-                rgba(15, 15, 28, 0.9) 100%);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            box-shadow: 
-                0 25px 80px rgba(0, 0, 0, 0.6),
-                0 0 0 1px rgba(83, 103, 255, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.08);
-            transform: scale(0.92) translateY(20px);
+            border-radius: var(--radius-xl);
+            padding: 30px 28px;
+            color: rgba(255, 255, 255, 0.93);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            /* Multi-layer glass background */
+            background:
+                linear-gradient(
+                    170deg,
+                    rgba(255,255,255,0.09) 0%,
+                    rgba(255,255,255,0.04) 30%,
+                    rgba(200,195,240,0.03) 60%,
+                    rgba(255,255,255,0.05) 100%
+                );
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            /* Depth shadow layers */
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.08),
+                var(--depth-far),
+                var(--glass-highlight),
+                inset 0 0 120px rgba(140,130,255,0.03);
+            transform: scale(0.9) translateY(30px) translateZ(0);
             opacity: 0;
-            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.5s cubic-bezier(0.22, 1, 0.18, 1);
             overflow-y: auto;
+            overflow-x: hidden;
+            will-change: transform, opacity;
         }
 
+        /* Modal variants - subtle tint differences */
         #cloud-ui-root .modal-auth {
             width: min(420px, calc(100vw - 32px));
-            border-color: rgba(83, 103, 255, 0.42);
-            background: linear-gradient(168deg,
-                rgba(32, 34, 58, 0.94) 0%,
-                rgba(24, 26, 48, 0.9) 45%,
-                rgba(14, 18, 36, 0.92) 100%);
+            background:
+                linear-gradient(
+                    170deg,
+                    rgba(255,255,255,0.08) 0%,
+                    rgba(210,200,250,0.05) 35%,
+                    rgba(200,210,255,0.04) 65%,
+                    rgba(255,255,255,0.05) 100%
+                );
             box-shadow:
-                0 28px 90px rgba(0, 0, 0, 0.58),
-                0 0 0 1px rgba(6, 214, 160, 0.12),
-                0 0 48px rgba(83, 103, 255, 0.12),
-                inset 0 1px 0 rgba(255, 255, 255, 0.09);
+                0 0 0 1px rgba(180,200,255,0.09),
+                var(--depth-far),
+                var(--glass-highlight),
+                0 0 80px rgba(155,155,255,0.06);
         }
 
         #cloud-ui-root .modal-history {
             width: min(520px, calc(100vw - 32px));
-            border-color: rgba(139, 92, 246, 0.38);
-            background: linear-gradient(168deg,
-                rgba(34, 30, 56, 0.94) 0%,
-                rgba(22, 24, 44, 0.91) 50%,
-                rgba(16, 20, 40, 0.93) 100%);
+            background:
+                linear-gradient(
+                    170deg,
+                    rgba(255,255,255,0.08) 0%,
+                    rgba(220,200,255,0.05) 30%,
+                    rgba(210,200,250,0.04) 60%,
+                    rgba(255,255,255,0.05) 100%
+                );
             box-shadow:
-                0 28px 90px rgba(0, 0, 0, 0.58),
-                0 0 0 1px rgba(139, 92, 246, 0.14),
-                0 0 40px rgba(6, 214, 160, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+                0 0 0 1px rgba(180,180,255,0.09),
+                var(--depth-far),
+                var(--glass-highlight);
         }
 
+        #cloud-ui-root .modal-leaderboard {
+            border-color: rgba(230,210,160,0.18);
+            background:
+                linear-gradient(
+                    170deg,
+                    rgba(255,255,255,0.07) 0%,
+                    rgba(240,220,180,0.04) 35%,
+                    rgba(230,210,190,0.03) 65%,
+                    rgba(255,255,255,0.04) 100%
+                );
+            box-shadow:
+                0 0 0 1px rgba(230,210,160,0.08),
+                var(--depth-far),
+                var(--glass-highlight);
+        }
+
+        /* -----------------------------------------------
+           Light Sweep - Animated beam across glass
+           ----------------------------------------------- */
+        #cloud-ui-root .modal::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            left: -60%;
+            width: 220%;
+            height: 220%;
+            background: radial-gradient(
+                ellipse at 50% 25%,
+                rgba(255,255,255,0.09) 0%,
+                rgba(220,210,255,0.04) 30%,
+                transparent 60%
+            );
+            pointer-events: none;
+            animation: lightSweep 10s ease-in-out infinite;
+        }
+
+        @keyframes lightSweep {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(2%, -2%) rotate(2deg); }
+            50% { transform: translate(-2%, 2%) rotate(-2deg); }
+            75% { transform: translate(2%, 2%) rotate(1deg); }
+        }
+
+        /* -----------------------------------------------
+           Modal open/close animations
+           ----------------------------------------------- */
+        #cloud-ui-root .modal-backdrop.open .modal {
+            transform: scale(1) translateY(0) translateZ(0);
+            opacity: 1;
+            animation: modalSettle 0.6s cubic-bezier(0.22, 1, 0.18, 1) forwards;
+        }
+
+        @keyframes modalSettle {
+            0% { transform: scale(0.92) translateY(15px); }
+            55% { transform: scale(1.008) translateY(-2px); }
+            100% { transform: scale(1) translateY(0); }
+        }
+
+        #cloud-ui-root .modal-backdrop.closing .modal {
+            transform: scale(0.94) translateY(12px);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.55, 1);
+        }
+
+        /* -----------------------------------------------
+           Modal Titles - Gradient Text
+           ----------------------------------------------- */
+        #cloud-ui-root .modal h2 {
+            margin: 0;
+            font-size: 23px;
+            font-weight: 670;
+            letter-spacing: -0.35px;
+            background: linear-gradient(
+                160deg,
+                #FFFFFF 0%,
+                #D8D8FF 45%,
+                #C0C0F0 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* -----------------------------------------------
+           Layout Helpers
+           ----------------------------------------------- */
+        #cloud-ui-root .row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #cloud-ui-root .row.title-row {
+            margin-bottom: 6px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        /* -----------------------------------------------
+           Auth Head
+           ----------------------------------------------- */
         #cloud-ui-root .auth-head {
             display: flex;
             flex-direction: column;
             align-items: stretch;
             gap: 16px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             padding-bottom: 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        /* -----------------------------------------------
+           Tabs - Glass pill segment control
+           ----------------------------------------------- */
+        #cloud-ui-root .tabs {
+            display: inline-flex;
+            gap: 3px;
+            padding: 5px;
+            border-radius: var(--radius-full);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: var(--glass-blur-light);
+            -webkit-backdrop-filter: var(--glass-blur-light);
+            box-shadow: var(--glass-highlight),
+                        inset 0 1px 2px rgba(0,0,0,0.1);
         }
 
         #cloud-ui-root .tabs.tabs-auth {
@@ -323,12 +612,147 @@
             justify-content: center;
         }
 
+        #cloud-ui-root .tab {
+            position: relative;
+            overflow: hidden;
+            padding: 10px 20px;
+            border-radius: var(--radius-full);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.58);
+            border: 1px solid transparent;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        #cloud-ui-root .tab:hover {
+            color: rgba(255, 255, 255, 0.82);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        #cloud-ui-root .tab:active {
+            transform: scale(0.96);
+            transition: transform 0.08s ease;
+        }
+
+        #cloud-ui-root .tab.active {
+            background: linear-gradient(
+                135deg,
+                rgba(155,150,240,0.45) 0%,
+                rgba(170,155,240,0.35) 50%,
+                rgba(180,170,255,0.25) 100%
+            );
+            color: rgba(255, 255, 255, 0.96);
+            border-color: rgba(200,190,255,0.3);
+            box-shadow: 0 4px 16px rgba(155,155,255,0.2),
+                        var(--glass-highlight),
+                        inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+
+        /* -----------------------------------------------
+           Form Fields
+           ----------------------------------------------- */
         #cloud-ui-root .auth-fields {
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
 
+        #cloud-ui-root .field {
+            margin-top: 18px;
+            display: grid;
+            gap: 8px;
+        }
+
+        #cloud-ui-root .field.auth-stagger {
+            animation: glassFieldIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+            animation-delay: calc(var(--i, 0) * 55ms);
+        }
+
+        @keyframes glassFieldIn {
+            from {
+                opacity: 0;
+                transform: translateY(14px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        #cloud-ui-root label {
+            font-size: 13px;
+            font-weight: 520;
+            color: rgba(200, 200, 240, 0.8);
+            margin-left: 4px;
+            letter-spacing: 0.1px;
+        }
+
+        #cloud-ui-root input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.93);
+            outline: none;
+            font-size: 14px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            font-family: inherit;
+        }
+
+        #cloud-ui-root input::placeholder {
+            color: rgba(255, 255, 255, 0.32);
+        }
+
+        #cloud-ui-root input:hover {
+            border-color: rgba(180, 180, 255, 0.35);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        #cloud-ui-root input:focus {
+            border-color: rgba(180, 170, 255, 0.5);
+            background: rgba(255, 255, 255, 0.09);
+            box-shadow:
+                0 0 0 5px rgba(155, 155, 255, 0.08),
+                0 0 28px rgba(155, 155, 255, 0.1),
+                inset 0 1px 2px rgba(0,0,0,0.08);
+        }
+
+        /* Auth-specific input focus */
+        #cloud-ui-root .modal-auth input:focus {
+            border-color: rgba(140, 210, 200, 0.45);
+            box-shadow:
+                0 0 0 5px rgba(126, 232, 208, 0.07),
+                0 0 28px rgba(155, 155, 255, 0.08),
+                inset 0 1px 2px rgba(0,0,0,0.08);
+        }
+
+        /* Optional field tag */
+        #cloud-ui-root .optional-field label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #cloud-ui-root .optional-tag {
+            font-size: 10.5px;
+            font-weight: 560;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            background: rgba(126, 232, 208, 0.12);
+            border: 1px solid rgba(126, 232, 208, 0.3);
+            color: rgba(140, 240, 215, 0.92);
+        }
+
+        /* -----------------------------------------------
+           Auth Actions
+           ----------------------------------------------- */
         #cloud-ui-root .auth-actions {
             margin-top: 22px;
             padding-top: 4px;
@@ -342,45 +766,58 @@
             justify-content: flex-end;
         }
 
-        #cloud-ui-root .field.auth-stagger {
-            animation: authFieldIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-            animation-delay: calc(var(--i, 0) * 55ms);
-        }
-
-        @keyframes authFieldIn {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        /* -----------------------------------------------
+           Hint Block - Translucent info panel
+           ----------------------------------------------- */
+        #cloud-ui-root .hint {
+            margin-top: 16px;
+            padding: 14px 16px;
+            font-size: 12px;
+            color: rgba(200, 200, 240, 0.78);
+            line-height: 1.65;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
         }
 
         #cloud-ui-root .auth-hint {
             margin-top: 18px;
-            background: linear-gradient(135deg, rgba(83, 103, 255, 0.1), rgba(6, 214, 160, 0.06));
-            border-color: rgba(6, 214, 160, 0.22);
-            color: rgba(196, 210, 254, 0.88);
+            background: rgba(200,200,255,0.05);
+            border-color: rgba(180,200,255,0.14);
+            color: rgba(210,210,245,0.82);
         }
 
-        #cloud-ui-root .optional-field label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        /* -----------------------------------------------
+           Error Message
+           ----------------------------------------------- */
+        #cloud-ui-root .error {
+            margin-top: 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255, 210, 210, 0.95);
+            background: rgba(255, 120, 120, 0.15);
+            border: 1px solid rgba(255, 140, 140, 0.3);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            display: none;
+            animation: glassShake 0.45s ease;
         }
 
-        #cloud-ui-root .optional-tag {
-            font-size: 11px;
-            font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 999px;
-            background: rgba(6, 214, 160, 0.15);
-            border: 1px solid rgba(6, 214, 160, 0.35);
-            color: rgba(110, 231, 200, 0.95);
+        @keyframes glassShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
         }
 
+        #cloud-ui-root .error.show { display: block; }
+
+        /* -----------------------------------------------
+           History Module
+           ----------------------------------------------- */
         #cloud-ui-root .history-head {
             align-items: flex-start;
             flex-wrap: wrap;
@@ -397,15 +834,25 @@
         #cloud-ui-root .history-title-accent {
             width: 48px;
             height: 3px;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #5367FF, #06D6A0);
-            opacity: 0.9;
+            border-radius: var(--radius-full);
+            background: linear-gradient(
+                90deg,
+                var(--accent-1),
+                var(--accent-cyan)
+            );
+            opacity: 0.8;
+            animation: accentShimmer 4s ease-in-out infinite;
+        }
+
+        @keyframes accentShimmer {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
         }
 
         #cloud-ui-root .history-actions {
             margin-top: 18px;
             padding-top: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.07);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         #cloud-ui-root .history-actions-right {
@@ -415,28 +862,199 @@
             justify-content: flex-end;
         }
 
+        /* -----------------------------------------------
+           Cards - Glass stat panels
+           ----------------------------------------------- */
+        #cloud-ui-root .cards {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        #cloud-ui-root .card {
+            padding: 18px 16px;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: var(--depth-near),
+                        var(--glass-highlight),
+                        inset 0 0 60px rgba(150,140,255,0.02);
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            transform: translateZ(0);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Card specular highlight on hover */
+        #cloud-ui-root .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(
+                150deg,
+                rgba(255,255,255,0.1) 0%,
+                transparent 50%,
+                rgba(180,160,240,0.05) 100%
+            );
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        #cloud-ui-root .card:hover {
+            transform: translateY(-3px) scale(1.02);
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(180,180,255,0.25);
+            box-shadow:
+                var(--depth-mid),
+                var(--glass-highlight),
+                0 0 40px rgba(155,155,255,0.06);
+        }
+
+        #cloud-ui-root .card:hover::before {
+            opacity: 1;
+        }
+
         #cloud-ui-root .history-cards .card {
-            background: linear-gradient(135deg, rgba(83, 103, 255, 0.14), rgba(6, 214, 160, 0.06));
-            border-color: rgba(139, 92, 246, 0.22);
+            background: rgba(200,190,250,0.05);
+            border-color: rgba(180,180,255,0.14);
+        }
+
+        #cloud-ui-root .card .k {
+            font-size: 10.5px;
+            font-weight: 560;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: rgba(200, 200, 240, 0.7);
+        }
+
+        #cloud-ui-root .card .v {
+            margin-top: 10px;
+            font-weight: 720;
+            font-size: 24px;
+            letter-spacing: -0.6px;
+            background: linear-gradient(
+                160deg,
+                #FFFFFF 0%,
+                #D5D5FF 45%,
+                #B8B8EE 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        #cloud-ui-root .card.wide {
+            grid-column: 1 / -1;
+        }
+
+        /* Sparkline container */
+        #cloud-ui-root .spark {
+            width: 100%;
+            height: 60px;
+            margin-top: 14px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* -----------------------------------------------
+           List - Glass rows
+           ----------------------------------------------- */
+        #cloud-ui-root .list {
+            margin-top: 16px;
+            display: grid;
+            gap: 10px;
+            max-height: min(45vh, 360px);
+            overflow: auto;
+            padding-right: 6px;
+        }
+
+        #cloud-ui-root .list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #cloud-ui-root .list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 3px;
+            margin: 4px 0;
+        }
+
+        #cloud-ui-root .list::-webkit-scrollbar-thumb {
+            background: rgba(180, 170, 240, 0.25);
+            border-radius: 3px;
+        }
+
+        #cloud-ui-root .list::-webkit-scrollbar-thumb:hover {
+            background: rgba(180, 170, 240, 0.4);
+        }
+
+        /* List items - Glass rows */
+        #cloud-ui-root .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: var(--glass-highlight);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            transform: translateZ(0);
+        }
+
+        #cloud-ui-root .item:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(180, 170, 240, 0.2);
+            transform: translateX(4px) scale(1.01);
+            box-shadow:
+                0 4px 20px rgba(0,0,0,0.15),
+                var(--glass-highlight);
         }
 
         #cloud-ui-root .history-list .item {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(83, 103, 255, 0.04));
-            border-color: rgba(255, 255, 255, 0.09);
+            background: rgba(200,195,250,0.04);
+            border-color: rgba(180,180,255,0.09);
         }
 
-        #cloud-ui-root .modal-leaderboard {
-            border-color: rgba(245, 158, 11, 0.32);
-            background: linear-gradient(168deg,
-                rgba(40, 32, 28, 0.94) 0%,
-                rgba(28, 24, 22, 0.91) 50%,
-                rgba(18, 16, 22, 0.93) 100%);
-            box-shadow:
-                0 28px 90px rgba(0, 0, 0, 0.58),
-                0 0 0 1px rgba(245, 158, 11, 0.12),
-                inset 0 1px 0 rgba(255, 255, 255, 0.07);
+        #cloud-ui-root .item .score {
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: -0.3px;
+            color: rgba(255, 255, 255, 0.96);
         }
 
+        #cloud-ui-root .item .time {
+            font-size: 11.5px;
+            color: rgba(200, 200, 240, 0.62);
+            margin-top: 4px;
+        }
+
+        #cloud-ui-root .item .sync-badge {
+            font-size: 10px;
+            font-weight: 580;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            background: rgba(126, 232, 208, 0.15);
+            color: rgba(140, 245, 220, 0.92);
+            border: 1px solid rgba(126, 232, 208, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* -----------------------------------------------
+           Leaderboard specific
+           ----------------------------------------------- */
         #cloud-ui-root .leaderboard-list .item.item--leaderboard {
             display: flex;
             align-items: center;
@@ -446,11 +1064,19 @@
 
         #cloud-ui-root .leaderboard-list .lb-rank {
             flex-shrink: 0;
-            min-width: 2.2em;
-            font-weight: 800;
+            min-width: 2.4em;
+            font-weight: 680;
             font-size: 15px;
-            color: rgba(251, 191, 36, 0.95);
             text-align: center;
+            background: linear-gradient(
+                160deg,
+                var(--accent-gold) 0%,
+                #E8C860 50%,
+                var(--accent-gold) 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         #cloud-ui-root .leaderboard-list .lb-main {
@@ -462,8 +1088,8 @@
         }
 
         #cloud-ui-root .leaderboard-list .lb-name {
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.92);
+            font-weight: 580;
+            color: rgba(255, 255, 255, 0.9);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -474,14 +1100,17 @@
             margin-left: auto;
         }
 
+        /* Self-highlight row */
         #cloud-ui-root .leaderboard-list .item.item--self {
-            border-color: rgba(6, 214, 160, 0.45);
-            background: linear-gradient(135deg, rgba(6, 214, 160, 0.12), rgba(83, 103, 255, 0.08));
-            box-shadow: 0 0 0 1px rgba(6, 214, 160, 0.2);
+            border-color: rgba(126, 232, 208, 0.35);
+            background: rgba(126, 232, 208, 0.08);
+            box-shadow:
+                0 0 0 1px rgba(126, 232, 208, 0.15),
+                var(--glass-highlight);
         }
 
         #cloud-ui-root .leaderboard-footer {
-            margin-top: 10px;
+            margin-top: 12px;
             display: none;
         }
 
@@ -489,9 +1118,17 @@
             margin: 0;
             text-align: center;
             font-size: 13px;
-            color: rgba(196, 210, 254, 0.85);
+            font-weight: 500;
+            color: rgba(210, 210, 245, 0.8);
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.04);
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
+        /* -----------------------------------------------
+           Modal Loading Overlay
+           ----------------------------------------------- */
         #cloud-ui-root .modal-loading {
             position: absolute;
             inset: 0;
@@ -499,12 +1136,12 @@
             display: grid;
             place-items: center;
             border-radius: inherit;
-            background: rgba(10, 12, 26, 0.55);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: saturate(160%) blur(14px);
+            -webkit-backdrop-filter: saturate(160%) blur(14px);
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.28s ease;
+            transition: opacity 0.35s ease;
         }
 
         #cloud-ui-root .modal-loading.show {
@@ -513,312 +1150,41 @@
         }
 
         #cloud-ui-root .modal-loading-spinner {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            border: 3px solid rgba(255, 255, 255, 0.12);
-            border-top-color: #06D6A0;
-            border-right-color: #5367FF;
-            animation: historySpin 0.75s linear infinite;
-        }
-
-        @keyframes historySpin {
-            to { transform: rotate(360deg); }
-        }
-
-        #cloud-ui-root .modal-backdrop.open .modal {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-        }
-
-        #cloud-ui-root .modal-backdrop.closing .modal {
-            transform: scale(0.95) translateY(10px);
-            opacity: 0;
-        }
-
-        #cloud-ui-root .modal h2 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        #cloud-ui-root .row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        #cloud-ui-root .row.title-row {
-            margin-bottom: 8px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        /* Enhanced Tabs */
-        #cloud-ui-root .tabs {
-            display: inline-flex;
-            gap: 4px;
-            padding: 5px;
-            border-radius: 999px;
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        #cloud-ui-root .tab {
-            position: relative;
-            overflow: hidden;
-            padding: 10px 18px;
-            border-radius: 999px;
-            background: transparent;
-            color: rgba(255, 255, 255, 0.65);
-            border: 1px solid transparent;
-            font-size: 13px;
-            font-weight: 500;
-            transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease, transform 0.12s ease, box-shadow 0.25s ease;
-            cursor: pointer;
-        }
-
-        #cloud-ui-root .tab:hover {
-            color: rgba(255, 255, 255, 0.85);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        #cloud-ui-root .tab:active {
-            transform: scale(0.97);
-        }
-
-        #cloud-ui-root .tab.active {
-            background: linear-gradient(135deg, rgba(83, 103, 255, 0.9), rgba(139, 92, 246, 0.8));
-            color: rgba(255, 255, 255, 0.98);
-            border-color: rgba(83, 103, 255, 0.4);
-            box-shadow: 0 4px 15px rgba(83, 103, 255, 0.35);
-        }
-
-        /* Enhanced Form Fields */
-        #cloud-ui-root .field {
-            margin-top: 18px;
-            display: grid;
-            gap: 8px;
-        }
-
-        #cloud-ui-root label { 
-            font-size: 13px; 
-            font-weight: 500;
-            color: rgba(165, 180, 252, 0.85);
-            margin-left: 4px;
-        }
-
-        #cloud-ui-root input {
-            width: 100%;
-            padding: 14px 16px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background: rgba(0, 0, 0, 0.25);
-            color: rgba(255, 255, 255, 0.95);
-            outline: none;
-            font-size: 14px;
-            transition: all 0.25s ease;
-        }
-
-        #cloud-ui-root input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        #cloud-ui-root input:hover {
-            border-color: rgba(83, 103, 255, 0.4);
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        #cloud-ui-root input:focus { 
-            border-color: rgba(83, 103, 255, 0.7); 
-            background: rgba(0, 0, 0, 0.35);
-            box-shadow: 
-                0 0 0 4px rgba(83, 103, 255, 0.15),
-                0 0 20px rgba(83, 103, 255, 0.2);
-        }
-
-        #cloud-ui-root .modal-auth input:focus {
-            border-color: rgba(6, 214, 160, 0.45);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent-cyan);
+            border-right-color: var(--accent-1);
+            animation: glassSpin 0.7s linear infinite;
             box-shadow:
-                0 0 0 4px rgba(6, 214, 160, 0.12),
-                0 0 22px rgba(83, 103, 255, 0.18);
+                0 0 24px rgba(155,155,255,0.15),
+                0 0 48px rgba(126,232,208,0.08),
+                inset 0 0 12px rgba(255,255,255,0.04);
         }
 
-        #cloud-ui-root .hint {
-            margin-top: 16px;
-            padding: 14px 16px;
-            font-size: 12px;
-            color: rgba(165, 180, 252, 0.8);
-            line-height: 1.6;
-            background: rgba(83, 103, 255, 0.08);
-            border-radius: 14px;
-            border: 1px solid rgba(83, 103, 255, 0.15);
-        }
-
-        /* Enhanced Error Message */
-        #cloud-ui-root .error {
-            margin-top: 14px;
-            font-size: 13px;
-            font-weight: 500;
-            color: rgba(254, 202, 202, 0.98);
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.15));
-            border: 1px solid rgba(239, 68, 68, 0.35);
-            padding: 12px 14px;
-            border-radius: 14px;
-            display: none;
-            animation: shake 0.4s ease;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-4px); }
-            40%, 80% { transform: translateX(4px); }
-        }
-
-        #cloud-ui-root .error.show { display: block; }
-
-        /* Enhanced List */
-        #cloud-ui-root .list {
-            margin-top: 16px;
-            display: grid;
-            gap: 10px;
-            max-height: min(45vh, 360px);
-            overflow: auto;
-            padding-right: 6px;
-        }
-
-        #cloud-ui-root .list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        #cloud-ui-root .list::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 3px;
-        }
-
-        #cloud-ui-root .list::-webkit-scrollbar-thumb {
-            background: rgba(83, 103, 255, 0.4);
-            border-radius: 3px;
-        }
-
-        /* Enhanced Cards */
-        #cloud-ui-root .cards {
-            margin-top: 16px;
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-        }
-
-        #cloud-ui-root .card {
-            padding: 16px;
-            border-radius: 18px;
-            background: linear-gradient(135deg, rgba(83, 103, 255, 0.12), rgba(139, 92, 246, 0.08));
-            border: 1px solid rgba(83, 103, 255, 0.2);
-            transition: all 0.25s ease;
-        }
-
-        #cloud-ui-root .card:hover {
-            transform: translateY(-2px);
-            background: linear-gradient(135deg, rgba(83, 103, 255, 0.18), rgba(139, 92, 246, 0.12));
-            box-shadow: 0 8px 25px rgba(83, 103, 255, 0.2);
-        }
-
-        #cloud-ui-root .card .k { 
-            font-size: 11px; 
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: rgba(165, 180, 252, 0.75); 
-        }
-
-        #cloud-ui-root .card .v { 
-            margin-top: 8px; 
-            font-weight: 800; 
-            font-size: 22px; 
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        #cloud-ui-root .card.wide { 
-            grid-column: 1 / -1; 
-        }
-
-        #cloud-ui-root .spark {
-            width: 100%;
-            height: 60px;
-            margin-top: 12px;
-            border-radius: 14px;
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            overflow: hidden;
-        }
-
-        /* Enhanced List Items */
-        #cloud-ui-root .item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 16px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s ease;
-        }
-
-        #cloud-ui-root .item:hover {
-            background: linear-gradient(135deg, rgba(83, 103, 255, 0.1), rgba(139, 92, 246, 0.06));
-            border-color: rgba(83, 103, 255, 0.25);
-            transform: translateX(4px);
-        }
-
-        #cloud-ui-root .item .score { 
-            font-weight: 800; 
-            font-size: 18px;
-            letter-spacing: -0.3px;
-            color: rgba(255, 255, 255, 0.98);
-        }
-
-        #cloud-ui-root .item .time { 
-            font-size: 12px; 
-            color: rgba(165, 180, 252, 0.7);
-            margin-top: 4px;
-        }
-
-        #cloud-ui-root .item .sync-badge {
-            font-size: 10px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: linear-gradient(135deg, rgba(6, 214, 160, 0.25), rgba(6, 214, 160, 0.15));
-            color: rgba(6, 214, 160, 0.95);
-            border: 1px solid rgba(6, 214, 160, 0.35);
-        }
-
-        /* Success Animation */
+        /* -----------------------------------------------
+           Success Toast - Floating glass notification
+           ----------------------------------------------- */
         #cloud-ui-root .success-toast {
             position: fixed;
-            top: 20px;
+            top: 16px;
             left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            padding: 14px 24px;
-            border-radius: 999px;
-            background: linear-gradient(135deg, rgba(6, 214, 160, 0.95), rgba(5, 196, 144, 0.9));
-            color: white;
-            font-weight: 600;
+            transform: translateX(-50%) translateY(-120px);
+            padding: 14px 28px;
+            border-radius: var(--radius-full);
+            background: rgba(126, 232, 208, 0.3);
+            border: 1px solid rgba(126, 232, 208, 0.4);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            color: rgba(255, 255, 255, 0.96);
+            font-weight: 560;
             font-size: 14px;
-            box-shadow: 0 10px 40px rgba(6, 214, 160, 0.4);
+            box-shadow:
+                0 8px 40px rgba(126, 232, 208, 0.25),
+                var(--glass-highlight);
             opacity: 0;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: 3000;
             pointer-events: none;
         }
@@ -828,20 +1194,28 @@
             opacity: 1;
         }
 
-        /* Responsive Adjustments */
+        /* -----------------------------------------------
+           Responsive
+           ----------------------------------------------- */
         @media (max-width: 480px) {
             #cloud-ui-root .modal {
-                padding: 20px;
-                border-radius: 20px;
+                padding: 22px 18px;
+                border-radius: var(--radius-lg);
             }
-            
+
             #cloud-ui-root .cards {
                 grid-template-columns: 1fr;
             }
-            
+
             #cloud-ui-root .pill {
                 flex-wrap: wrap;
                 max-width: calc(100vw - 32px);
+                padding: 5px 5px 5px 10px;
+            }
+
+            #cloud-ui-root .btn {
+                font-size: 11.5px;
+                padding: 6px 11px;
             }
         }
 
@@ -857,9 +1231,16 @@
             justify-content: center;
             gap: 24px;
             z-index: 99999;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: rgba(255, 255, 255, 0.95);
-            font-family: ui-sans-serif, system-ui, sans-serif;
+            background: linear-gradient(
+                160deg,
+                #0D0D1B 0%,
+                #111128 25%,
+                #0E0E22 50%,
+                #0A0A1E 75%,
+                #0D0D20 100%
+            );
+            color: rgba(255, 255, 255, 0.93);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", ui-sans-serif, system-ui, sans-serif;
             text-align: center;
             padding: 32px;
         }
@@ -872,20 +1253,24 @@
             width: 72px;
             height: 72px;
             border-radius: 50%;
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.2));
-            border: 2px solid rgba(239, 68, 68, 0.5);
+            background: rgba(255, 140, 140, 0.12);
+            border: 1.5px solid rgba(255, 160, 160, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
-            font-weight: 200;
-            color: rgba(254, 202, 202, 0.95);
-            animation: errorPulse 2s ease-in-out infinite;
+            font-size: 32px;
+            font-weight: 240;
+            color: rgba(255, 210, 210, 0.93);
+            animation: errorGlassPulse 2.5s ease-in-out infinite;
+            box-shadow: var(--glass-highlight),
+                        0 0 40px rgba(255,130,130,0.15);
         }
 
-        @keyframes errorPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            50% { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); }
+        @keyframes errorGlassPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 130, 130, 0.25), var(--glass-highlight); }
+            50% { box-shadow: 0 0 0 18px rgba(255, 130, 130, 0), var(--glass-highlight); }
         }
 
         #error-screen h2 {
@@ -898,7 +1283,7 @@
             margin: 0;
             max-width: 380px;
             font-size: 14px;
-            color: rgba(165, 180, 252, 0.8);
+            color: rgba(200, 200, 240, 0.75);
             line-height: 1.6;
         }
 
@@ -908,19 +1293,28 @@
             cursor: pointer;
             margin-top: 8px;
             padding: 12px 32px;
-            border-radius: 999px;
+            border-radius: var(--radius-full);
             font-size: 15px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.98);
-            background: linear-gradient(135deg, rgba(83, 103, 255, 0.85), rgba(139, 92, 246, 0.75));
-            border: 1px solid rgba(83, 103, 255, 0.5);
-            box-shadow: 0 4px 20px rgba(83, 103, 255, 0.4);
-            transition: all 0.25s ease;
+            font-weight: 580;
+            color: rgba(255, 255, 255, 0.96);
+            background: linear-gradient(
+                135deg,
+                rgba(140,140,255,0.55) 0%,
+                rgba(160,140,240,0.45) 40%,
+                rgba(180,160,255,0.35) 100%
+            );
+            border: 1px solid rgba(180,180,255,0.35);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 4px 24px rgba(140,130,255,0.25),
+                        var(--glass-highlight);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         #error-screen .error-retry-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 28px rgba(83, 103, 255, 0.55);
+            box-shadow: 0 6px 32px rgba(140,130,255,0.4),
+                        var(--glass-highlight);
         }
     </style>
 </head>

@@ -28,7 +28,7 @@ function sum(arr: number[]) {
     return arr.reduce((a, b) => a + b, 0);
 }
 
-function buildSparkline(values: number[], stroke = "rgba(83,103,255,0.92)", fill = "rgba(83,103,255,0.18)") {
+function buildSparkline(values: number[], stroke = "rgba(155,155,255,0.85)", fill = "rgba(155,155,255,0.14)") {
     const w = 600;
     const h = 120;
     const pad = 10;
@@ -72,20 +72,24 @@ function buildSparkline(values: number[], stroke = "rgba(83,103,255,0.92)", fill
     return svg;
 }
 
-// Create ripple effect on button click
+// Create liquid glass ripple effect on button click
 function addRippleEffect(button: HTMLElement, e?: MouseEvent) {
     const ripple = document.createElement("span");
     ripple.style.cssText = `
         position: absolute;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.4);
+        background: radial-gradient(circle,
+            rgba(220,220,255,0.45) 0%,
+            rgba(180,180,240,0.2) 40%,
+            transparent 70%
+        );
         transform: scale(0);
-        animation: ripple 0.5s ease-out;
+        animation: glassRipple 0.6s ease-out;
         pointer-events: none;
     `;
     
     const rect = button.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height);
+    const size = Math.max(rect.width, rect.height) * 1.5;
     ripple.style.width = ripple.style.height = `${size}px`;
     
     if (e) {
@@ -97,18 +101,18 @@ function addRippleEffect(button: HTMLElement, e?: MouseEvent) {
     }
     
     button.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 500);
+    setTimeout(() => ripple.remove(), 600);
 }
 
-// Add ripple animation to document
+// Add liquid glass ripple animation to document
 function addRippleStyle() {
     if (document.getElementById("ripple-style")) return;
     const style = document.createElement("style");
     style.id = "ripple-style";
     style.textContent = `
-        @keyframes ripple {
+        @keyframes glassRipple {
             to {
-                transform: scale(2.5);
+                transform: scale(2.8);
                 opacity: 0;
             }
         }
