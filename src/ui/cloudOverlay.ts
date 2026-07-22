@@ -1,5 +1,5 @@
 import * as cloud from "../cloud/client";
-import { clearSynced, listLocalScores, markSynced, pendingLocalScores } from "../cloud/localScores";
+import { clearSynced, clearLocalScores, listLocalScores, markSynced, pendingLocalScores } from "../cloud/localScores";
 import { eventBus, GEV } from "../events";
 
 type Mode = "login" | "register";
@@ -563,7 +563,48 @@ export function initCloudOverlay(): {
         const syncBtn = createButtonWithLoader("同步本地", "btn primary");
         syncBtn.onclick = () => void sync();
 
+        // 清空记录按钮（两步确认：点击变为"确认清空？"，再点才执行）
+        let clearPending = false;
+        const clearBtn = createButtonWithLoader("清空记录", "btn danger clear-btn");
+        clearBtn.onclick = () => {
+            if (!clearPending) {
+                clearPending = true;
+                clearBtn.textContent = "确认清空？";
+                clearBtn.style.background = "linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.75))";
+                clearBtn.style.borderBottomColor = "rgba(220, 38, 38, 0.5)";
+                setTimeout(() => { clearPending = false; clearBtn.textContent = "清空记录"; clearBtn.removeAttribute("style"); }, 4000);
+                return;
+            }
+            void (async () => {
+                if (busy) return;
+                busy = true;
+                clearBtn.classList.add("loading");
+                clearBtn.textContent = "清空中...";
+                try {
+                    if (user) {
+                        // 云端：调用 API 清空
+                        await cloud.clearScores();
+                        // 同时清理本地已同步的历史记录
+                        clearLocalScores();
+                        showSuccess("云端成绩已清空");
+                    } else {
+                        clearLocalScores();
+                        showSuccess("本地记录已清空");
+                    }
+                    clearPending = false;
+                    clearBtn.removeAttribute("style");
+                    await load();
+                } catch (e) {
+                    setError(e instanceof Error ? e.message : String(e));
+                    clearBtn.textContent = "清空记录";
+                    busy = false;
+                    clearBtn.classList.remove("loading");
+                }
+            })();
+        };
+
         actions.appendChild(left);
+        left.appendChild(clearBtn);
         right.appendChild(refreshBtn);
         right.appendChild(syncBtn);
         actions.appendChild(right);

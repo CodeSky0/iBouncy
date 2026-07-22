@@ -71,3 +71,9 @@ export async function summary(): Promise<{ summary: ScoreSummary; trend7d: Trend
     const r = await apiFetch<{ summary: ScoreSummary; trend7d: TrendPoint[] }>("/api/scores/summary");
     return { summary: r.summary, trend7d: r.trend7d };
 }
+
+/** 清空当前用户的所有云端成绩 */
+export async function clearScores(): Promise<number> {
+    const r = await apiFetch<{ deleted: number }>("/api/scores/clear", { method: "POST", json: {} });
+    return r.deleted;
+}

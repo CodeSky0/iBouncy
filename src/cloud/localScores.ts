@@ -90,3 +90,8 @@ export function clearSynced(): void {
     save(next);
 }
 
+/** 清空所有本地存储的成绩 */
+export function clearLocalScores(): void {
+    save([]);
+}
+
