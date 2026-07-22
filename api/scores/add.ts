@@ -1,13 +1,24 @@
 import { getSql, ensureSchema, firstSqlRow } from "../_lib/db.js";
 import { readJsonBody } from "../_lib/body.js";
-import { ok, badRequest, unauthorized, methodNotAllowed, serverError } from "../_lib/response.js";
+import { ok, badRequest, unauthorized, methodNotAllowed, serverError, tooManyRequests, forbidden } from "../_lib/response.js";
 import { getUserFromRequest } from "../_lib/auth.js";
+import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
+import { csrfCheck } from "../_lib/csrf.js";
 
 export default async function handler(req: any, res: any) {
     if (req.method !== "POST") return methodNotAllowed(res, "POST");
     try {
         const user = getUserFromRequest(req);
         if (!user) return unauthorized(res, "请先登录");
+
+        // CSRF
+        if (!csrfCheck(req)) return forbidden(res, "CSRF 验证失败");
+
+        // 速率限制：同 IP 每分钟最多 30 次提交
+        const ip = getClientIp(req);
+        if (isRateLimited(`score:${ip}`, 30)) {
+            return tooManyRequests(res);
+        }
 
         const body = await readJsonBody(req);
         const score = Number(body.score);

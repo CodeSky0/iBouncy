@@ -1,8 +1,10 @@
 import bcrypt from "bcryptjs";
 import { getSql, ensureSchema, firstSqlRow } from "../_lib/db.js";
 import { readJsonBody } from "../_lib/body.js";
-import { ok, badRequest, methodNotAllowed, serverError } from "../_lib/response.js";
+import { ok, badRequest, methodNotAllowed, serverError, tooManyRequests, forbidden } from "../_lib/response.js";
 import { signToken, buildAuthCookie } from "../_lib/auth.js";
+import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
+import { csrfCheck } from "../_lib/csrf.js";
 
 function normalizeEmail(email: unknown) {
     return String(email || "").trim().toLowerCase();
@@ -35,6 +37,15 @@ function userPayload(row: { id: unknown; email: string; username: string | null;
 export default async function handler(req: any, res: any) {
     if (req.method !== "POST") return methodNotAllowed(res, "POST");
     try {
+        // CSRF
+        if (!csrfCheck(req)) return forbidden(res, "CSRF 验证失败");
+
+        // 速率限制：同 IP 每分钟最多 5 次注册
+        const ip = getClientIp(req);
+        if (isRateLimited(`register:${ip}`, 5)) {
+            return tooManyRequests(res);
+        }
+
         const body = await readJsonBody(req);
         const email = normalizeEmail(body.email);
         const password = String(body.password || "");

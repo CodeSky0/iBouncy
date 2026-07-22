@@ -27,7 +27,6 @@
     "vite": "^8.0.10"
   },
   "dependencies": {
-    "@leafer-game/node": "^1.12.4",
     "@neondatabase/serverless": "^1.0.1",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/cookie": "^1.0.0",

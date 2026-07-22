@@ -6,6 +6,7 @@ export async function apiFetch<T>(
     init?: RequestInit & { json?: unknown },
 ): Promise<ApiOk<T>> {
     const headers: Record<string, string> = {
+        "X-Requested-With": "XMLHttpRequest",
         ...(init?.headers as Record<string, string> | undefined),
     };
 

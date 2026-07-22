@@ -32,3 +32,12 @@ export function serverError(res: any, err: unknown) {
     return json(res, 500, { ok: false, error: msg });
 }
 
+export function tooManyRequests(res: any, message?: string) {
+    res.setHeader("Retry-After", "60");
+    return json(res, 429, { ok: false, error: message || "请求过于频繁，请稍后再试" });
+}
+
+export function forbidden(res: any, message?: string) {
+    return json(res, 403, { ok: false, error: message || "Forbidden" });
+}
+
