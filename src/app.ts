@@ -9,6 +9,8 @@ import { Mask, FPS } from "./ui/elements";
 import { initCloudOverlay } from "./ui/cloudOverlay";
 import { addScore } from "./cloud/client";
 import { addLocalScore, clearSynced, markSynced } from "./cloud/localScores";
+import { soundManager } from "./audio/SoundManager";
+import { touchCtrl } from "./utils/TouchController";
 
 /** 碰撞加分公式用：板宽恒定，提出循环外避免每子步除法。 */
 const TABLET_2PI_OVER_W = (Math.PI * 2) / UIConf.Tablet.WIDTH;
@@ -25,7 +27,27 @@ Mask.show_("#FFF", 1, 0.7, 0.4);
 GP.renderElse();
 rafId = requestAnimationFrame(firstFrame);
 timer.newInterval(() => FPS.assign_(timer.FPS), GameConf.FPS_DETECT_INTERVAL * 1000);
-initializeApp().catch((err) => console.error("Initialization failed...\n", err));
+initializeApp().catch((err) => {
+    console.error("Initialization failed...\n", err);
+    // 显示错误边界
+    const loadingEl = document.getElementById("loading");
+    if (loadingEl) loadingEl.style.display = "none";
+    const errorScreen = document.getElementById("error-screen");
+    if (errorScreen) errorScreen.classList.add("show");
+});
+
+// 触摸控制器初始化
+touchCtrl.mount();
+
+// 音效系统初始化（首次用户手势后恢复 AudioContext）
+let audioEnsured = false;
+const ensureAudio = () => {
+    if (audioEnsured) return;
+    soundManager.ensure();
+    audioEnsured = true;
+};
+document.addEventListener("pointerdown", ensureAudio, { once: true });
+document.addEventListener("keydown", ensureAudio, { once: true });
 
 window.addEventListener("unload", () => {
     if (rafId) cancelAnimationFrame(rafId);
@@ -88,6 +110,7 @@ function gameLoop(timeStamp: number): void {
                 const d = D(Tablet.cx - Ball.cx);
                 const dP = Math.cos(TABLET_2PI_OVER_W * d) + 0.5;
                 evBus.emit(GEV.PLAYER_SCORE, { delta: 0.4 * bvP + 0.16 * dP });
+                soundManager.playBounce();
             }
         }
     }
@@ -104,6 +127,13 @@ evBus.on(GEV.GAME_OVER, async (payload) => {
     // 先本地保存一份（游客也有记录；登录后可同步）
     const local = addLocalScore(payload.score);
 
+    // 音效：胜利或失败
+    if (payload.win) {
+        soundManager.playWin();
+    } else {
+        soundManager.playLose();
+    }
+
     if (!cloudUI.getUser()) return;
     try {
         await addScore(payload.score, local.clientId);
@@ -113,6 +143,19 @@ evBus.on(GEV.GAME_OVER, async (payload) => {
         console.error("Upload score failed:", e);
     }
 });
+
+// 音效：游戏开始
+evBus.on(GEV.GAME_START, () => {
+    soundManager.playStart();
+});
+
+// 触摸视口同步
+evBus.on(GEV.RESIZE, (payload) => {
+    touchCtrl.syncViewport(payload.data.width, payload.data.height);
+});
+
+// 初始视口同步
+touchCtrl.syncViewport(document.body.clientWidth, document.body.clientHeight);
 KS.whenHold((e) => {
     switch (e.code) {
         case "Semicolon":

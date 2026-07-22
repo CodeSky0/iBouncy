@@ -3,6 +3,7 @@ import type { BoundsEntity } from "../core/interaction";
 import { evBus, GEV } from "../events";
 import { GI, GP } from "../core/instances";
 import { GameConf, UIConf } from "../config";
+import { touchCtrl } from "../utils/TouchController";
 
 export default class E_Tablet extends Rect {
     confUI = UIConf.Tablet;
@@ -43,18 +44,22 @@ export default class E_Tablet extends Rect {
 
     frameLoop(prog: number): void {
         this.vx = this.vy = 0;
-        if (Keyboard.isHold("KeyW") || Keyboard.isHold("ArrowUp")) {
-            this.vy -= this.vyMax * prog;
+        const kbW = Keyboard.isHold("KeyW") || Keyboard.isHold("ArrowUp");
+        const kbS = Keyboard.isHold("KeyS") || Keyboard.isHold("ArrowDown");
+        const kbA = Keyboard.isHold("KeyA") || Keyboard.isHold("ArrowLeft");
+        const kbD = Keyboard.isHold("KeyD") || Keyboard.isHold("ArrowRight");
+
+        // 触摸优先：有触摸活动时使用触摸方向，否则用键盘
+        if (touchCtrl.active) {
+            this.vx += touchCtrl.dx * this.vxMax * prog;
+            this.vy += touchCtrl.dy * this.vyMax * prog;
+        } else {
+            if (kbW) this.vy -= this.vyMax * prog;
+            if (kbS) this.vy += this.vyMax * prog;
+            if (kbA) this.vx -= this.vxMax * prog;
+            if (kbD) this.vx += this.vxMax * prog;
         }
-        if (Keyboard.isHold("KeyS") || Keyboard.isHold("ArrowDown")) {
-            this.vy += this.vyMax * prog;
-        }
-        if (Keyboard.isHold("KeyA") || Keyboard.isHold("ArrowLeft")) {
-            this.vx -= this.vxMax * prog;
-        }
-        if (Keyboard.isHold("KeyD") || Keyboard.isHold("ArrowRight")) {
-            this.vx += this.vxMax * prog;
-        }
+
         this.x! += this.vx;
         this.y! += this.vy;
         GI.boundaryDetect(this as BoundsEntity, this.tabletBoundaryOpts);
