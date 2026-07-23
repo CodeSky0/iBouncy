@@ -438,6 +438,10 @@
             to { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
+        @keyframes spinnerSpin {
+            to { transform: rotate(360deg); }
+        }
+
         /* ============================================
            Badge - Prismatic Glass Chip
            ============================================ */
@@ -1327,7 +1331,7 @@
             border: 2.5px solid rgba(255,255,255,0.08);
             border-top-color: var(--prism-teal);
             border-right-color: var(--prism-blue);
-            animation: prismSpin 0.65s linear infinite;
+            animation: spinnerSpin 0.65s linear infinite;
             box-shadow:
                 0 0 28px rgba(74,158,255,0.12),
                 0 0 56px rgba(94,234,212,0.06),
