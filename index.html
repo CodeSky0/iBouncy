@@ -518,7 +518,7 @@
             transition: all 0.55s cubic-bezier(0.22, 1, 0.14, 1);
             overflow-y: auto;
             overflow-x: hidden;
-            scrollbar-gutter: stable;
+            scrollbar-width: none;
             will-change: transform, opacity;
         }
 
@@ -1147,22 +1147,7 @@
         }
 
         #cloud-ui-root .modal::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        #cloud-ui-root .modal::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.02);
-            border-radius: 3px;
-            margin: 4px 0;
-        }
-
-        #cloud-ui-root .modal::-webkit-scrollbar-thumb {
-            background: rgba(160,180,240,0.20);
-            border-radius: 3px;
-        }
-
-        #cloud-ui-root .modal::-webkit-scrollbar-thumb:hover {
-            background: rgba(160,180,240,0.35);
+            display: none;
         }
 
         #cloud-ui-root .item {
