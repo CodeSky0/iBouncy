@@ -158,11 +158,12 @@
             gap: 8px;
             padding: 5px 5px 5px 12px;
             border-radius: var(--radius-full);
-            color: rgba(255,255,255,0.93);
-            border: 0.5px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.96);
+            border: 0.5px solid rgba(255,255,255,0.14);
             background: var(--glass-depth-low);
             backdrop-filter: var(--glass-blur-mid);
             -webkit-backdrop-filter: var(--glass-blur-mid);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.25);
             box-shadow:
                 0 0 0 0.5px rgba(120,170,255,0.08),
                 0 0 0 1px rgba(255,140,170,0.06),
@@ -266,9 +267,9 @@
         #cloud-ui-root .btn {
             border-radius: var(--radius-full);
             padding: 8px 14px;
-            color: rgba(255,255,255,0.92);
-            background: var(--glass-depth-mid);
-            border: 0.5px solid rgba(255,255,255,0.11);
+            color: rgba(255,255,255,0.96);
+            background: var(--glass-depth-high);
+            border: 0.5px solid rgba(255,255,255,0.14);
             backdrop-filter: var(--glass-blur-surface);
             -webkit-backdrop-filter: var(--glass-blur-surface);
             box-shadow:
@@ -277,10 +278,11 @@
             transition:
                 all 0.35s var(--ease-fluid),
                 transform 0.4s var(--ease-spring);
-            font-weight: 520;
+            font-weight: 540;
             font-size: 12.5px;
             letter-spacing: 0.15px;
             transform: translateZ(0);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
         #cloud-ui-root .btn::before {
@@ -452,12 +454,13 @@
             border-radius: var(--radius-full);
             font-size: 11.5px;
             font-weight: 540;
-            color: rgba(255,255,255,0.94);
-            background: rgba(160,180,255,0.15);
-            border: 0.5px solid rgba(140,210,255,0.20);
+            color: rgba(255,255,255,0.96);
+            background: rgba(160,180,255,0.18);
+            border: 0.5px solid rgba(140,210,255,0.25);
             backdrop-filter: var(--glass-blur-surface);
             -webkit-backdrop-filter: var(--glass-blur-surface);
             box-shadow: var(--spec-top);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.25);
             letter-spacing: 0.1px;
         }
 
