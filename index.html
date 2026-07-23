@@ -492,6 +492,10 @@
             transition: opacity 0.3s var(--ease-exit);
         }
 
+        #cloud-ui-root .modal-backdrop.closing .modal {
+            animation: glassSpringOut 0.42s cubic-bezier(0.4, 0, 0.25, 1) forwards;
+        }
+
         /* ============================================
            Modal Panel - Multi-Layer Prismatic Glass
            ============================================ */
@@ -655,14 +659,57 @@
         #cloud-ui-root .modal-backdrop.open .modal {
             transform: scale(1) translateY(0) translateZ(0);
             opacity: 1;
-            animation: glassSpringIn 0.7s cubic-bezier(0.22, 1, 0.12, 1) forwards;
+            animation: glassSpringIn 0.75s cubic-bezier(0.22, 1, 0.08, 1) forwards;
         }
 
         @keyframes glassSpringIn {
-            0% { transform: scale(0.88) translateY(20px); }
-            50% { transform: scale(1.012) translateY(-3px); }
-            75% { transform: scale(0.996) translateY(1px); }
+            0%   { transform: scale(0.85) translateY(30px); }
+            45%  { transform: scale(1.018) translateY(-5px); }
+            68%  { transform: scale(0.993) translateY(2px); }
+            85%  { transform: scale(1.004) translateY(-1px); }
             100% { transform: scale(1) translateY(0); }
+        }
+
+        @keyframes glassSpringOut {
+            0%   { transform: scale(1) translateY(0) translateZ(0); opacity: 1; }
+            100% { transform: scale(0.82) translateY(36px) translateZ(0); opacity: 0; }
+        }
+
+        @keyframes tabBounceIn {
+            0%   { transform: scale(0.86); }
+            50%  { transform: scale(1.06); }
+            72%  { transform: scale(0.96); }
+            88%  { transform: scale(1.015); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes errorBounceIn {
+            0%   { transform: translateX(8px) scale(0.88); opacity: 0; }
+            52%  { transform: translateX(-2px) scale(1.05); opacity: 1; }
+            78%  { transform: translateX(1px) scale(0.97); }
+            100% { transform: translateX(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes toastBounceSlide {
+            0%   { transform: translateX(-50%) translateY(-80px) scale(0.8); opacity: 0; }
+            45%  { transform: translateX(-50%) translateY(6px) scale(1.04); opacity: 1; }
+            70%  { transform: translateX(-50%) translateY(-4px) scale(0.98); }
+            90%  { transform: translateX(-50%) translateY(1px) scale(1.01); }
+            100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes staggerSpringIn {
+            0%   { transform: translateY(22px) scale(0.88); opacity: 0; filter: blur(4px); }
+            55%  { transform: translateY(-3px) scale(1.03); opacity: 1; filter: blur(0); }
+            78%  { transform: translateY(1px) scale(0.995); }
+            100% { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+        }
+
+        @keyframes liquidFieldSpring {
+            0%   { opacity: 0; transform: translateY(20px) scale(0.92); filter: blur(3px); }
+            50%  { opacity: 1; transform: translateY(-4px) scale(1.03); filter: blur(0); }
+            75%  { transform: translateY(2px) scale(0.99); }
+            100% { transform: translateY(0) scale(1); filter: blur(0); }
         }
 
         #cloud-ui-root .modal-backdrop.closing .modal {
@@ -775,6 +822,7 @@
         }
 
         #cloud-ui-root .tab.active {
+            animation: tabBounceIn 0.45s var(--ease-spring) forwards;
             background: linear-gradient(
                 145deg,
                 rgba(74,158,255,0.38) 0%,
@@ -805,7 +853,7 @@
         }
 
         #cloud-ui-root .field.auth-stagger {
-            animation: liquidFieldIn 0.55s var(--ease-fluid) backwards;
+            animation: liquidFieldSpring 0.5s var(--ease-spring) backwards;
             animation-delay: calc(var(--i, 0) * 60ms);
         }
 
@@ -953,7 +1001,10 @@
             40%, 80% { transform: translateX(5px); }
         }
 
-        #cloud-ui-root .error.show { display: block; }
+        #cloud-ui-root .error.show {
+            display: block;
+            animation: errorBounceIn 0.38s var(--ease-spring) forwards;
+        }
 
         /* ============================================
            History Module
@@ -1032,6 +1083,17 @@
             transform-style: preserve-3d;
             overflow: hidden;
             position: relative;
+            animation: staggerSpringIn 0.5s var(--ease-spring) backwards;
+        }
+
+        #cloud-ui-root .cards .card:nth-child(1)  { animation-delay: 0.08s; }
+        #cloud-ui-root .cards .card:nth-child(2)  { animation-delay: 0.14s; }
+        #cloud-ui-root .cards .card:nth-child(3)  { animation-delay: 0.20s; }
+        #cloud-ui-root .cards .card:nth-child(4)  { animation-delay: 0.26s; }
+        #cloud-ui-root .cards .card:nth-child(5)  { animation-delay: 0.32s; }
+        #cloud-ui-root .cards .card:nth-child(6)  { animation-delay: 0.38s; }
+        #cloud-ui-root .cards .card:nth-child(7)  { animation-delay: 0.44s; }
+        #cloud-ui-root .cards .card:nth-child(8)  { animation-delay: 0.50s; }
         }
 
         #cloud-ui-root .card::before {
@@ -1177,7 +1239,19 @@
                 all 0.35s var(--ease-fluid),
                 transform 0.4s var(--ease-spring);
             transform: translateZ(0);
+            animation: staggerSpringIn 0.45s var(--ease-spring) backwards;
         }
+
+        #cloud-ui-root .list .item:nth-child(1)  { animation-delay: 0.06s; }
+        #cloud-ui-root .list .item:nth-child(2)  { animation-delay: 0.11s; }
+        #cloud-ui-root .list .item:nth-child(3)  { animation-delay: 0.16s; }
+        #cloud-ui-root .list .item:nth-child(4)  { animation-delay: 0.21s; }
+        #cloud-ui-root .list .item:nth-child(5)  { animation-delay: 0.26s; }
+        #cloud-ui-root .list .item:nth-child(6)  { animation-delay: 0.31s; }
+        #cloud-ui-root .list .item:nth-child(7)  { animation-delay: 0.36s; }
+        #cloud-ui-root .list .item:nth-child(8)  { animation-delay: 0.41s; }
+        #cloud-ui-root .list .item:nth-child(9)  { animation-delay: 0.46s; }
+        #cloud-ui-root .list .item:nth-child(10) { animation-delay: 0.51s; }
 
         #cloud-ui-root .item:hover {
             background: rgba(255,255,255,0.08);
@@ -1377,8 +1451,7 @@
         }
 
         #cloud-ui-root .success-toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
+            animation: toastBounceSlide 0.65s var(--ease-spring) forwards;
         }
 
         /* ============================================
