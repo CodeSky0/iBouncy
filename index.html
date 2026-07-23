@@ -11,13 +11,17 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preload" href="/fonts/HYDiSiKe-U.woff2" as="font" type="font/woff2" crossorigin>
     <style>
-        /* ============================================
-           iOS 26 Liquid Glass - Prismatic Design System
-           Pillars: Prismatic Edges, Caustic Light,
-           Spatial Parallax, Liquid Physics,
-           Iridescent Opalescence, Dynamic Ambient Light
-           ============================================ */
+        /* ================================================================
+           iOS 26 Liquid Glass · Prismatic Design System
+           Pillars: Prismatic Edge Refraction, Caustic Light Speckles,
+                   Spatial Parallax Depth, Liquid Physics Motion,
+                   Iridescent Opalescence, Dynamic Ambient Light
+           ================================================================ */
 
+
+        /* ───────────────────────────────────────────────────────────────
+           1. Reset & Base
+           ─────────────────────────────────────────────────────────────── */
         * {
             user-select: none;
             -webkit-user-drag: none;
@@ -56,7 +60,10 @@
             transform: translate(calc(50vw - 117px), calc(50vh - 50px)) scale(1.2);
         }
 
-        /* ---- Root Variables: Prismatic Glass System ---- */
+
+        /* ───────────────────────────────────────────────────────────────
+           2. Design Tokens — CSS Custom Properties
+           ─────────────────────────────────────────────────────────────── */
         :root {
             --prism-blue: #4A9EFF;
             --prism-teal: #5EEAD4;
@@ -103,6 +110,10 @@
             --ease-exit: cubic-bezier(0.4, 0, 0.55, 1);
         }
 
+
+        /* ───────────────────────────────────────────────────────────────
+           3. UI Root Container
+           ─────────────────────────────────────────────────────────────── */
         #cloud-ui-root {
             position: fixed;
             inset: 0;
@@ -118,79 +129,58 @@
             -webkit-user-drag: none;
         }
 
-        /* ============================================
-           FAB - Prismatic Floating Pill (right-top)
-           Ultra-thin glass, 3D parallax, iridescent rim
-           ============================================ */
-        #cloud-ui-root .cloud-fab {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            pointer-events: auto;
-            transform-origin: top right;
-            opacity: 1;
-            transform: scale(1) translateZ(0);
-            filter: blur(0);
-            transition:
-                opacity 0.45s var(--ease-fluid),
-                transform 0.45s var(--ease-spring),
-                filter 0.38s ease;
-            perspective: 1000px;
+
+        /* ───────────────────────────────────────────────────────────────
+           4. Keyframes Library — All Animations
+           ─────────────────────────────────────────────────────────────── */
+
+        @keyframes accentShimmer {
+            0%, 100% { opacity: 0.7; filter: hue-rotate(0deg); }
+            50% { opacity: 1; filter: hue-rotate(15deg); }
         }
 
-        #cloud-ui-root .cloud-fab.cloud-fab--game-hidden {
-            opacity: 0;
-            transform: scale(0.6) translateY(8px);
-            pointer-events: none;
-            filter: blur(4px);
-            transition:
-                opacity 0.28s var(--ease-exit),
-                transform 0.28s var(--ease-exit),
-                filter 0.25s ease;
+        @keyframes causticFlow {
+            0%, 100% { background-position: 25% 30%, 70% 25%, 55% 65%; }
+            30% { background-position: 30% 35%, 65% 30%, 60% 60%; }
+            60% { background-position: 20% 28%, 75% 22%, 50% 70%; }
         }
 
-        #cloud-ui-root .pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 5px 5px 12px;
-            border-radius: var(--radius-full);
-            color: rgba(255,255,255,0.96);
-            border: 0.5px solid rgba(255,255,255,0.14);
-            background: var(--glass-depth-low);
-            backdrop-filter: var(--glass-blur-mid);
-            -webkit-backdrop-filter: var(--glass-blur-mid);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.25);
-            box-shadow:
-                0 0 0 0.5px rgba(120,170,255,0.08),
-                0 0 0 1px rgba(255,140,170,0.06),
-                var(--depth-near),
-                var(--spec-top);
-            animation: pillBreathe 5s ease-in-out infinite, prismRim 7s ease-in-out infinite;
-            transform-style: preserve-3d;
-            transition:
-                transform 0.4s var(--ease-spring),
-                box-shadow 0.4s ease,
-                border-color 0.4s ease;
-            position: relative;
+        @keyframes errorBounceIn {
+            0%   { transform: translateX(8px) scale(0.88); opacity: 0; }
+            52%  { transform: translateX(-2px) scale(1.05); opacity: 1; }
+            78%  { transform: translateX(1px) scale(0.97); }
+            100% { transform: translateX(0) scale(1); opacity: 1; }
         }
 
-        /* Ambient light orb inside pill */
-        #cloud-ui-root .pill::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            border-radius: inherit;
-            background: radial-gradient(
-                ellipse 120% 80% at 30% 20%,
-                rgba(160,200,255,0.12) 0%,
-                transparent 60%
-            );
-            pointer-events: none;
-            animation: orbShift 6s ease-in-out infinite;
+        @keyframes errorPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,107,157,0.20), var(--spec-top); }
+            50% { box-shadow: 0 0 0 20px rgba(255,107,157,0), var(--spec-top); }
+        }
+
+        @keyframes glassShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        @keyframes glassSpringIn {
+            0%   { transform: scale(0.85) translateY(30px); }
+            45%  { transform: scale(1.018) translateY(-5px); }
+            68%  { transform: scale(0.993) translateY(2px); }
+            85%  { transform: scale(1.004) translateY(-1px); }
+            100% { transform: scale(1) translateY(0); }
+        }
+
+        @keyframes glassSpringOut {
+            0%   { transform: scale(1) translateY(0) translateZ(0); opacity: 1; }
+            100% { transform: scale(0.82) translateY(36px) translateZ(0); opacity: 0; }
+        }
+
+        @keyframes liquidFieldSpring {
+            0%   { opacity: 0; transform: translateY(20px) scale(0.92); filter: blur(3px); }
+            50%  { opacity: 1; transform: translateY(-4px) scale(1.03); filter: blur(0); }
+            75%  { transform: translateY(2px) scale(0.99); }
+            100% { transform: translateY(0) scale(1); filter: blur(0); }
         }
 
         @keyframes orbShift {
@@ -236,21 +226,54 @@
             }
         }
 
-        #cloud-ui-root .pill:hover {
-            transform: translateY(-3px) scale(1.03);
-            box-shadow:
-                0 0 0 0.5px rgba(140,250,210,0.18),
-                0 0 0 1px rgba(120,170,255,0.10),
-                var(--depth-mid),
-                var(--spec-top),
-                0 0 48px rgba(74,158,255,0.10),
-                0 0 24px rgba(94,234,212,0.06);
-            border-color: rgba(255,255,255,0.18);
+        @keyframes prismSpin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
-        /* ============================================
-           Button Reset
-           ============================================ */
+        @keyframes rimSweep {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes selfPulse {
+            0%, 100% { box-shadow: 0 0 0 0.5px rgba(94,234,212,0.15), 0 0 24px rgba(94,234,212,0.06), var(--spec-top); }
+            50% { box-shadow: 0 0 0 0.5px rgba(94,234,212,0.25), 0 0 36px rgba(94,234,212,0.12), var(--spec-top); }
+        }
+
+        @keyframes spinnerSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes staggerSpringIn {
+            0%   { transform: translateY(22px) scale(0.88); opacity: 0; filter: blur(4px); }
+            55%  { transform: translateY(-3px) scale(1.03); opacity: 1; filter: blur(0); }
+            78%  { transform: translateY(1px) scale(0.995); }
+            100% { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+        }
+
+        @keyframes tabBounceIn {
+            0%   { transform: scale(0.86); }
+            50%  { transform: scale(1.06); }
+            72%  { transform: scale(0.96); }
+            88%  { transform: scale(1.015); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes toastBounceSlide {
+            0%   { transform: translateX(-50%) translateY(-80px) scale(0.8); opacity: 0; }
+            45%  { transform: translateX(-50%) translateY(6px) scale(1.04); opacity: 1; }
+            70%  { transform: translateX(-50%) translateY(-4px) scale(0.98); }
+            90%  { transform: translateX(-50%) translateY(1px) scale(1.01); }
+            100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+        }
+
+
+        /* ───────────────────────────────────────────────────────────────
+           5. Components
+           ─────────────────────────────────────────────────────────────── */
+
+        /*
+         *  5a. Buttons — Liquid Glass with Prismatic Hover
+         */
         #cloud-ui-root button {
             appearance: none;
             border: 0;
@@ -261,9 +284,6 @@
             outline: none;
         }
 
-        /* ============================================
-           Buttons - Liquid Glass with Prismatic Hover
-           ============================================ */
         #cloud-ui-root .btn {
             border-radius: var(--radius-full);
             padding: 8px 14px;
@@ -350,7 +370,7 @@
             transition: width 0s, height 0s, opacity 0.25s ease;
         }
 
-        /* Primary button - iridescent prism */
+        /* Primary — iridescent prism gradient */
         #cloud-ui-root .btn.primary {
             background: linear-gradient(
                 145deg,
@@ -382,7 +402,7 @@
                 var(--spec-top);
         }
 
-        /* Danger button - warm prism */
+        /* Danger — warm prism */
         #cloud-ui-root .btn.danger {
             background: linear-gradient(
                 145deg,
@@ -436,17 +456,10 @@
             display: block;
         }
 
-        @keyframes prismSpin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
 
-        @keyframes spinnerSpin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ============================================
-           Badge - Prismatic Glass Chip
-           ============================================ */
+        /*
+         *  5b. Badge — Prismatic Glass Chip
+         */
         #cloud-ui-root .badge {
             display: inline-flex;
             align-items: center;
@@ -464,9 +477,99 @@
             letter-spacing: 0.1px;
         }
 
-        /* ============================================
-           Modal Backdrop - Atmosphere Layer
-           ============================================ */
+
+        /*
+         *  5c. FAB & Floating Pills
+         */
+        #cloud-ui-root .cloud-fab {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            pointer-events: auto;
+            transform-origin: top right;
+            opacity: 1;
+            transform: scale(1) translateZ(0);
+            filter: blur(0);
+            transition:
+                opacity 0.45s var(--ease-fluid),
+                transform 0.45s var(--ease-spring),
+                filter 0.38s ease;
+            perspective: 1000px;
+        }
+
+        #cloud-ui-root .cloud-fab.cloud-fab--game-hidden {
+            opacity: 0;
+            transform: scale(0.6) translateY(8px);
+            pointer-events: none;
+            filter: blur(4px);
+            transition:
+                opacity 0.28s var(--ease-exit),
+                transform 0.28s var(--ease-exit),
+                filter 0.25s ease;
+        }
+
+        #cloud-ui-root .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 5px 5px 12px;
+            border-radius: var(--radius-full);
+            color: rgba(255,255,255,0.96);
+            border: 0.5px solid rgba(255,255,255,0.14);
+            background: var(--glass-depth-low);
+            backdrop-filter: var(--glass-blur-mid);
+            -webkit-backdrop-filter: var(--glass-blur-mid);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+            box-shadow:
+                0 0 0 0.5px rgba(120,170,255,0.08),
+                0 0 0 1px rgba(255,140,170,0.06),
+                var(--depth-near),
+                var(--spec-top);
+            animation: pillBreathe 5s ease-in-out infinite, prismRim 7s ease-in-out infinite;
+            transform-style: preserve-3d;
+            transition:
+                transform 0.4s var(--ease-spring),
+                box-shadow 0.4s ease,
+                border-color 0.4s ease;
+            position: relative;
+        }
+
+        /* Ambient light orb inside pill */
+        #cloud-ui-root .pill::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: radial-gradient(
+                ellipse 120% 80% at 30% 20%,
+                rgba(160,200,255,0.12) 0%,
+                transparent 60%
+            );
+            pointer-events: none;
+            animation: orbShift 6s ease-in-out infinite;
+        }
+
+        #cloud-ui-root .pill:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow:
+                0 0 0 0.5px rgba(140,250,210,0.18),
+                0 0 0 1px rgba(120,170,255,0.10),
+                var(--depth-mid),
+                var(--spec-top),
+                0 0 48px rgba(74,158,255,0.10),
+                0 0 24px rgba(94,234,212,0.06);
+            border-color: rgba(255,255,255,0.18);
+        }
+
+
+        /*
+         *  5d. Modal System
+         */
+
+        /* Backdrop */
         #cloud-ui-root .modal-backdrop {
             position: absolute;
             inset: 0;
@@ -496,9 +599,7 @@
             animation: glassSpringOut 0.42s cubic-bezier(0.4, 0, 0.25, 1) forwards;
         }
 
-        /* ============================================
-           Modal Panel - Multi-Layer Prismatic Glass
-           ============================================ */
+        /* Panel — multi-layer prismatic glass */
         #cloud-ui-root .modal {
             position: relative;
             width: min(480px, calc(100vw - 32px));
@@ -535,6 +636,10 @@
             will-change: transform, opacity;
         }
 
+        #cloud-ui-root .modal::-webkit-scrollbar {
+            display: none;
+        }
+
         /* Caustic light pattern overlay */
         #cloud-ui-root .modal::before {
             content: '';
@@ -549,18 +654,6 @@
             will-change: background-position;
             animation: causticFlow 14s ease-in-out infinite;
             z-index: 0;
-        }
-
-        @keyframes causticFlow {
-            0%, 100% {
-                background-position: 25% 30%, 70% 25%, 55% 65%;
-            }
-            30% {
-                background-position: 30% 35%, 65% 30%, 60% 60%;
-            }
-            60% {
-                background-position: 20% 28%, 75% 22%, 50% 70%;
-            }
         }
 
         /* Prismatic rim light sweep */
@@ -589,16 +682,19 @@
             filter: blur(4px);
         }
 
-        @keyframes rimSweep {
-            to { transform: rotate(360deg); }
-        }
-
         #cloud-ui-root .modal > * {
             position: relative;
             z-index: 1;
         }
 
-        /* Auth modal variant */
+        /* Open — spring physics entrance */
+        #cloud-ui-root .modal-backdrop.open .modal {
+            transform: scale(1) translateY(0) translateZ(0);
+            opacity: 1;
+            animation: glassSpringIn 0.75s cubic-bezier(0.22, 1, 0.08, 1) forwards;
+        }
+
+        /* Variants */
         #cloud-ui-root .modal-auth {
             width: min(420px, calc(100vw - 32px));
             background:
@@ -617,7 +713,6 @@
                 0 0 100px rgba(74,158,255,0.04);
         }
 
-        /* History modal variant */
         #cloud-ui-root .modal-history {
             width: min(520px, calc(100vw - 32px));
             background:
@@ -635,7 +730,6 @@
                 var(--spec-top);
         }
 
-        /* Leaderboard modal variant - iridescent gold */
         #cloud-ui-root .modal-leaderboard {
             border-color: rgba(230,210,160,0.15);
             background:
@@ -653,74 +747,7 @@
                 var(--spec-top);
         }
 
-        /* ============================================
-           Modal Open/Close — Spring Physics
-           ============================================ */
-        #cloud-ui-root .modal-backdrop.open .modal {
-            transform: scale(1) translateY(0) translateZ(0);
-            opacity: 1;
-            animation: glassSpringIn 0.75s cubic-bezier(0.22, 1, 0.08, 1) forwards;
-        }
-
-        @keyframes glassSpringIn {
-            0%   { transform: scale(0.85) translateY(30px); }
-            45%  { transform: scale(1.018) translateY(-5px); }
-            68%  { transform: scale(0.993) translateY(2px); }
-            85%  { transform: scale(1.004) translateY(-1px); }
-            100% { transform: scale(1) translateY(0); }
-        }
-
-        @keyframes glassSpringOut {
-            0%   { transform: scale(1) translateY(0) translateZ(0); opacity: 1; }
-            100% { transform: scale(0.82) translateY(36px) translateZ(0); opacity: 0; }
-        }
-
-        @keyframes tabBounceIn {
-            0%   { transform: scale(0.86); }
-            50%  { transform: scale(1.06); }
-            72%  { transform: scale(0.96); }
-            88%  { transform: scale(1.015); }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes errorBounceIn {
-            0%   { transform: translateX(8px) scale(0.88); opacity: 0; }
-            52%  { transform: translateX(-2px) scale(1.05); opacity: 1; }
-            78%  { transform: translateX(1px) scale(0.97); }
-            100% { transform: translateX(0) scale(1); opacity: 1; }
-        }
-
-        @keyframes toastBounceSlide {
-            0%   { transform: translateX(-50%) translateY(-80px) scale(0.8); opacity: 0; }
-            45%  { transform: translateX(-50%) translateY(6px) scale(1.04); opacity: 1; }
-            70%  { transform: translateX(-50%) translateY(-4px) scale(0.98); }
-            90%  { transform: translateX(-50%) translateY(1px) scale(1.01); }
-            100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
-        }
-
-        @keyframes staggerSpringIn {
-            0%   { transform: translateY(22px) scale(0.88); opacity: 0; filter: blur(4px); }
-            55%  { transform: translateY(-3px) scale(1.03); opacity: 1; filter: blur(0); }
-            78%  { transform: translateY(1px) scale(0.995); }
-            100% { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
-        }
-
-        @keyframes liquidFieldSpring {
-            0%   { opacity: 0; transform: translateY(20px) scale(0.92); filter: blur(3px); }
-            50%  { opacity: 1; transform: translateY(-4px) scale(1.03); filter: blur(0); }
-            75%  { transform: translateY(2px) scale(0.99); }
-            100% { transform: translateY(0) scale(1); filter: blur(0); }
-        }
-
-        #cloud-ui-root .modal-backdrop.closing .modal {
-            transform: scale(0.92) translateY(16px);
-            opacity: 0;
-            transition: all 0.35s var(--ease-exit);
-        }
-
-        /* ============================================
-           Modal Titles - Iridescent Gradient Text
-           ============================================ */
+        /* Title — iridescent gradient text */
         #cloud-ui-root .modal h2 {
             margin: 0;
             font-size: 24px;
@@ -738,9 +765,10 @@
             background-clip: text;
         }
 
-        /* ============================================
-           Layout Helpers
-           ============================================ */
+
+        /*
+         *  5e. Layout Helpers
+         */
         #cloud-ui-root .row {
             display: flex;
             gap: 12px;
@@ -754,22 +782,10 @@
             border-bottom: 0.5px solid rgba(255,255,255,0.06);
         }
 
-        /* ============================================
-           Auth Head
-           ============================================ */
-        #cloud-ui-root .auth-head {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            gap: 16px;
-            margin-bottom: 2px;
-            padding-bottom: 18px;
-            border-bottom: 0.5px solid rgba(255,255,255,0.05);
-        }
 
-        /* ============================================
-           Tabs - Liquid Glass Segment Pill
-           ============================================ */
+        /*
+         *  5f. Tabs — Liquid Glass Segment Pill
+         */
         #cloud-ui-root .tabs {
             display: inline-flex;
             gap: 3px;
@@ -837,13 +853,24 @@
                 inset 0 1px 0 rgba(255,255,255,0.06);
         }
 
-        /* ============================================
-           Form Fields - Liquid Glass Inputs
-           ============================================ */
+
+        /*
+         *  5g. Form Fields — Liquid Glass Inputs
+         */
         #cloud-ui-root .auth-fields {
             display: flex;
             flex-direction: column;
             gap: 2px;
+        }
+
+        #cloud-ui-root .auth-head {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+            margin-bottom: 2px;
+            padding-bottom: 18px;
+            border-bottom: 0.5px solid rgba(255,255,255,0.05);
         }
 
         #cloud-ui-root .field {
@@ -855,19 +882,6 @@
         #cloud-ui-root .field.auth-stagger {
             animation: liquidFieldSpring 0.5s var(--ease-spring) backwards;
             animation-delay: calc(var(--i, 0) * 60ms);
-        }
-
-        @keyframes liquidFieldIn {
-            from {
-                opacity: 0;
-                transform: translateY(16px) scale(0.96);
-                filter: blur(2px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-                filter: blur(0);
-            }
         }
 
         #cloud-ui-root label {
@@ -938,9 +952,6 @@
             color: rgba(140,245,220,0.90);
         }
 
-        /* ============================================
-           Auth Actions
-           ============================================ */
         #cloud-ui-root .auth-actions {
             margin-top: 22px;
             padding-top: 4px;
@@ -954,9 +965,10 @@
             justify-content: flex-end;
         }
 
-        /* ============================================
-           Hint Block - Frosted Info Panel
-           ============================================ */
+
+        /*
+         *  5h. Hint Blocks — Frosted Info Panels
+         */
         #cloud-ui-root .hint {
             margin-top: 16px;
             padding: 14px 16px;
@@ -977,9 +989,10 @@
             color: rgba(215,220,250,0.88);
         }
 
-        /* ============================================
-           Error Message - Liquid Glass Alert
-           ============================================ */
+
+        /*
+         *  5i. Error Message — Liquid Glass Alert
+         */
         #cloud-ui-root .error {
             margin-top: 14px;
             font-size: 13px;
@@ -995,20 +1008,15 @@
             animation: glassShake 0.45s ease;
         }
 
-        @keyframes glassShake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
-        }
-
         #cloud-ui-root .error.show {
             display: block;
             animation: errorBounceIn 0.38s var(--ease-spring) forwards;
         }
 
-        /* ============================================
-           History Module
-           ============================================ */
+
+        /*
+         *  5j. History Module
+         */
         #cloud-ui-root .history-head {
             align-items: flex-start;
             flex-wrap: wrap;
@@ -1036,11 +1044,6 @@
             animation: accentShimmer 4s ease-in-out infinite;
         }
 
-        @keyframes accentShimmer {
-            0%, 100% { opacity: 0.7; filter: hue-rotate(0deg); }
-            50% { opacity: 1; filter: hue-rotate(15deg); }
-        }
-
         #cloud-ui-root .history-actions {
             margin-top: 18px;
             padding-top: 16px;
@@ -1054,9 +1057,10 @@
             justify-content: flex-end;
         }
 
-        /* ============================================
-           Cards - 3D Parallax Glass Stat Panels
-           ============================================ */
+
+        /*
+         *  5k. Cards — 3D Parallax Glass Stat Panels
+         */
         #cloud-ui-root .cards {
             margin-top: 16px;
             display: grid;
@@ -1094,7 +1098,6 @@
         #cloud-ui-root .cards .card:nth-child(6)  { animation-delay: 0.38s; }
         #cloud-ui-root .cards .card:nth-child(7)  { animation-delay: 0.44s; }
         #cloud-ui-root .cards .card:nth-child(8)  { animation-delay: 0.50s; }
-        }
 
         #cloud-ui-root .card::before {
             content: '';
@@ -1188,9 +1191,10 @@
             -webkit-backdrop-filter: blur(6px);
         }
 
-        /* ============================================
-           List - Thin Glass Rows
-           ============================================ */
+
+        /*
+         *  5l. List & Leaderboard — Thin Glass Rows
+         */
         #cloud-ui-root .list {
             margin-top: 16px;
             display: grid;
@@ -1217,10 +1221,6 @@
 
         #cloud-ui-root .list::-webkit-scrollbar-thumb:hover {
             background: rgba(160,180,240,0.35);
-        }
-
-        #cloud-ui-root .modal::-webkit-scrollbar {
-            display: none;
         }
 
         #cloud-ui-root .item {
@@ -1293,9 +1293,7 @@
             -webkit-backdrop-filter: blur(8px);
         }
 
-        /* ============================================
-           Leaderboard - Iridescent Gold Ranking
-           ============================================ */
+        /* Leaderboard — iridescent gold */
         #cloud-ui-root .leaderboard-list .item.item--leaderboard {
             display: flex;
             align-items: center;
@@ -1349,7 +1347,7 @@
             margin-left: auto;
         }
 
-        /* Self-highlight row - prismatic glow */
+        /* Self-highlight row — prismatic glow */
         #cloud-ui-root .leaderboard-list .item.item--self {
             border-color: rgba(94,234,212,0.30);
             background: rgba(94,234,212,0.06);
@@ -1358,11 +1356,6 @@
                 0 0 24px rgba(94,234,212,0.06),
                 var(--spec-top);
             animation: selfPulse 3s ease-in-out infinite;
-        }
-
-        @keyframes selfPulse {
-            0%, 100% { box-shadow: 0 0 0 0.5px rgba(94,234,212,0.15), 0 0 24px rgba(94,234,212,0.06), var(--spec-top); }
-            50% { box-shadow: 0 0 0 0.5px rgba(94,234,212,0.25), 0 0 36px rgba(94,234,212,0.12), var(--spec-top); }
         }
 
         #cloud-ui-root .leaderboard-footer {
@@ -1382,9 +1375,10 @@
             border: 0.5px solid rgba(255,255,255,0.06);
         }
 
-        /* ============================================
-           Modal Loading Overlay
-           ============================================ */
+
+        /*
+         *  5m. Loading Overlay
+         */
         #cloud-ui-root .modal-loading {
             position: absolute;
             inset: 0;
@@ -1419,9 +1413,10 @@
                 inset 0 0 14px rgba(255,255,255,0.03);
         }
 
-        /* ============================================
-           Success Toast - Liquid Glass Popup
-           ============================================ */
+
+        /*
+         *  5n. Success Toast — Liquid Glass Popup
+         */
         #cloud-ui-root .success-toast {
             position: fixed;
             top: 16px;
@@ -1454,9 +1449,10 @@
             animation: toastBounceSlide 0.65s var(--ease-spring) forwards;
         }
 
-        /* ============================================
-           Responsive - Mobile Adaptation
-           ============================================ */
+
+        /* ───────────────────────────────────────────────────────────────
+           6. Responsive — Mobile Adaptation
+           ─────────────────────────────────────────────────────────────── */
         @media (max-width: 480px) {
             #cloud-ui-root .modal {
                 padding: 22px 18px;
@@ -1479,9 +1475,10 @@
             }
         }
 
-        /* ============================================
-           Error Boundary Screen - Prismatic Glass
-           ============================================ */
+
+        /* ───────────────────────────────────────────────────────────────
+           7. Error Screen — Full-Screen Fallback
+           ─────────────────────────────────────────────────────────────── */
         #error-screen {
             position: fixed;
             inset: 0;
@@ -1524,15 +1521,6 @@
             box-shadow:
                 var(--spec-top),
                 0 0 48px rgba(255,107,157,0.12);
-        }
-
-        @keyframes errorPulse {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(255,107,157,0.20), var(--spec-top);
-            }
-            50% {
-                box-shadow: 0 0 0 20px rgba(255,107,157,0), var(--spec-top);
-            }
         }
 
         #error-screen h2 {
