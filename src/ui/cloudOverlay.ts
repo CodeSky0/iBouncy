@@ -79,8 +79,9 @@ function addRippleEffect(button: HTMLElement, e?: MouseEvent) {
         position: absolute;
         border-radius: 50%;
         background: radial-gradient(circle,
-            rgba(220,220,255,0.45) 0%,
-            rgba(180,180,240,0.2) 40%,
+            rgba(160,220,255,0.40) 0%,
+            rgba(120,200,240,0.18) 35%,
+            rgba(94,234,212,0.10) 55%,
             transparent 70%
         );
         transform: scale(0);
