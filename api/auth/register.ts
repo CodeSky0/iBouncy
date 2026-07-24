@@ -5,6 +5,7 @@ import { ok, badRequest, methodNotAllowed, serverError, tooManyRequests, forbidd
 import { signToken, buildAuthCookie } from "../_lib/auth.js";
 import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
 import { csrfCheck } from "../_lib/csrf.js";
+import { toUserPayload, type UserRow } from "../_lib/user.js";
 
 function normalizeEmail(email: unknown) {
     return String(email || "").trim().toLowerCase();
@@ -17,21 +18,6 @@ function normalizeUsername(u: unknown) {
 function normalizeNickname(n: unknown) {
     const s = String(n || "").trim();
     return s.length ? s.slice(0, 32) : "";
-}
-
-type RegisterUserRow = { id: unknown; email: string; username: string | null; nickname: string | null };
-
-function userPayload(row: { id: unknown; email: string; username: string | null; nickname: string | null }) {
-    const nickname = row.nickname ? String(row.nickname).trim() : "";
-    const username = row.username ? String(row.username).trim() : "";
-    const displayName = nickname || username || row.email;
-    return {
-        id: Number(row.id),
-        email: row.email,
-        username: username || null,
-        nickname: nickname || null,
-        displayName,
-    };
 }
 
 export default async function handler(req: any, res: any) {
@@ -70,9 +56,9 @@ export default async function handler(req: any, res: any) {
             RETURNING id, email, username, nickname, created_at
         `;
 
-        const row = firstSqlRow<RegisterUserRow>(rows);
+        const row = firstSqlRow<UserRow>(rows);
         if (!row) return serverError(res, new Error("注册后未返回用户行"));
-        const user = userPayload(row);
+        const user = toUserPayload(row);
         const token = signToken({ userId: user.id, email: user.email });
         const cookie = buildAuthCookie(token);
         return ok(res, { user, tokenSet: true }, { "Set-Cookie": cookie });

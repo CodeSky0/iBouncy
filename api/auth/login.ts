@@ -5,6 +5,7 @@ import { ok, badRequest, unauthorized, methodNotAllowed, serverError, tooManyReq
 import { signToken, buildAuthCookie } from "../_lib/auth.js";
 import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
 import { csrfCheck } from "../_lib/csrf.js";
+import { toUserPayload, type UserRow } from "../_lib/user.js";
 
 function normalizeEmail(email: unknown) {
     return String(email || "").trim().toLowerCase();
@@ -17,19 +18,6 @@ type LoginUserRow = {
     nickname: string | null;
     password_hash: string;
 };
-
-function userPayload(row: { id: unknown; email: string; username: string | null; nickname: string | null }) {
-    const nickname = row.nickname ? String(row.nickname).trim() : "";
-    const username = row.username ? String(row.username).trim() : "";
-    const displayName = nickname || username || row.email;
-    return {
-        id: Number(row.id),
-        email: row.email,
-        username: username || null,
-        nickname: nickname || null,
-        displayName,
-    };
-}
 
 export default async function handler(req: any, res: any) {
     if (req.method !== "POST") return methodNotAllowed(res, "POST");
@@ -78,7 +66,7 @@ export default async function handler(req: any, res: any) {
         const okPwd = await bcrypt.compare(password, row.password_hash);
         if (!okPwd) return unauthorized(res, "用户名/邮箱或密码不正确");
 
-        const user = userPayload(row);
+        const user = toUserPayload(row);
         const token = signToken({ userId: user.id, email: user.email });
         const cookie = buildAuthCookie(token);
         return ok(res, { user, tokenSet: true }, { "Set-Cookie": cookie });

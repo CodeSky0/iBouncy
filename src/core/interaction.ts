@@ -1,4 +1,4 @@
-import { D } from "../utils/math";
+import { abs } from "../utils/math";
 import { GameConf } from "../config";
 import type EmbeddedTimer from "../utils/EmbeddedTimer";
 import type E_Ball from "../elements/E_Ball";
@@ -130,7 +130,7 @@ export default class Interaction {
         const tabletV = direction === "x" ? this.#Tablet.vx : this.#Tablet.vy;
         const tabletMax = direction === "x" ? this.#Tablet.vxMax : this.#Tablet.vyMax;
         const vBuffRatio = ratio1 - Math.sign(ballV) * tabletV * ratio2 / tabletMax;
-        const vBuff = D(ballV * (vBuffRatio - 1));
+        const vBuff = abs(ballV * (vBuffRatio - 1));
         const vUnitNerf = vBuff / DECAY_TIMES;
         this.#timer.newInterval(
             () => {

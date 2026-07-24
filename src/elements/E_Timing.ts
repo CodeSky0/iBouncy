@@ -1,6 +1,6 @@
 import { Group, Path, Text } from "leafer-game";
 import { evBus, GEV } from "../events";
-import { F } from "../utils/math";
+import { floor } from "../utils/math";
 import { GP, timer } from "../core/instances";
 import { UIConf } from "../config";
 import type EmbeddedTimer from "../utils/EmbeddedTimer";
@@ -82,12 +82,12 @@ export default class E_Timing extends Group {
     }
 
     static toMS_(v: number): [number, number] {
-        return [F(v / 60), v % 60];
+        return [floor(v / 60), v % 60];
     }
 
     static toMSString_(v: number): string {
         const seconds = v % 60;
-        return `${F(v / 60)}:${seconds < 10 ? "0" + seconds : seconds}`;
+        return `${floor(v / 60)}:${seconds < 10 ? "0" + seconds : seconds}`;
     }
 
     #loopPerSecond(): void {

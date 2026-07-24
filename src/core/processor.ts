@@ -35,8 +35,12 @@ export default class Processor {
     #leafer: Leafer;
     #scoreSource: () => number = () => 0;
 
-    constructor(ENV: Partial<ProcessorEnvironment> & Record<string, unknown>, leafer: Leafer) {
-        this.ENV = ENV as ProcessorEnvironment;
+    /**
+     * @param env - Full {@link ProcessorEnvironment}; callers pass the complete
+     *              object so we don't need unsafe casting.
+     */
+    constructor(env: ProcessorEnvironment, leafer: Leafer) {
+        this.ENV = env;
         this.#leafer = leafer;
         this.gameOver = this.gameOver.bind(this);
         evBus.on(GEV.GAME_BALL_LOST, () => this.gameOver(false));

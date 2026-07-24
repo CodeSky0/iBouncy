@@ -120,7 +120,8 @@ export default class E_MainMenu extends Group {
     }
 
     hide_(): void {
-        this.Brand.hoverStyle = false as unknown as typeof this.Brand.hoverStyle;
+        // Reset hover style; Leafer may expect null/undefined for "no hover".
+        (this.Brand as any).hoverStyle = null;
         this.fadeOut_(0.5).once(AnimateEvent.COMPLETED, () => (this.visible = false));
     }
 }

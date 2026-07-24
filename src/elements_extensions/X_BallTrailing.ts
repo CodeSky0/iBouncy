@@ -1,6 +1,6 @@
 import { AnimateEvent, Ellipse } from "leafer-game";
 import { Ball, GP, leafer } from "../core/instances";
-import { C, F } from "../utils/math";
+import { ceil, floor } from "../utils/math";
 import { UIConf } from "../config";
 import type { IAnimate } from "@leafer-ui/interface";
 
@@ -46,9 +46,9 @@ export default class X_BallTrailing {
         const act = GP.ENV.actUnitInterval;
         const actN = typeof act === "string" ? parseFloat(act) : act;
         if (actN >= 25) {
-            this.framesInterval = C(94 / actN);
+            this.framesInterval = ceil(94 / actN);
         } else {
-            this.framesInterval = F(94 / actN);
+            this.framesInterval = floor(94 / actN);
         }
     }
 

@@ -120,32 +120,43 @@ npm run typecheck
 
 ```text
 iBouncy/
-├── index.html
+├── index.html                # 入口 HTML（精简，样式外置）
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
-├── public/                    # 构建时按 Vite 规则拷贝的静态资源（字体、图片等）
+├── public/                   # 构建时拷贝的静态资源（字体、图片、SVG）
+├── api/                      # Vercel Serverless Functions（后端 API）
+│   ├── _lib/                 # 公共模块：数据库、认证、CSRF、速率限制、用户工具
+│   ├── auth/                 # 登录、注册、获取用户、退出
+│   └── scores/               # 分数提交、历史记录、排行榜、统计
 ├── src/
-│   ├── app.ts                 # 入口：装配事件桥、启动主循环
-│   ├── config/                # 游戏与 UI 数值配置（GameConf / UIConf）
+│   ├── app.ts                # 入口：装配事件桥、启动主循环
+│   ├── styles/
+│   │   └── glass.css         # Liquid Glass 设计系统 CSS（从 index.html 提取）
+│   ├── config/               # 游戏与 UI 数值配置（GameConf / UIConf）
 │   ├── core/
-│   │   ├── instances.ts       # Leafer、Processor、各元素单例与工具聚合导出
-│   │   ├── processor.ts     # 状态机、资源加载、生命周期 emit
-│   │   └── interaction.ts   # 碰撞与边界检测
-│   ├── events/                # 全局事件通信（通道、载荷、总线、桥接）
-│   │   ├── channels.ts        # GEV 通道名与命名约定说明
-│   │   ├── payloads.ts        # 各通道载荷类型（GameEventPayloadMap）
-│   │   ├── bus.ts             # GameEventBus 实现与单例 eventBus
-│   │   ├── catalog.ts         # GAME_EVENT_CATALOG 人类可读说明
-│   │   ├── index.ts           # 对外统一导出
-│   │   └── bridge/
-│   │       ├── EventBridge.ts # createEventBridge：组装适配器
-│   │       ├── deps.ts        # 桥接依赖（leafer / timer / setPrevTimeStamp）
-│   │       └── adapters/      # 按职责拆分：页面、计时器同步、状态链
-│   ├── elements/              # 游戏与 UI 节点（E_*）
-│   ├── elements_extensions/   # 元素扩展（如拖尾）
-│   ├── utils/                 # 计时器、遮罩层、键盘路由、UI 原型扩展等
-│   ├── types/                 # 全局类型补充（如 Leafer UI 扩展）
+│   │   ├── instances.ts      # Leafer、Processor、各元素单例与工具聚合导出
+│   │   ├── processor.ts      # 状态机、资源加载、生命周期 emit
+│   │   ├── interaction.ts    # 碰撞与边界检测
+│   │   └── effects.ts        # 视觉特效全局开关
+│   ├── events/               # 全局事件通信（通道、载荷、总线、桥接）
+│   │   ├── channels.ts       # GEV 通道名与命名约定
+│   │   ├── payloads.ts       # 各通道载荷类型（GameEventPayloadMap）
+│   │   ├── bus.ts            # GameEventBus 实现与单例 eventBus
+│   │   ├── catalog.ts        # 事件速查表
+│   │   ├── index.ts          # 对外统一导出
+│   │   └── bridge/           # 适配器：页面、计时器同步、状态链
+│   ├── elements/             # 游戏元素（弹球、挡板、计分、菜单、遮罩等）
+│   ├── elements_extensions/  # 元素扩展（如拖尾特效）
+│   ├── ui/                   # 云端 UI 覆盖层
+│   │   ├── cloudOverlay.ts   # 初始化与状态管理（FAB、键盘快捷键、同步）
+│   │   ├── cloudModals.ts    # 认证 / 历史 / 排行榜模态框渲染
+│   │   ├── cloudUtils.ts     # DOM 工具、格式化函数、共享类型
+│   │   └── elements.ts       # UI 元素单例聚合
+│   ├── cloud/                # 云端 API 客户端与本地分数存储
+│   ├── audio/                # Web Audio 音效合成
+│   ├── utils/                # 计时器、遮罩层、键盘路由、UI 原型扩展等
+│   ├── types/                # 全局类型补充（如 Leafer UI 扩展）
 │   └── vite-env.d.ts
 └── README.md
 ```

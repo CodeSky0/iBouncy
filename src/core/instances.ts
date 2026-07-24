@@ -23,6 +23,13 @@ import { setLeafer } from "../utils/UIExtensions";
 setLeafer(leafer);
 
 const defFrameInterval = 1000 / GameConf.DEFAULT_REFRESH_RATE;
+/**
+ * Game Processor — the central state machine.
+ *
+ * Owns game lifecycle (init → prepared → playing → paused → over),
+ * viewport dimensions (`.bw` / `.bh`), environment config (`.ENV`),
+ * and asset loading helpers (`fontInitializer`, `ImageInitializer`).
+ */
 export const GP = new Processor(
     {
         refreshRate: GameConf.DEFAULT_REFRESH_RATE,
@@ -45,6 +52,7 @@ export const timer = new EmbeddedTimer({
 export const Ball = new E_Ball();
 export const Tablet = new E_Tablet();
 
+/** Game Interaction — collision detection and boundary enforcement. */
 export const GI = new Interaction({ Ball, Tablet, timer, GP });
 
 export const Timing = new E_Timing();

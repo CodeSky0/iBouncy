@@ -20,6 +20,4 @@ export const GAME_EVENT_CATALOG: Record<GameEventName, string> = {
     [GEV.GAME_BALL_LOST]: "弹球掉落触底，Processor 据此调用 gameOver(false)",
     [GEV.GAME_TIME_UP]: "倒计时归零，Processor 据此调用 gameOver(true)",
     [GEV.PLAYER_SCORE]: "玩家得分入口；载荷为本次碰撞的原始增量 delta",
-    [GEV.MAIN_MENU_SHOW]: "预留：主菜单展示",
-    [GEV.MAIN_MENU_HIDE]: "预留：主菜单隐藏",
 };

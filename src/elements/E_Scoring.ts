@@ -3,7 +3,7 @@ import type { IAnimate } from "@leafer-ui/interface";
 import { Ball, GP, leafer, timer } from "../core/instances";
 import { effectsEnabled } from "../core/effects";
 import { evBus, GEV } from "../events";
-import { F } from "../utils/math";
+import { floor } from "../utils/math";
 import { UIConf } from "../config";
 
 export default class E_Scoring extends Group {
@@ -278,14 +278,14 @@ export default class E_Scoring extends Group {
     }
 
     #newScore_(): void {
-        this.Integer.text = String(F(this.v / 10));
+        this.Integer.text = String(floor(this.v / 10));
         this.Decimal.text = "." + (this.v % 10);
         this.Integer.x = (240 - this.Integer.w - this.Decimal.w) / 2;
         this.Decimal.x = this.Integer.ox;
     }
 
     static stringify_(v: number): string {
-        return `${F(v / 10)}.${v % 10}`;
+        return `${floor(v / 10)}.${v % 10}`;
     }
 }
 

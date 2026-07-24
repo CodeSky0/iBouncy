@@ -1,13 +1,12 @@
 /**
  * 全局事件通道名（跨模块发布/订阅）。
  *
- * 命名约定：`域:动作` 或 `域:子系统:动作`，便于在日志与调试中一眼识别来源。
+ * 命名约定：`域:动作`，便于在日志与调试中一眼识别来源。
  *
  * - **system**：浏览器 / Leafer 画布与页面生命周期
- * - **ui**：与「非主玩法 UI」渲染、布局相关
+ * - **ui**：非主玩法 UI 渲染与布局
  * - **game**：玩法状态机（准备 / 进行中 / 暂停 / 结束等）
- * - **player**：玩家侧交互（预留扩展，如统一计分入口）
- * - **main:menu**：主菜单显隐（预留）
+ * - **player**：玩家交互
  */
 export const GEV = {
     // --- system ---
@@ -36,12 +35,8 @@ export const GEV = {
     /** 倒计时归零，由 Processor 决定最终是否判胜 */
     GAME_TIME_UP: "game:time:up",
 
-    // --- player (reserved) ---
+    // --- player ---
     PLAYER_SCORE: "player:score",
-
-    // --- main menu (reserved) ---
-    MAIN_MENU_SHOW: "main:menu:show",
-    MAIN_MENU_HIDE: "main:menu:hide",
 } as const;
 
 export type GameEventName = (typeof GEV)[keyof typeof GEV];

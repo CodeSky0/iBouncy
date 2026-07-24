@@ -1,3 +1,3 @@
-export const D = Math.abs;
-export const C = Math.ceil;
-export const F = Math.floor;
+export const abs = Math.abs;
+export const ceil = Math.ceil;
+export const floor = Math.floor;

@@ -1,7 +1,7 @@
 import { initializeApp, KS } from "./app/bootstrap";
 import { GameConf, UIConf } from "./config";
 import { evBus, GEV } from "./events";
-import { D, F } from "./utils/math";
+import { abs, floor } from "./utils/math";
 import { effectsEnabled, setEffectsEnabled } from "./core/effects";
 import { prevTimeStamp, setPrevTimeStamp } from "./app/timing";
 import { GI, GP, timer, leafer, Ball, Tablet } from "./core/instances";
@@ -96,7 +96,7 @@ function gameLoop(timeStamp: number): void {
     let steps = 1;
     if (GP.at("playing")) {
         accumulated += Math.min(deltaTime, GameConf.MAX_ACCUMULATED * 1000);
-        Ball.timeDivisor = Math.min(F(accumulated / GP.ENV.fixedStep), GP.ENV.maxStepPerFrame);
+        Ball.timeDivisor = Math.min(floor(accumulated / GP.ENV.fixedStep), GP.ENV.maxStepPerFrame);
         const unitProg = GP.ENV.fixedStep / GP.ENV.stdUnitInterval;
         while (accumulated >= GP.ENV.fixedStep && steps <= GP.ENV.maxStepPerFrame) {
             // sub-stepping loop
@@ -107,7 +107,7 @@ function gameLoop(timeStamp: number): void {
             if (GI.collisionDetect() && Ball.vy < 0) {
                 const bv = Math.hypot(Ball.vx, Ball.vy);
                 const bvP = Math.log2(bv) + 1 / Math.cos(BV_ANGLE_SCALE * bv);
-                const d = D(Tablet.cx - Ball.cx);
+                const d = abs(Tablet.cx - Ball.cx);
                 const dP = Math.cos(TABLET_2PI_OVER_W * d) + 0.5;
                 evBus.emit(GEV.PLAYER_SCORE, { delta: 0.4 * bvP + 0.16 * dP });
                 soundManager.playBounce();
