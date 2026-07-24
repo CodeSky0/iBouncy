@@ -23,6 +23,7 @@ export async function register(params: {
     nickname?: string;
     email: string;
     password: string;
+    verifyCode?: string;
 }): Promise<CloudUser> {
     const r = await apiFetch<{ user: CloudUser }>("/api/auth/register", {
         method: "POST",
@@ -31,6 +32,7 @@ export async function register(params: {
             nickname: params.nickname || "",
             email: params.email,
             password: params.password,
+            verifyCode: params.verifyCode || "",
         },
     });
     return r.user;
@@ -46,6 +48,30 @@ export async function login(identifier: string, password: string): Promise<Cloud
 
 export async function logout(): Promise<void> {
     await apiFetch<{ loggedOut: boolean }>("/api/auth/logout", { method: "POST", json: {} });
+}
+
+/** 发送邮箱验证码（注册验证或密码重置） */
+export async function sendVerifyCode(email: string, purpose: "verify" | "reset" = "verify"): Promise<void> {
+    await apiFetch<{ sent: boolean }>("/api/auth/send-verify-code", {
+        method: "POST",
+        json: { email, purpose },
+    });
+}
+
+/** 请求密码重置验证码 */
+export async function forgotPassword(email: string): Promise<void> {
+    await apiFetch<{ sent: boolean }>("/api/auth/forgot-password", {
+        method: "POST",
+        json: { email },
+    });
+}
+
+/** 重置密码 */
+export async function resetPassword(email: string, code: string, password: string): Promise<void> {
+    await apiFetch<{ reset: boolean }>("/api/auth/reset-password", {
+        method: "POST",
+        json: { email, code, password },
+    });
 }
 
 /**

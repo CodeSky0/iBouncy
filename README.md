@@ -58,16 +58,32 @@ npm run dev
 
 ### 1) 环境变量
 
-你需要提供两项环境变量（本地与 Vercel 都要配置）：
+你需要提供以下环境变量（本地与 Vercel 都要配置）：
 
-- **`POSTGRES_URL`**：你的 Postgres 连接串（适配 Serverless 数据库，如 Neon / Vercel Postgres）
-- **`JWT_SECRET`**：JWT 签名密钥（随便一段足够长的随机字符串）
+| 变量名 | 必需 | 说明 |
+|--------|------|------|
+| `POSTGRES_URL` | 是 | Postgres 连接串（适配 Serverless 数据库，如 Neon / Vercel Postgres） |
+| `JWT_SECRET` | 是 | JWT 签名密钥（足够长的随机字符串） |
+| `SMTP_HOST` | 否* | SMTP 邮件服务器地址（用于邮箱验证和密码重置） |
+| `SMTP_PORT` | 否* | SMTP 端口（默认 587） |
+| `SMTP_USER` | 否* | SMTP 认证用户名 |
+| `SMTP_PASS` | 否* | SMTP 认证密码 |
+| `SMTP_FROM` | 否 | 发件人地址（默认同 `SMTP_USER`） |
+
+> \* `SMTP_*` 变量为可选：不配置时邮箱验证与密码重置功能不可用，注册仍然正常进行。配置后即可启用完整的邮箱验证流程。
 
 本地开发可在根目录新建 `.env.local`：
 
 ```bash
 POSTGRES_URL="postgres://USER:PASSWORD@HOST:5432/DB?sslmode=require"
 JWT_SECRET="please-change-me-to-a-long-random-string"
+
+# 可选：SMTP 邮件服务（用于邮箱验证和密码重置）
+SMTP_HOST="smtp.example.com"
+SMTP_PORT="587"
+SMTP_USER="noreply@example.com"
+SMTP_PASS="your-smtp-password"
+SMTP_FROM="noreply@example.com"
 ```
 
 > 说明：后端接口运行在 Vercel `api/` Serverless Functions 中，使用 **HttpOnly Cookie** 保存登录态。
@@ -88,33 +104,25 @@ JWT_SECRET="please-change-me-to-a-long-random-string"
 
 首次调用任意 `/api/*` 接口时，会在数据库中自动创建表（幂等）：
 
-- `users(id, email, password_hash, created_at)`
+- `users(id, email, password_hash, username, nickname, created_at)`
 - `scores(id, user_id, client_id, score, created_at)`
+- `email_codes(id, email, code, purpose, used, expires_at, created_at)` — 邮箱验证码（验证码 10 分钟有效）
 
 其中 `score` 为**整数**，对应游戏内 1 位小数的分数：建议按 `score * 10` 存储（本项目已按此规则上传）。
 `client_id` 用于客户端同步时的**去重**（同一用户下唯一，允许为空）。
 
-### 4) Vercel 部署
+### 4) 邮箱验证与密码重置
 
-1. 将仓库导入 Vercel
-2. 在项目设置里添加环境变量：`POSTGRES_URL`、`JWT_SECRET`
-3. 直接部署即可
+配置 SMTP 环境变量后，以下功能可用：
 
-Vercel 会同时托管：
+- **邮箱验证码**：注册时可选择填写验证码验证邮箱所有权
+- **忘记密码**：登录表单底部的「忘记密码？」链接，通过邮箱验证码重置密码
+- **API 端点**：
+  - `POST /api/auth/send-verify-code` — 发送邮箱验证码
+  - `POST /api/auth/forgot-password` — 发送密码重置验证码
+  - `POST /api/auth/reset-password` — 验证码通过后重置密码
 
-- 前端静态站点（Vite 构建产物 `dist/`）
-- 后端 API（`/api/auth/*`、`/api/scores/*`）
-
-### 生产构建
-```bash
-npm run build
-npm run preview  # 预览构建结果
-```
-
-### 类型检查
-```bash
-npm run typecheck
-```
+未配置 SMTP 时，注册仍可正常完成（`verifyCode` 字段可选）。
 
 ## 📁 项目结构
 
@@ -126,8 +134,15 @@ iBouncy/
 ├── vite.config.ts
 ├── public/                   # 构建时拷贝的静态资源（字体、图片、SVG）
 ├── api/                      # Vercel Serverless Functions（后端 API）
-│   ├── _lib/                 # 公共模块：数据库、认证、CSRF、速率限制、用户工具
+│   ├── _lib/                 # 公共模块：数据库、认证、CSRF、速率限制、用户工具、邮件服务
 │   ├── auth/                 # 登录、注册、获取用户、退出
+│   │   ├── register.ts
+│   │   ├── login.ts
+│   │   ├── logout.ts
+│   │   ├── me.ts
+│   │   ├── send-verify-code.ts
+│   │   ├── forgot-password.ts
+│   │   └── reset-password.ts
 │   └── scores/               # 分数提交、历史记录、排行榜、统计
 ├── src/
 │   ├── app.ts                # 入口：装配事件桥、启动主循环
@@ -149,8 +164,8 @@ iBouncy/
 │   ├── elements/             # 游戏元素（弹球、挡板、计分、菜单、遮罩等）
 │   ├── elements_extensions/  # 元素扩展（如拖尾特效）
 │   ├── ui/                   # 云端 UI 覆盖层
-│   │   ├── cloudOverlay.ts   # 初始化与状态管理（FAB、键盘快捷键、同步）
-│   │   ├── cloudModals.ts    # 认证 / 历史 / 排行榜模态框渲染
+│   │   ├── cloudOverlay.ts   # 初始化与状态管理（FAB、键盘快捷键、同步、音效开关）
+│   │   ├── cloudModals.ts    # 认证 / 历史 / 排行榜 / 忘记密码模态框渲染
 │   │   ├── cloudUtils.ts     # DOM 工具、格式化函数、共享类型
 │   │   └── elements.ts       # UI 元素单例聚合
 │   ├── cloud/                # 云端 API 客户端与本地分数存储
@@ -168,7 +183,7 @@ iBouncy/
 - **桥接**：`createEventBridge({ leafer, timer, setPrevTimeStamp })` 在 **`app.ts`** 启动时调用，将 Leafer/DOM 与玩法状态链映射到内部事件，**不反向依赖** `instances`，避免环状引用。
 - **速查表**：`GAME_EVENT_CATALOG`（`src/events/catalog.ts`）为每个通道提供简短说明，便于新人阅读与检索。
 
-扩展新事件时：在 **`channels.ts`** 增加常量 → 在 **`payloads.ts`** 补全载荷 → 在 **`catalog.ts`** 写一句说明 → 在订阅/发布处使用类型安全的 **`eventBus.emit` / `eventBus.on`**。
+ 扩展新事件时：在 **`channels.ts`** 增加常量 → 在 **`payloads.ts`** 补全载荷 → 在 **`catalog.ts`** 写一句说明 → 在订阅/发布处使用类型安全的 **`eventBus.emit` / `eventBus.on`**。
 
 ## 🎯 游戏机制
 

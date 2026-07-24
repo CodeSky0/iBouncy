@@ -57,6 +57,20 @@ export async function ensureSchema(sql: Sql) {
         );
     `;
 
+    // ---- 邮箱验证码 ----
+    await sql`
+        CREATE TABLE IF NOT EXISTS email_codes (
+            id BIGSERIAL PRIMARY KEY,
+            email TEXT NOT NULL,
+            code TEXT NOT NULL,
+            purpose TEXT NOT NULL DEFAULT 'verify',
+            used BOOLEAN NOT NULL DEFAULT false,
+            expires_at TIMESTAMPTZ NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_email_codes_email_purpose ON email_codes(email, purpose, used, expires_at);`;
+
     await sql`ALTER TABLE scores ADD COLUMN IF NOT EXISTS client_id TEXT;`;
     await sql`CREATE INDEX IF NOT EXISTS idx_scores_user_created_at ON scores(user_id, created_at DESC);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_scores_user_score ON scores (user_id, score DESC);`;
@@ -81,4 +95,3 @@ export async function ensureSchema(sql: Sql) {
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS nickname TEXT;`;
     await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_users_username_lower ON users (LOWER(username)) WHERE username IS NOT NULL;`;
 }
-

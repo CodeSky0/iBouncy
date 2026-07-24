@@ -27,6 +27,55 @@ export interface ModalHelpers {
     setBackdropOpen: (open: boolean) => void;
 }
 
+/** 发送验证码按钮（带 60 秒冷却） */
+function createSendCodeButton(
+    text: string,
+    sendFn: () => Promise<void>,
+    helpers: ModalHelpers,
+): HTMLButtonElement {
+    const btn = createButtonWithLoader(text, "btn");
+    btn.type = "button";
+    let cooldown = 0;
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    const setCooldown = (sec: number) => {
+        cooldown = sec;
+        if (sec > 0) {
+            btn.disabled = true;
+            btn.textContent = `${sec}s 后可重发`;
+            if (!timer) {
+                timer = setInterval(() => {
+                    cooldown--;
+                    if (cooldown <= 0) {
+                        btn.disabled = false;
+                        btn.textContent = text;
+                        if (timer) { clearInterval(timer); timer = null; }
+                    } else {
+                        btn.textContent = `${cooldown}s 后可重发`;
+                    }
+                }, 1000);
+            }
+        }
+    };
+
+    btn.onclick = async (e) => {
+        addRippleEffect(btn, e as MouseEvent);
+        if (cooldown > 0) return;
+        btn.classList.add("loading");
+        try {
+            await sendFn();
+            helpers.showSuccess("验证码已发送");
+            setCooldown(60);
+        } catch (err) {
+            helpers.setError(err instanceof Error ? err.message : String(err));
+        } finally {
+            btn.classList.remove("loading");
+        }
+    };
+
+    return btn;
+}
+
 export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): void {
     ctx.modal = "auth";
     ctx.modalBox.className = "modal modal-auth";
@@ -79,17 +128,6 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
     );
 
     const hint = el("div", "hint auth-hint");
-    if (ctx.mode === "login") {
-        hint.innerHTML = `
-            <strong>提示</strong><br>
-            可用<strong>用户名</strong>或<strong>邮箱</strong>登录。登录后成绩会同步云端，在「历史记录」中查看。
-        `;
-    } else {
-        hint.innerHTML = `
-            <strong>注册说明</strong><br>
-            用户名用于登录（小写字母、数字、下划线，3–20 位）。昵称为展示名称，可不填（将显示用户名）。
-        `;
-    }
 
     let firstFocus: HTMLInputElement;
 
@@ -108,6 +146,17 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
         fieldsWrap.appendChild(fieldId);
         fieldsWrap.appendChild(fieldPwd);
         firstFocus = identifierInput;
+
+        // 忘记密码链接
+        const forgotLink = el("a", "forgot-link");
+        forgotLink.textContent = "忘记密码？";
+        forgotLink.href = "#";
+        forgotLink.onclick = (e) => {
+            e.preventDefault();
+            ctx.mode = "register";
+            ctx.modal = "forgot";
+            renderForgotModal(ctx, helpers);
+        };
 
         const doSubmit = async () => {
             if (ctx.busy) return;
@@ -141,6 +190,15 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
         submitBtn.onclick = doSubmit;
         identifierInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
         pwdInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
+
+        hint.innerHTML = `
+            <strong>提示</strong><br>
+            可用<strong>用户名</strong>或<strong>邮箱</strong>登录。登录后成绩会同步云端，在「历史记录」中查看。
+        `;
+
+        // 将忘记密码链接放在 hint 下方
+        hint.appendChild(el("br"));
+        hint.appendChild(forgotLink);
     } else {
         stagger = 0;
         const fieldUser = el("div", "field auth-stagger");
@@ -177,10 +235,42 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
         fieldEmail.appendChild(emailLabel);
         fieldEmail.appendChild(emailInput);
 
+        // 验证码字段（邮箱验证用）
+        const fieldCode = el("div", "field auth-stagger field-verify-code");
+        fieldCode.style.setProperty("--i", String(stagger++));
+        const codeLabel = el("label");
+        codeLabel.textContent = "邮箱验证码";
+        const codeRow = el("div", "code-input-row");
+        const codeInput = el("input") as HTMLInputElement;
+        codeInput.type = "text";
+        codeInput.placeholder = "6 位数字";
+        codeInput.maxLength = 6;
+        codeInput.autocomplete = "one-time-code";
+        codeInput.inputMode = "numeric";
+        codeInput.pattern = "[0-9]*";
+
+        const sendCodeBtn = createSendCodeButton(
+            "发送验证码",
+            async () => {
+                const email = emailInput.value.trim();
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    throw new Error("请先输入正确的邮箱地址");
+                }
+                await cloud.sendVerifyCode(email, "verify");
+            },
+            helpers,
+        );
+        sendCodeBtn.classList.add("send-code-btn");
+        codeRow.appendChild(codeInput);
+        codeRow.appendChild(sendCodeBtn);
+        fieldCode.appendChild(codeLabel);
+        fieldCode.appendChild(codeRow);
+
         fieldPwd.style.setProperty("--i", String(stagger++));
         fieldsWrap.appendChild(fieldUser);
         fieldsWrap.appendChild(fieldNick);
         fieldsWrap.appendChild(fieldEmail);
+        fieldsWrap.appendChild(fieldCode);
         fieldsWrap.appendChild(fieldPwd);
         firstFocus = usernameInput;
 
@@ -191,10 +281,12 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
             const nickname = nicknameInput.value.trim();
             const email = emailInput.value.trim();
             const password = pwdInput.value;
+            const verifyCode = codeInput.value.trim();
             if (!/^[a-z0-9_]{3,20}$/.test(username)) {
                 return helpers.setError("用户名为 3–20 位小写字母、数字或下划线");
             }
             if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return helpers.setError("邮箱格式不正确");
+            if (verifyCode && !/^\d{6}$/.test(verifyCode)) return helpers.setError("验证码为 6 位数字");
             if (!password || password.length < 6) return helpers.setError("密码至少 6 位");
 
             ctx.busy = true;
@@ -205,6 +297,7 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
                     nickname: nickname || undefined,
                     email,
                     password,
+                    verifyCode: verifyCode || undefined,
                 });
                 helpers.renderFab();
                 await helpers.syncLocalToCloud();
@@ -222,7 +315,14 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
         usernameInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
         nicknameInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
         emailInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
+        codeInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
         pwdInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
+
+        hint.innerHTML = `
+            <strong>注册说明</strong><br>
+            用户名用于登录（小写字母、数字、下划线，3–20 位）。昵称为展示名称，可不填（将显示用户名）。<br>
+            建议填写验证码以验证邮箱所有权。
+        `;
     }
 
     tabLogin.onclick = (e) => {
@@ -246,6 +346,145 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
 
     ctx.modalBox.replaceChildren(head, fieldsWrap, errBox, actions, hint);
     setTimeout(() => firstFocus.focus(), 100);
+}
+
+// ---- 忘记密码模态框 ----
+export function renderForgotModal(ctx: CloudUIContext, helpers: ModalHelpers): void {
+    ctx.modal = "forgot";
+    ctx.modalBox.className = "modal modal-auth";
+    helpers.setBackdropOpen(true);
+    helpers.setError(null);
+
+    const head = el("div", "auth-head");
+    const title = el("h2");
+    title.textContent = "忘记密码";
+    head.appendChild(title);
+
+    // 返回登录链接
+    const backLink = el("a", "forgot-link");
+    backLink.textContent = "返回登录";
+    backLink.href = "#";
+    backLink.onclick = (e) => {
+        e.preventDefault();
+        ctx.mode = "login";
+        renderAuthModal(ctx, helpers);
+    };
+
+    const fieldsWrap = el("div", "auth-fields");
+
+    const fieldEmail = el("div", "field auth-stagger");
+    fieldEmail.style.setProperty("--i", "0");
+    const emailLabel = el("label");
+    emailLabel.textContent = "注册邮箱";
+    const emailInput = el("input") as HTMLInputElement;
+    emailInput.type = "email";
+    emailInput.placeholder = "请输入注册时使用的邮箱";
+    emailInput.autocomplete = "email";
+    fieldEmail.appendChild(emailLabel);
+    fieldEmail.appendChild(emailInput);
+
+    const fieldCode = el("div", "field auth-stagger");
+    fieldCode.style.setProperty("--i", "1");
+    const codeLabel = el("label");
+    codeLabel.textContent = "验证码";
+    const codeRow = el("div", "code-input-row");
+    const codeInput = el("input") as HTMLInputElement;
+    codeInput.type = "text";
+    codeInput.placeholder = "6 位数字";
+    codeInput.maxLength = 6;
+    codeInput.autocomplete = "one-time-code";
+    codeInput.inputMode = "numeric";
+    codeInput.pattern = "[0-9]*";
+
+    const sendCodeBtn = createSendCodeButton(
+        "发送验证码",
+        async () => {
+            const email = emailInput.value.trim();
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                throw new Error("请先输入正确的邮箱地址");
+            }
+            await cloud.forgotPassword(email);
+        },
+        helpers,
+    );
+    sendCodeBtn.classList.add("send-code-btn");
+    codeRow.appendChild(codeInput);
+    codeRow.appendChild(sendCodeBtn);
+    fieldCode.appendChild(codeLabel);
+    fieldCode.appendChild(codeRow);
+
+    const fieldNewPwd = el("div", "field auth-stagger");
+    fieldNewPwd.style.setProperty("--i", "2");
+    const newPwdLabel = el("label");
+    newPwdLabel.textContent = "新密码";
+    const newPwdInput = el("input") as HTMLInputElement;
+    newPwdInput.type = "password";
+    newPwdInput.placeholder = "至少 6 位";
+    newPwdInput.autocomplete = "new-password";
+    fieldNewPwd.appendChild(newPwdLabel);
+    fieldNewPwd.appendChild(newPwdInput);
+
+    fieldsWrap.appendChild(fieldEmail);
+    fieldsWrap.appendChild(fieldCode);
+    fieldsWrap.appendChild(fieldNewPwd);
+
+    const errBox = el("div", "error");
+
+    const actions = el("div", "row auth-actions");
+    const actionsLeft = el("div");
+    const actionsRight = el("div");
+    actionsRight.className = "auth-actions-right";
+
+    const closeBtn = createButtonWithLoader("关闭", "btn");
+    closeBtn.onclick = () => helpers.setBackdropOpen(false);
+
+    const submitBtn = createButtonWithLoader("重置密码", "btn primary");
+
+    const doSubmit = async () => {
+        if (ctx.busy) return;
+        helpers.setError(null);
+        const email = emailInput.value.trim();
+        const code = codeInput.value.trim();
+        const password = newPwdInput.value;
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return helpers.setError("邮箱格式不正确");
+        if (!/^\d{6}$/.test(code)) return helpers.setError("验证码为 6 位数字");
+        if (!password || password.length < 6) return helpers.setError("密码至少 6 位");
+
+        ctx.busy = true;
+        submitBtn.classList.add("loading");
+        try {
+            await cloud.resetPassword(email, code, password);
+            helpers.showSuccess("密码已重置，请登录");
+            ctx.mode = "login";
+            renderAuthModal(ctx, helpers);
+        } catch (e) {
+            helpers.setError(e instanceof Error ? e.message : String(e));
+        } finally {
+            ctx.busy = false;
+            submitBtn.classList.remove("loading");
+        }
+    };
+
+    submitBtn.onclick = doSubmit;
+    emailInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
+    codeInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
+    newPwdInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
+
+    const hint = el("div", "hint auth-hint");
+    hint.innerHTML = `
+        <strong>密码重置</strong><br>
+        输入注册邮箱后点击「发送验证码」，收到验证码后输入新密码即可重置。
+    `;
+    hint.appendChild(el("br"));
+    hint.appendChild(backLink);
+
+    actionsLeft.appendChild(closeBtn);
+    actionsRight.appendChild(submitBtn);
+    actions.appendChild(actionsLeft);
+    actions.appendChild(actionsRight);
+
+    ctx.modalBox.replaceChildren(head, fieldsWrap, errBox, actions, hint);
+    setTimeout(() => emailInput.focus(), 100);
 }
 
 export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelpers): Promise<void> {

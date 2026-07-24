@@ -158,7 +158,7 @@ export type SyncLocalResult = {
     lastError?: string;
 };
 
-export type ModalType = "none" | "auth" | "history" | "leaderboard";
+export type ModalType = "none" | "auth" | "history" | "leaderboard" | "forgot" | "reset";
 export type AuthMode = "login" | "register";
 
 /** Shared mutable state carried through the cloud UI system. */

@@ -37,6 +37,7 @@ export default async function handler(req: any, res: any) {
         const password = String(body.password || "");
         const username = normalizeUsername(body.username);
         const nicknameRaw = normalizeNickname(body.nickname);
+        const verifyCode = String(body.verifyCode || "").trim();
 
         if (!username || !/^[a-z0-9_]{3,20}$/.test(username)) {
             return badRequest(res, "用户名为 3–20 位小写字母、数字或下划线");
@@ -46,6 +47,29 @@ export default async function handler(req: any, res: any) {
 
         const sql = getSql();
         await ensureSchema(sql);
+
+        // 验证邮箱验证码
+        if (verifyCode) {
+            if (!/^\d{6}$/.test(verifyCode)) {
+                return badRequest(res, "验证码为 6 位数字");
+            }
+            const codeRows = await sql`
+                SELECT id FROM email_codes
+                WHERE email = ${email}
+                  AND code = ${verifyCode}
+                  AND purpose = 'verify'
+                  AND used = false
+                  AND expires_at > NOW()
+                ORDER BY created_at DESC
+                LIMIT 1
+            `;
+            const codeRow = firstSqlRow<{ id: unknown }>(codeRows);
+            if (!codeRow) {
+                return badRequest(res, "验证码无效或已过期");
+            }
+            // 标记验证码已使用
+            await sql`UPDATE email_codes SET used = true WHERE id = ${codeRow.id}`;
+        }
 
         const passwordHash = await bcrypt.hash(password, 10);
         const nicknameToStore = nicknameRaw || null;

@@ -498,6 +498,55 @@ canvas {
         filter 0.25s ease;
 }
 
+/* Sound toggle button — top right corner */
+#cloud-ui-root .sound-toggle-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    border-radius: var(--radius-full);
+    border: 0.5px solid rgba(255,255,255,0.14);
+    background: var(--glass-depth-low);
+    backdrop-filter: var(--glass-blur-mid);
+    -webkit-backdrop-filter: var(--glass-blur-mid);
+    color: rgba(200,210,230,0.9);
+    cursor: pointer;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 0 0 0.5px rgba(120,170,255,0.08),
+        var(--depth-near),
+        var(--spec-top);
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        transform 0.35s var(--ease-spring),
+        opacity 0.28s var(--ease-exit),
+        filter 0.25s ease;
+}
+
+#cloud-ui-root .sound-toggle-btn:hover {
+    color: rgba(255,255,255,0.95);
+    background: rgba(100,140,200,0.18);
+}
+
+#cloud-ui-root .sound-toggle-btn svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+#cloud-ui-root .sound-toggle-btn.sound-toggle-btn--hidden {
+    opacity: 0;
+    transform: scale(0.6);
+    pointer-events: none;
+    filter: blur(4px);
+}
+
 #cloud-ui-root .pill {
     display: inline-flex;
     align-items: center;
@@ -974,6 +1023,46 @@ canvas {
     background: rgba(180,200,255,0.04);
     border-color: rgba(160,200,255,0.12);
     color: rgba(215,220,250,0.88);
+}
+
+/* 验证码输入行 */
+#cloud-ui-root .code-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#cloud-ui-root .code-input-row input {
+    flex: 1;
+    min-width: 0;
+}
+
+#cloud-ui-root .send-code-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 0 14px;
+    height: 34px;
+    font-size: 12px;
+    border-radius: var(--radius-sm);
+}
+
+#cloud-ui-root .send-code-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* 忘记密码链接 */
+#cloud-ui-root .forgot-link {
+    color: rgba(160, 200, 255, 0.7);
+    font-size: 12px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+#cloud-ui-root .forgot-link:hover {
+    color: rgba(180, 220, 255, 0.95);
+    text-decoration: underline;
 }
 
 

@@ -1,6 +1,7 @@
 /**
  * 音效管理器 —— 基于 Web Audio API 的合成音效系统。
  * 所有音效均在运行时合成，无需外部音频文件。
+ * 支持 localStorage 持久化静音状态。
  */
 export class SoundManager {
     private ctx: AudioContext | null = null;
@@ -10,19 +11,42 @@ export class SoundManager {
     /** 音量（0-1），仅控制音效，不影响主音量 */
     private _volume = 0.35;
 
+    constructor() {
+        // 从 localStorage 恢复静音状态
+        try {
+            const stored = localStorage.getItem("ibouncy_sound_muted");
+            if (stored !== null) {
+                this._muted = stored === "true";
+            }
+        } catch {
+            // localStorage 不可用时忽略
+        }
+    }
+
     get muted(): boolean {
         return this._muted;
     }
 
-    /** 切换静音 */
+    /** 切换静音，返回新状态 */
     toggleMute(): boolean {
-        this._muted = !this._muted;
+        return this.setMuted(!this._muted);
+    }
+
+    /** 设置静音状态，返回新状态 */
+    setMuted(muted: boolean): boolean {
+        this._muted = muted;
         if (this.masterGain) {
             this.masterGain.gain.setTargetAtTime(
                 this._muted ? 0 : this._volume,
                 this.ctx!.currentTime,
                 0.05,
             );
+        }
+        // 持久化到 localStorage
+        try {
+            localStorage.setItem("ibouncy_sound_muted", String(this._muted));
+        } catch {
+            // 忽略
         }
         return this._muted;
     }
@@ -160,7 +184,6 @@ export class SoundManager {
 
         gain.gain.setValueAtTime(0.06, now);
         gain.gain.setValueAtTime(0, now + 0.08);
-        // 可以加一个短暂的后半音
         gain.gain.setValueAtTime(0.04, now + 0.12);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
 

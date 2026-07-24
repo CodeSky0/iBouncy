@@ -2,7 +2,7 @@
  * Cloud UI overlay initialization and state management.
  *
  * Orchestrates the FAB, auth/history/leaderboard modals, keyboard
- * shortcuts, and background sync.  Rendering is delegated to
+ * shortcuts, sound toggle, and background sync.  Rendering is delegated to
  * {@link ./cloudModals} while utilities live in {@link ./cloudUtils}.
  */
 import * as cloud from "../cloud/client";
@@ -21,6 +21,7 @@ import {
     renderHistoryModal,
     renderLeaderboardModal,
 } from "./cloudModals";
+import { soundManager } from "../audio/SoundManager";
 
 export type { SyncLocalResult } from "./cloudUtils";
 
@@ -44,6 +45,24 @@ export function initCloudOverlay(): {
             syncLocalToCloud: async () => ({ uploaded: 0, pendingAtStart: 0 }),
             getUser: () => null,
         };
+    }
+
+    // ---- Sound toggle button ----
+    const soundBtn = el("button", "sound-toggle-btn");
+    soundBtn.type = "button";
+    soundBtn.title = "音效开关";
+    root.appendChild(soundBtn);
+    updateSoundIcon();
+
+    soundBtn.addEventListener("click", (e) => {
+        soundManager.toggleMute();
+        updateSoundIcon();
+    });
+
+    function updateSoundIcon(): void {
+        const muted = soundManager.muted;
+        soundBtn.innerHTML = muted ? SOUND_OFF_SVG_STR : SOUND_ON_SVG_STR;
+        soundBtn.setAttribute("aria-label", muted ? "开启音效" : "关闭音效");
     }
 
     // ---- Mutable state ----
@@ -82,13 +101,18 @@ export function initCloudOverlay(): {
         setBackdropOpen,
     };
 
-    // ---- Game-state FAB visibility ----
-    eventBus.on(GEV.GAME_START, () => {
+    // ---- Game-state FAB & sound button visibility ----
+    const hideGameUI = () => {
         ctx.fab.classList.add("cloud-fab--game-hidden");
-    });
-    eventBus.on(GEV.GAME_OVER, () => {
+        soundBtn.classList.add("sound-toggle-btn--hidden");
+    };
+    const showGameUI = () => {
         ctx.fab.classList.remove("cloud-fab--game-hidden");
-    });
+        soundBtn.classList.remove("sound-toggle-btn--hidden");
+    };
+
+    eventBus.on(GEV.GAME_START, hideGameUI);
+    eventBus.on(GEV.GAME_OVER, showGameUI);
 
     // ---- Toast & error ----
     function showSuccess(message: string): void {
@@ -227,6 +251,11 @@ export function initCloudOverlay(): {
         if ((e.key === "l" || e.key === "L") && ctx.modal === "none") openAuth();
         if ((e.key === "h" || e.key === "H") && ctx.modal === "none") openHistory();
         if ((e.key === "b" || e.key === "B") && ctx.modal === "none") openLeaderboard();
+        // M 键切换静音
+        if ((e.key === "m" || e.key === "M") && ctx.modal === "none") {
+            soundManager.toggleMute();
+            updateSoundIcon();
+        }
     });
 
     // ---- Background sync ----
@@ -272,3 +301,16 @@ export function initCloudOverlay(): {
         getUser: () => ctx.user,
     };
 }
+
+// ---- Inline SVG icons for sound toggle ----
+const SOUND_ON_SVG_STR = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 9v6h5l5 3V6l-5 3H3z" fill="currentColor"/>
+    <path d="M17 8c2 2 2 6 0 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M20 5c4 3 4 10 0 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+</svg>`;
+
+const SOUND_OFF_SVG_STR = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 9v6h5l5 3V6l-5 3H3z" fill="currentColor"/>
+    <line x1="17" y1="8" x2="22" y2="17" stroke="#f66" stroke-width="2.2" stroke-linecap="round"/>
+    <line x1="22" y1="8" x2="17" y2="17" stroke="#f66" stroke-width="2.2" stroke-linecap="round"/>
+</svg>`;

@@ -25,6 +25,7 @@
     "@types/cookie": "^1.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.0",
+    "@types/nodemailer": "^8.0.1",
     "typescript": "^6.0.3",
     "vite": "^8.0.10"
   },
@@ -33,6 +34,7 @@
     "bcryptjs": "^3.0.2",
     "cookie": "^1.0.2",
     "jsonwebtoken": "^9.0.2",
-    "leafer-game": "^1.12.4"
+    "leafer-game": "^1.12.4",
+    "nodemailer": "^9.0.3"
   }
 }
