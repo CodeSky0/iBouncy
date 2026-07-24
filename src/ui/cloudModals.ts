@@ -244,8 +244,164 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
     actions.appendChild(actionsLeft);
     actions.appendChild(actionsRight);
 
-    ctx.modalBox.replaceChildren(head, fieldsWrap, errBox, actions, hint);
+    // "Forgot password" link (login mode only)
+    const forgotWrap = el("div", "auth-forgot");
+    if (ctx.mode === "login") {
+        const forgotLink = el("button", "link-btn auth-stagger");
+        forgotLink.style.setProperty("--i", "2");
+        forgotLink.type = "button";
+        forgotLink.textContent = "忘记密码?";
+        forgotLink.onclick = (e) => {
+            addRippleEffect(forgotLink, e as MouseEvent);
+            renderResetModal(ctx, helpers);
+        };
+        forgotWrap.appendChild(forgotLink);
+    }
+
+    ctx.modalBox.replaceChildren(head, fieldsWrap, errBox, actions, forgotWrap, hint);
     setTimeout(() => firstFocus.focus(), 100);
+}
+
+function renderResetModal(ctx: CloudUIContext, helpers: ModalHelpers): void {
+    ctx.modal = "auth";
+    ctx.modalBox.className = "modal modal-auth";
+    helpers.setBackdropOpen(true);
+    helpers.setError(null);
+
+    const head = el("div", "auth-head");
+    const title = el("h2");
+    title.textContent = "重置密码";
+
+    const backBtn = el("button", "link-btn back-btn");
+    backBtn.type = "button";
+    backBtn.textContent = "返回登录";
+    backBtn.onclick = () => renderAuthModal(ctx, helpers);
+    head.appendChild(title);
+    head.appendChild(backBtn);
+
+    const fieldsWrap = el("div", "auth-fields");
+    const errBox = el("div", "error");
+    const hint = el("div", "hint auth-hint");
+    hint.innerHTML = `
+        <strong>密码重置说明</strong><br>
+        输入注册邮箱获取重置令牌（开发环境令牌直接展示，生产环境会通过邮件发送），然后输入令牌和新密码完成重置。
+    `;
+
+    // Step 1: email input
+    const fieldEmail = el("div", "field auth-stagger");
+    fieldEmail.style.setProperty("--i", "0");
+    const emailLabel = el("label");
+    emailLabel.textContent = "注册邮箱";
+    const emailInput = el("input") as HTMLInputElement;
+    emailInput.type = "email";
+    emailInput.placeholder = "例如：me@example.com";
+    emailInput.autocomplete = "email";
+    fieldEmail.appendChild(emailLabel);
+    fieldEmail.appendChild(emailInput);
+
+    // Step 2: token input
+    const fieldToken = el("div", "field auth-stagger");
+    fieldToken.style.setProperty("--i", "1");
+    const tokenLabel = el("label");
+    tokenLabel.textContent = "重置令牌";
+    const tokenInput = el("input") as HTMLInputElement;
+    tokenInput.type = "text";
+    tokenInput.placeholder = "从邮件或上一步返回结果中获取";
+    tokenInput.autocomplete = "off";
+    tokenInput.spellcheck = false;
+    fieldToken.appendChild(tokenLabel);
+    fieldToken.appendChild(tokenInput);
+
+    // Step 3: new password input
+    const fieldPwd = el("div", "field auth-stagger");
+    fieldPwd.style.setProperty("--i", "2");
+    const pwdLabel = el("label");
+    pwdLabel.textContent = "新密码";
+    const pwdInput = el("input") as HTMLInputElement;
+    pwdInput.type = "password";
+    pwdInput.placeholder = "至少 6 位";
+    pwdInput.autocomplete = "new-password";
+    fieldPwd.appendChild(pwdLabel);
+    fieldPwd.appendChild(pwdInput);
+
+    fieldsWrap.appendChild(fieldEmail);
+    fieldsWrap.appendChild(fieldToken);
+    fieldsWrap.appendChild(fieldPwd);
+
+    const actions = el("div", "row auth-actions");
+    const actionsLeft = el("div");
+    const actionsRight = el("div");
+    actionsRight.className = "auth-actions-right";
+
+    const closeBtn = createButtonWithLoader("关闭", "btn");
+    closeBtn.onclick = () => helpers.setBackdropOpen(false);
+
+    const requestBtn = createButtonWithLoader("获取令牌", "btn");
+    requestBtn.onclick = async () => {
+        if (ctx.busy) return;
+        helpers.setError(null);
+        const email = emailInput.value.trim();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return helpers.setError("邮箱格式不正确");
+        }
+        ctx.busy = true;
+        requestBtn.classList.add("loading");
+        try {
+            const result = await cloud.requestPasswordReset(email);
+            helpers.setError(null);
+            if (result.token) {
+                tokenInput.value = result.token;
+                helpers.showSuccess("令牌已获取（已自动填入）");
+            } else {
+                helpers.showSuccess(result.message);
+            }
+        } catch (e) {
+            helpers.setError(e instanceof Error ? e.message : String(e));
+        } finally {
+            ctx.busy = false;
+            requestBtn.classList.remove("loading");
+        }
+    };
+
+    const resetBtn = createButtonWithLoader("重置密码", "btn primary");
+    resetBtn.onclick = async () => {
+        if (ctx.busy) return;
+        helpers.setError(null);
+        const email = emailInput.value.trim();
+        const token = tokenInput.value.trim();
+        const newPassword = pwdInput.value;
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return helpers.setError("邮箱格式不正确");
+        }
+        if (!token) return helpers.setError("请先获取重置令牌");
+        if (!newPassword || newPassword.length < 6) return helpers.setError("新密码至少 6 位");
+
+        ctx.busy = true;
+        resetBtn.classList.add("loading");
+        try {
+            await cloud.confirmPasswordReset(email, token, newPassword);
+            helpers.showSuccess("密码重置成功！请使用新密码登录。");
+            helpers.setBackdropOpen(false);
+            setTimeout(() => {
+                ctx.mode = "login";
+                renderAuthModal(ctx, helpers);
+            }, 400);
+        } catch (e) {
+            helpers.setError(e instanceof Error ? e.message : String(e));
+        } finally {
+            ctx.busy = false;
+            resetBtn.classList.remove("loading");
+        }
+    };
+
+    actionsLeft.appendChild(closeBtn);
+    actionsRight.appendChild(requestBtn);
+    actionsRight.appendChild(resetBtn);
+    actions.appendChild(actionsLeft);
+    actions.appendChild(actionsRight);
+
+    ctx.modalBox.replaceChildren(head, fieldsWrap, errBox, actions, hint);
+    setTimeout(() => emailInput.focus(), 100);
 }
 
 export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelpers): Promise<void> {

@@ -1,7 +1,7 @@
 import { createEventBridge, evBus, GEV } from "../events";
 import { UIConf } from "../config";
 import { leafer, GP, timer } from "../core/instances";
-import { MainMenu, OptionsMenu, Settlement, Scoring } from "../ui/elements";
+import { MainMenu, OptionsMenu, Settlement, Scoring, Tutorial } from "../ui/elements";
 import ML from "../utils/MaskLayer";
 import KeyboardSolution from "../utils/KeyboardSolution";
 import { loading } from "./dom";
@@ -44,6 +44,7 @@ export const KS = new KeyboardSolution();
 
 ML.$init(MainMenu, OptionsMenu, Settlement);
 
+// Tutorial: show on first game preparation, hide on game start
 evBus.on(GEV.GAME_PREPARED, () => {
     loading
         .animate([{ opacity: 0 }], {
@@ -53,6 +54,11 @@ evBus.on(GEV.GAME_PREPARED, () => {
         .finished.then(() => {
             loading.style.display = "none";
         });
+    // Delay tutorial slightly to let main menu finish animating
+    setTimeout(() => Tutorial.show_(), 900);
+});
+evBus.on(GEV.GAME_START, () => {
+    Tutorial.hide_();
 });
 
 GP.setScoreSource(() => Scoring.v);
@@ -60,5 +66,6 @@ GP.setScoreSource(() => Scoring.v);
 export async function initializeApp(): Promise<void> {
     await Promise.all([MainMenu.init(), Scoring.init_(), Settlement.init_()]);
     MainMenu.render_();
+    Tutorial.render_();
     GP.state("init1");
 }

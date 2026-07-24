@@ -2,13 +2,18 @@ import { AnimateEvent, Group, Text } from "leafer-game";
 import { evBus, GEV } from "../events";
 import { GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
-import { UIConf } from "../config";
+import { UIConf, ColorConf } from "../config";
+import { floor } from "../utils/math";
 
 export default class E_Settlement extends Group {
     confUI = UIConf.Settlement;
     Title: Text;
+    ScoreText: Text;
+    ScoreLabel: Text;
     Hint1: TextLine;
     Hint2: TextLine;
+    #lastScore = 0;
+    #lastWin = false;
 
     constructor() {
         super({
@@ -29,6 +34,28 @@ export default class E_Settlement extends Group {
             scale: this.confUI.Title.SCALE,
             opacity: 0,
         });
+
+        this.ScoreLabel = new Text({
+            x: GP.bw * this.confUI.X_RATIO,
+            y: GP.bh * 3 / 7,
+            around: "center",
+            text: "最终得分",
+            fontSize: 16,
+            fill: UIConf.Scoring.Integer.FILL,
+            opacity: 0,
+        });
+
+        this.ScoreText = new Text({
+            x: GP.bw * this.confUI.X_RATIO,
+            y: GP.bh * 3 / 7 + 44,
+            around: "center",
+            text: "",
+            fontSize: 56,
+            fontFamily: UIConf.Scoring.FONT_FAMILY,
+            fill: UIConf.Scoring.Integer.FILL,
+            opacity: 0,
+        });
+
         this.Hint1 = new TextLine(
             GP.bw * this.confUI.X_RATIO,
             GP.bh * this.confUI.Hint1.Y_RATIO + this.confUI.Hint1.Y_OFFSET,
@@ -51,7 +78,7 @@ export default class E_Settlement extends Group {
             .$append("回车键", 3, void 0, void 0, "bold")
             .$append("返回开始菜单");
         this.Hint2.opacity = 0;
-        this.add([this.Title, this.Hint1, this.Hint2]);
+        this.add([this.Title, this.ScoreLabel, this.ScoreText, this.Hint1, this.Hint2]);
 
         this.init_ = this.init_.bind(this);
         this.#$setupEventListeners();
@@ -61,6 +88,8 @@ export default class E_Settlement extends Group {
         evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
         evBus.on(GEV.RESIZE, (payload) => this.relocate_(payload.data));
         evBus.on(GEV.GAME_OVER, (payload) => {
+            this.#lastScore = payload.score;
+            this.#lastWin = payload.win;
             if (payload.win) this.win_();
             else this.fail_();
         });
@@ -69,6 +98,10 @@ export default class E_Settlement extends Group {
     relocate_(e: { width: number; height: number }): void {
         this.cx = e.width / 2;
         this.Title.y = e.height * 2 / 7;
+        this.ScoreLabel.x = e.width * this.confUI.X_RATIO;
+        this.ScoreLabel.y = e.height * 3 / 7;
+        this.ScoreText.x = e.width * this.confUI.X_RATIO;
+        this.ScoreText.y = e.height * 3 / 7 + 44;
         this.Hint1.y = e.height * 9 / 14 - 12;
         this.Hint2.y = e.height * 9 / 14 + 12;
     }
@@ -78,7 +111,6 @@ export default class E_Settlement extends Group {
     }
 
     async #loadFont_(): Promise<void> {
-        // `public/*` 在 Vite 下会直接映射到站点根路径（如 `/fonts/...`）。
         const fontURL = "/fonts/HYBeiBingYang-W.woff2";
         await GP.fontInitializer("HYBeiBingYang-W", fontURL);
     }
@@ -92,10 +124,30 @@ export default class E_Settlement extends Group {
     show_(): void {
         this.visible = true;
         this.relocate_({ width: GP.bw, height: GP.bh });
+
+        // Format score
+        const v = Math.round(this.#lastScore * 10);
+        this.ScoreText.text = `${floor(v / 10)}.${v % 10}`;
+
+        // Motivational text
+        this.ScoreLabel.fill = this.#lastWin
+            ? UIConf.Scoring.tip.FILL
+            : ColorConf.DANGER;
+        this.ScoreLabel.text = this.#lastWin
+            ? "最终得分 - Perfect!"
+            : "最终得分 - Try again";
+
         this.Title.animate([{ scale: 1, opacity: 1 }], {
             duration: this.confUI.Title.SHOW_DURATION,
             join: true,
         });
+        this.ScoreLabel.fadeIn_(0.6, 0.15);
+        this.ScoreText.animate([{ scale: 1.3 }, { scale: 1 }], {
+            duration: 0.5,
+            join: true,
+            easing: "back-out",
+        });
+        this.ScoreText.fadeIn_(0.6, 0.2);
         this.Hint1.fadeIn_(this.confUI.Hint1.FADE_IN_DURATION, this.confUI.Hint1.FADE_IN_DELAY);
         this.Hint2.fadeIn_(this.confUI.Hint2.FADE_IN_DURATION, this.confUI.Hint2.FADE_IN_DELAY);
     }
@@ -105,6 +157,8 @@ export default class E_Settlement extends Group {
             duration: this.confUI.Title.HIDE_DURATION,
             join: true,
         });
+        this.ScoreLabel.fadeOut_(0.3);
+        this.ScoreText.fadeOut_(0.3);
         this.Hint1.fadeOut_(this.confUI.Hint1.FADE_OUT_DURATION);
         this.Hint2.fadeOut_(this.confUI.Hint2.FADE_OUT_DURATION).once(AnimateEvent.COMPLETED, () => (this.visible = false));
     }

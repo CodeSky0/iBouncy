@@ -77,3 +77,46 @@ export async function clearScores(): Promise<number> {
     const r = await apiFetch<{ deleted: number }>("/api/scores/clear", { method: "POST", json: {} });
     return r.deleted;
 }
+
+/** 请求密码重置令牌 */
+export async function requestPasswordReset(email: string): Promise<{ message: string; token?: string }> {
+    const r = await apiFetch<{ message: string; token?: string }>("/api/auth/reset", {
+        method: "POST",
+        json: { email, action: "request" },
+    });
+    return { message: r.message, token: r.token };
+}
+
+/** 确认密码重置 */
+export async function confirmPasswordReset(
+    email: string,
+    token: string,
+    newPassword: string,
+): Promise<{ message: string }> {
+    const r = await apiFetch<{ message: string }>("/api/auth/reset", {
+        method: "POST",
+        json: { email, token, newPassword, action: "confirm" },
+    });
+    return r;
+}
+
+/** 请求邮箱验证码 */
+export async function sendVerificationCode(email: string): Promise<{ message: string; code?: string; verified?: boolean }> {
+    const r = await apiFetch<{ message: string; code?: string; verified?: boolean }>("/api/auth/verify", {
+        method: "POST",
+        json: { email, action: "send" },
+    });
+    return r;
+}
+
+/** 确认邮箱验证码 */
+export async function confirmVerificationCode(
+    email: string,
+    code: string,
+): Promise<{ message: string; verified: boolean }> {
+    const r = await apiFetch<{ message: string; verified: boolean }>("/api/auth/verify", {
+        method: "POST",
+        json: { email, code, action: "confirm" },
+    });
+    return r;
+}

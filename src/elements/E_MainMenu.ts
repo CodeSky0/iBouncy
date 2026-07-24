@@ -1,14 +1,17 @@
-import { AnimateEvent, Group, Image } from "leafer-game";
+import { AnimateEvent, Group, Image, Text } from "leafer-game";
 import { evBus, GEV } from "../events";
 import { GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
+import { soundManager } from "../audio/SoundManager";
 
 export default class E_MainMenu extends Group {
     confUI = UIConf.MainMenu;
+    audioConf = UIConf.AudioToggle;
     Brand: Image;
     Hint1: TextLine;
     Hint2: TextLine;
+    MuteIcon: Text;
 
     constructor() {
         super({
@@ -58,7 +61,18 @@ export default class E_MainMenu extends Group {
             .$append("W/A/S/D", 3, void 0, void 0, "bold")
             .$append("来控制平板的移动");
         this.Hint2.opacity = 0;
-        this.add([this.Brand, this.Hint1, this.Hint2]);
+
+        this.MuteIcon = new Text({
+            x: GP.bw * this.audioConf.MAIN_MENU_X_RATIO,
+            y: GP.bh * this.audioConf.MAIN_MENU_Y_RATIO,
+            around: "center",
+            text: soundManager.muted ? "M" : "S",
+            fontSize: this.audioConf.ICON_SIZE,
+            fill: this.audioConf.FILL,
+            opacity: 0,
+        });
+
+        this.add([this.Brand, this.Hint1, this.Hint2, this.MuteIcon]);
         this.#$setupEventListeners();
     }
 
@@ -81,6 +95,8 @@ export default class E_MainMenu extends Group {
         this.Brand.y = e.height * this.confUI.Brand.Y_RATIO;
         this.Hint1.y = e.height * this.confUI.Hint1.Y_RATIO + this.confUI.Hint1.Y_OFFSET;
         this.Hint2.y = e.height * this.confUI.Hint2.Y_RATIO + this.confUI.Hint2.Y_OFFSET;
+        this.MuteIcon.x = e.width * this.audioConf.MAIN_MENU_X_RATIO;
+        this.MuteIcon.y = e.height * this.audioConf.MAIN_MENU_Y_RATIO;
     }
 
     reset_(): void {
@@ -90,6 +106,18 @@ export default class E_MainMenu extends Group {
         this.Brand.offsetY = this.confUI.Brand.Y_OFFSET;
         this.Hint1.opacity = 0;
         this.Hint2.opacity = 0;
+        this.#updateMuteIcon();
+        this.MuteIcon.opacity = 0;
+    }
+
+    #updateMuteIcon(): void {
+        this.MuteIcon.text = soundManager.muted ? "M" : "S";
+        this.MuteIcon.fill = soundManager.muted ? this.audioConf.FILL : this.audioConf.HOVER_FILL;
+    }
+
+    /** Public accessor so app.ts can refresh the icon after M-key toggle */
+    $updateMuteIcon(): void {
+        this.#updateMuteIcon();
     }
 
     show_(): void {
@@ -117,6 +145,7 @@ export default class E_MainMenu extends Group {
         });
         this.Hint1.fadeIn_(0.8, 0.2);
         this.Hint2.fadeIn_(0.8, 0.4);
+        this.MuteIcon.fadeIn_(0.8, 0.6);
     }
 
     hide_(): void {

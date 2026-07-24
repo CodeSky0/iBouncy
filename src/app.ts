@@ -5,7 +5,7 @@ import { abs, floor } from "./utils/math";
 import { effectsEnabled, setEffectsEnabled } from "./core/effects";
 import { prevTimeStamp, setPrevTimeStamp } from "./app/timing";
 import { GI, GP, timer, leafer, Ball, Tablet } from "./core/instances";
-import { Mask, FPS } from "./ui/elements";
+import { MainMenu, OptionsMenu, Mask, FPS } from "./ui/elements";
 import { initCloudOverlay } from "./ui/cloudOverlay";
 import { addScore } from "./cloud/client";
 import { addLocalScore, clearSynced, markSynced } from "./cloud/localScores";
@@ -182,6 +182,16 @@ KS.whenUp((e) => {
         case "NumpadEnter":
             if (GP.at("over") || GP.at("paused")) {
                 GP.prepared();
+            }
+            break;
+        case "KeyM":
+            soundManager.toggleMute();
+            // Update mute icon on visible menus
+            if (GP.at("prepared")) {
+                (MainMenu as any).$updateMuteIcon?.();
+            }
+            if (GP.at("paused")) {
+                (OptionsMenu as any).$updateMuteIcon?.();
             }
             break;
     }
