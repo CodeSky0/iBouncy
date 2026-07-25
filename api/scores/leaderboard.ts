@@ -29,7 +29,7 @@ export default async function handler(req: any, res: any) {
         const rows = await sql`
             WITH per_user AS (
                 SELECT user_id, MAX(score)::int AS best_score
-                FROM scores
+                FROM scores s
                 WHERE 1=1 ${timeFilter}
                 GROUP BY user_id
             ),
