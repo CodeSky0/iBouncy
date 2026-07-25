@@ -37,6 +37,7 @@ export const GEV = {
 
     // --- player ---
     PLAYER_SCORE: "player:score",
+    PLAYER_COMBO: "player:combo",
 } as const;
 
 export type GameEventName = (typeof GEV)[keyof typeof GEV];

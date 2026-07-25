@@ -11,12 +11,14 @@ import { addScore } from "./cloud/client";
 import { addLocalScore, clearSynced, markSynced } from "./cloud/localScores";
 import { soundManager } from "./audio/SoundManager";
 import { touchCtrl } from "./utils/TouchController";
+import X_CollisionParticle from "./elements_extensions/X_CollisionParticle";
 
 /** 碰撞加分公式用：板宽恒定，提出循环外避免每子步除法。 */
 const TABLET_2PI_OVER_W = (Math.PI * 2) / UIConf.Tablet.WIDTH;
 const BV_ANGLE_SCALE = Math.PI / 30;
 
 const cloudUI = initCloudOverlay();
+const collisionParticle = new X_CollisionParticle();
 
 let accumulated = 0;
 let rafId = 0;
@@ -109,8 +111,10 @@ function gameLoop(timeStamp: number): void {
                 const bvP = Math.log2(bv) + 1 / Math.cos(BV_ANGLE_SCALE * bv);
                 const d = abs(Tablet.cx - Ball.cx);
                 const dP = Math.cos(TABLET_2PI_OVER_W * d) + 0.5;
-                evBus.emit(GEV.PLAYER_SCORE, { delta: 0.4 * bvP + 0.16 * dP });
+                const { multiplier } = GI.registerHit();
+                evBus.emit(GEV.PLAYER_SCORE, { delta: (0.4 * bvP + 0.16 * dP) * multiplier });
                 soundManager.playBounce();
+                collisionParticle.emit(Ball.cx, Math.min(Ball.oy, Tablet.ty));
             }
         }
     }
@@ -147,6 +151,11 @@ evBus.on(GEV.GAME_OVER, async (payload) => {
 // 音效：游戏开始
 evBus.on(GEV.GAME_START, () => {
     soundManager.playStart();
+});
+
+// 球丢失时重置连击
+evBus.on(GEV.GAME_BALL_LOST, () => {
+    GI.resetCombo();
 });
 
 // 触摸视口同步

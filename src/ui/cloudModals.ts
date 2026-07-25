@@ -767,6 +767,8 @@ export async function renderLeaderboardModal(ctx: CloudUIContext, helpers: Modal
     helpers.setBackdropOpen(true);
     helpers.setError(null);
 
+    let currentPeriod = "all";
+
     const loadingOverlay = el("div", "modal-loading");
     const loadingRing = el("div", "modal-loading-spinner");
     loadingOverlay.appendChild(loadingRing);
@@ -783,6 +785,30 @@ export async function renderLeaderboardModal(ctx: CloudUIContext, helpers: Modal
     titleRow.appendChild(titleBlock);
     titleRow.appendChild(closeBtn);
 
+    const periodTabs = el("div", "period-tabs");
+    const periods: { key: string; label: string }[] = [
+        { key: "all", label: "全部" },
+        { key: "day", label: "日榜" },
+        { key: "week", label: "周榜" },
+        { key: "month", label: "月榜" },
+    ];
+    for (const p of periods) {
+        const tab = document.createElement("button");
+        tab.type = "button";
+        tab.className = "period-tab" + (p.key === currentPeriod ? " active" : "");
+        tab.textContent = p.label;
+        tab.dataset.period = p.key;
+        tab.onclick = (e) => {
+            addRippleEffect(tab, e as MouseEvent);
+            if (p.key === currentPeriod || ctx.busy) return;
+            currentPeriod = p.key;
+            periodTabs.querySelectorAll(".period-tab").forEach((t) => t.classList.remove("active"));
+            tab.classList.add("active");
+            void load();
+        };
+        periodTabs.appendChild(tab);
+    }
+
     const errBox = el("div", "error");
     const list = el("div", "list history-list leaderboard-list");
     const footer = el("div", "leaderboard-footer");
@@ -795,7 +821,7 @@ export async function renderLeaderboardModal(ctx: CloudUIContext, helpers: Modal
     actions.appendChild(actionsLeft);
     actionsRight.appendChild(refreshBtn);
     actions.appendChild(actionsRight);
-    ctx.modalBox.replaceChildren(titleRow, errBox, list, footer, actions, loadingOverlay);
+    ctx.modalBox.replaceChildren(titleRow, periodTabs, errBox, list, footer, actions, loadingOverlay);
 
     const load = async () => {
         if (ctx.busy) return;
@@ -806,7 +832,7 @@ export async function renderLeaderboardModal(ctx: CloudUIContext, helpers: Modal
         footer.replaceChildren();
         footer.style.display = "none";
         try {
-            const entries = await cloud.fetchLeaderboard(50);
+            const entries = await cloud.fetchLeaderboard(50, currentPeriod);
             if (ctx.user) {
                 try {
                     const { summary: s } = await cloud.summary();

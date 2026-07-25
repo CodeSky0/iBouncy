@@ -23,4 +23,5 @@ export type GameEventPayloadMap = {
     [GEV.GAME_BALL_LOST]: undefined;
     [GEV.GAME_TIME_UP]: undefined;
     [GEV.PLAYER_SCORE]: { delta: number },
+    [GEV.PLAYER_COMBO]: { combo: number; multiplier: number },
 };

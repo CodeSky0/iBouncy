@@ -194,4 +194,12 @@ export const UIConf = {
             LINE_HEIGHT: 16,
         },
     },
+    CollisionParticle: {
+        COUNT: 8,
+        MIN_RADIUS: 2,
+        MAX_RADIUS: 4,
+        COLORS: [ColorConf.SECONDARY, ColorConf.WARNING, ColorConf.PRIMARY, ColorConf.LIGHT_CYAN, ColorConf.SUCCESS],
+        DURATION: 0.5,
+        SPREAD: 60,
+    },
 } as const;

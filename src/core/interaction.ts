@@ -4,6 +4,7 @@ import type EmbeddedTimer from "../utils/EmbeddedTimer";
 import type E_Ball from "../elements/E_Ball";
 import type E_Tablet from "../elements/E_Tablet";
 import type Processor from "./processor";
+import { evBus, GEV } from "../events";
 
 type Axis = "x" | "y";
 
@@ -25,6 +26,11 @@ export default class Interaction {
     collisionStat = 0;
     accelerateCD = GameConf.Ball.ACCELERATION.COOLDOWN * 1000;
     prevAccTime: [number, number] = [0, 0];
+    combo = 0;
+    private comboLastHit = 0;
+    private readonly comboResetWindow = GameConf.Combo.RESET_WINDOW * 1000;
+    private readonly comboMultiplierStep = GameConf.Combo.MULTIPLIER_STEP;
+    private readonly comboMaxMultiplier = GameConf.Combo.MAX_MULTIPLIER;
     #Ball: E_Ball;
     #Tablet: E_Tablet;
     #timer: EmbeddedTimer;
@@ -115,6 +121,26 @@ export default class Interaction {
             this.#Ball.vy! *= -1;
         }
         return true;
+    }
+
+    registerHit(): { combo: number; multiplier: number } {
+        const now = performance.now();
+        if (this.comboLastHit > 0 && now - this.comboLastHit <= this.comboResetWindow) {
+            this.combo++;
+        } else {
+            this.combo = 1;
+        }
+        this.comboLastHit = now;
+        const multiplier = Math.min(1 + (this.combo - 1) * this.comboMultiplierStep, this.comboMaxMultiplier);
+        const payload = { combo: this.combo, multiplier };
+        evBus.emit(GEV.PLAYER_COMBO, payload);
+        return payload;
+    }
+
+    resetCombo(): void {
+        this.combo = 0;
+        this.comboLastHit = 0;
+        evBus.emit(GEV.PLAYER_COMBO, { combo: 0, multiplier: 1 });
     }
 
     tempAccelerate(direction: Axis): number {

@@ -86,9 +86,9 @@ export async function listScores(limit = 20): Promise<ScoreRecord[]> {
     return r.records;
 }
 
-export async function fetchLeaderboard(limit = 50): Promise<LeaderboardEntry[]> {
+export async function fetchLeaderboard(limit = 50, period = "all"): Promise<LeaderboardEntry[]> {
     const r = await apiFetch<{ entries: LeaderboardEntry[] }>(
-        `/api/scores/leaderboard?limit=${encodeURIComponent(String(limit))}`,
+        `/api/scores/leaderboard?limit=${encodeURIComponent(String(limit))}&period=${encodeURIComponent(period)}`,
     );
     return r.entries;
 }

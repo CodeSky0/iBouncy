@@ -7,20 +7,37 @@ export default async function handler(req: any, res: any) {
         const url = new URL(req.url, "http://localhost");
         const limitRaw = url.searchParams.get("limit");
         const limit = Math.max(1, Math.min(100, Number(limitRaw || 50) || 50));
+        const period = url.searchParams.get("period") || "all";
 
         const sql = getSql();
         await ensureSchema(sql);
+
+        let timeFilter = sql``;
+        const now = new Date();
+        if (period === "day") {
+            const since = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+            timeFilter = sql` AND s.created_at >= ${since}`;
+        } else if (period === "week") {
+            const dayOfWeek = now.getDay();
+            const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((dayOfWeek + 6) % 7)).toISOString();
+            timeFilter = sql` AND s.created_at >= ${monday}`;
+        } else if (period === "month") {
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+            timeFilter = sql` AND s.created_at >= ${firstDay}`;
+        }
 
         const rows = await sql`
             WITH per_user AS (
                 SELECT user_id, MAX(score)::int AS best_score
                 FROM scores
+                WHERE 1=1 ${timeFilter}
                 GROUP BY user_id
             ),
             best_times AS (
                 SELECT s.user_id, MIN(s.created_at) AS best_at
                 FROM scores s
                 INNER JOIN per_user p ON p.user_id = s.user_id AND s.score = p.best_score
+                WHERE 1=1 ${timeFilter}
                 GROUP BY s.user_id
             )
             SELECT

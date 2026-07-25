@@ -37,4 +37,9 @@ export const GameConf = {
         VX: 6,
         VY: 2.8,
     },
+    Combo: {
+        RESET_WINDOW: 0.8,
+        MULTIPLIER_STEP: 0.25,
+        MAX_MULTIPLIER: 5,
+    },
 } as const;

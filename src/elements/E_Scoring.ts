@@ -11,7 +11,10 @@ export default class E_Scoring extends Group {
     Panel: Path;
     Integer: Text;
     Decimal: Text;
+    Combo: Text;
     v = 0;
+    currentCombo = 0;
+    currentMultiplier = 1;
     /** 复用得分提示文本，避免碰撞时频繁 new/destroy 带来的 GC 抖动 */
     private readonly tipPool: Text[] = [];
     private readonly activeTips = new Set<Text>();
@@ -58,7 +61,17 @@ export default class E_Scoring extends Group {
             text: "--",
             fontFamily: this.confUI.FONT_FAMILY,
         });
-        this.add([this.Panel, this.Integer, this.Decimal]);
+        this.Combo = new Text({
+            x: -GP.bw,
+            y: 64,
+            text: "",
+            fontSize: 18,
+            fill: UIConf.CollisionParticle.COLORS[0],
+            fontFamily: this.confUI.FONT_FAMILY,
+            around: "center",
+            visible: false,
+        });
+        this.add([this.Panel, this.Integer, this.Decimal, this.Combo]);
 
         this.init_ = this.init_.bind(this);
         this.#$setupEventListeners();
@@ -72,10 +85,36 @@ export default class E_Scoring extends Group {
             const deltaStr = this.delta_(payload.delta);
             this.tip_(deltaStr);
         });
+        evBus.on(GEV.PLAYER_COMBO, (payload) => {
+            this.updateCombo_(payload.combo, payload.multiplier);
+        });
+    }
+
+    updateCombo_(combo: number, multiplier: number): void {
+        this.currentCombo = combo;
+        this.currentMultiplier = multiplier;
+        if (combo >= 2) {
+            this.Combo.text = `${combo}x (x${multiplier.toFixed(2)})`;
+            this.Combo.visible = true;
+            this.Combo.cx = 120;
+            if (effectsEnabled) {
+                this.Combo.opacity = 1;
+                this.Combo.scaleX = this.Combo.scaleY = 0.6;
+                this.Combo.animate(
+                    [{ style: { scaleX: 1, scaleY: 1 } }],
+                    { duration: 0.15, easing: "back-out", join: true },
+                );
+            }
+        } else {
+            this.Combo.visible = false;
+        }
     }
 
     reset_(): void {
         this.assign_(0);
+        this.Combo.visible = false;
+        this.currentCombo = 0;
+        this.currentMultiplier = 1;
     }
 
     relocate_(e: IResizeLike): void {
