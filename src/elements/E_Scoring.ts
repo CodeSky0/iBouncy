@@ -147,7 +147,6 @@ export default class E_Scoring extends Group {
     }
 
     relocate_(e: IResizeLike): void {
-        if (e.width === e.old.width) return;
         this.cx = e.width / 2;
         this.#newScore_();
     }
