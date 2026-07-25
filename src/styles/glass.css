@@ -615,9 +615,9 @@ canvas {
     place-items: center;
     pointer-events: auto;
     background:
-        radial-gradient(ellipse 70% 60% at 50% 45%, rgba(8,10,26,0.08) 0%, rgba(4,4,14,0.55) 100%);
-    backdrop-filter: saturate(190%) blur(34px);
-    -webkit-backdrop-filter: saturate(190%) blur(34px);
+        radial-gradient(ellipse 70% 60% at 50% 45%, rgba(8,10,26,0.42) 0%, rgba(4,4,14,0.64) 100%);
+    backdrop-filter: saturate(150%) blur(44px);
+    -webkit-backdrop-filter: saturate(150%) blur(44px);
     opacity: 0;
     transition: opacity 0.45s var(--ease-fluid);
     perspective: 1400px;
