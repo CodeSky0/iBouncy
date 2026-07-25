@@ -607,17 +607,16 @@ canvas {
  *  5d. Modal System
  */
 
-/* Backdrop — atmospheric vignette that reveals game background */
+/* Backdrop — atmospheric overlay with strong blur */
 #cloud-ui-root .modal-backdrop {
     position: absolute;
     inset: 0;
     display: none;
     place-items: center;
     pointer-events: auto;
-    background:
-        radial-gradient(ellipse 70% 60% at 50% 45%, rgba(8,10,26,0.42) 0%, rgba(4,4,14,0.64) 100%);
-    backdrop-filter: saturate(150%) blur(44px);
-    -webkit-backdrop-filter: saturate(150%) blur(44px);
+    background: rgba(6,8,22,0.62);
+    backdrop-filter: saturate(140%) blur(50px);
+    -webkit-backdrop-filter: saturate(140%) blur(50px);
     opacity: 0;
     transition: opacity 0.45s var(--ease-fluid);
     perspective: 1400px;
