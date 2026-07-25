@@ -498,11 +498,12 @@ canvas {
         filter 0.25s ease;
 }
 
-/* Sound toggle button — top left corner */
+/* Sound toggle button — bottom right corner */
 #cloud-ui-root .sound-toggle-btn {
     position: absolute;
-    top: 14px;
-    left: 14px;
+    bottom: 14px;
+    right: 14px;
+    pointer-events: auto;
     width: 44px;
     height: 44px;
     padding: 10px;
