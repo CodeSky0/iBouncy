@@ -35,6 +35,11 @@ export default class Processor {
     #leafer: Leafer;
     #scoreSource: () => number = () => 0;
 
+    /** 每帧开始时由 gameLoop 写入，供帧内所有模块共享，替代 `performance.now()`。 */
+    frameTimeStamp = 0;
+    /** 帧序号，每帧递增，用于键盘缓存等单帧脏标记方案。 */
+    frameCount = 0;
+
     /**
      * @param env - Full {@link ProcessorEnvironment}; callers pass the complete
      *              object so we don't need unsafe casting.

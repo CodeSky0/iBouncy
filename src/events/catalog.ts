@@ -21,4 +21,5 @@ export const GAME_EVENT_CATALOG: Record<GameEventName, string> = {
     [GEV.GAME_TIME_UP]: "倒计时归零，Processor 据此调用 gameOver(true)",
     [GEV.PLAYER_SCORE]: "玩家得分入口；载荷为本次碰撞的原始增量 delta",
     [GEV.PLAYER_COMBO]: "连击更新；载荷含当前连击数与倍率 multiplier",
+    [GEV.SCORE_HIT]: "合并得分+连击事件；载荷含 delta/combo/multiplier，减少碰撞帧事件分发次数",
 };

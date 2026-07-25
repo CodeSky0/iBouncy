@@ -24,6 +24,8 @@ export default class E_Ball extends Ellipse {
         paddings: [number, number, number, number];
         callbacks: BoundaryCallbacks;
     };
+    /** 缓存球下方的负 padding（= -h * 3），球是圆形，宽高恒定，无需每子步重算。 */
+    private readonly ballBottomPadding: number;
 
     constructor() {
         super({
@@ -31,6 +33,7 @@ export default class E_Ball extends Ellipse {
             height: UIConf.Ball.RADIUS * 2,
             fill: UIConf.Ball.FILL,
         });
+        this.ballBottomPadding = -this.h * 3;
         this.boundaryCallbacks = [null, null, () => evBus.emit(GEV.GAME_BALL_LOST), null];
         this.ballBoundaryOpts = {
             bounce: true,
@@ -75,7 +78,7 @@ export default class E_Ball extends Ellipse {
         }
         this.x! += this.vx * prog;
         this.y! += this.vy * prog;
-        this.ballBoundaryPaddings[2] = -this.h * 3;
+        this.ballBoundaryPaddings[2] = this.ballBottomPadding;
         GI.boundaryDetect(this as BoundsEntity, this.ballBoundaryOpts);
         // 卡顿时关闭视觉拖尾，保障核心物理计算更稳定。
         if (effectsEnabled) this.trailing?.frameLoop(this.timeDivisor);

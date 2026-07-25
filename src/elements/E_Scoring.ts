@@ -4,6 +4,7 @@ import { Ball, GP, leafer, timer } from "../core/instances";
 import { effectsEnabled } from "../core/effects";
 import { evBus, GEV } from "../events";
 import { floor } from "../utils/math";
+import { fastRandom } from "../utils/prng";
 import { UIConf } from "../config";
 
 export default class E_Scoring extends Group {
@@ -73,19 +74,47 @@ export default class E_Scoring extends Group {
         });
         this.add([this.Panel, this.Integer, this.Decimal, this.Combo]);
 
+        // 对象池预分配：避免首次碰撞时 new Text 产生的 GC 抖动
+        this.#preallocateTips();
+
         this.init_ = this.init_.bind(this);
         this.#$setupEventListeners();
+    }
+
+    #preallocateTips(): void {
+        const tipConf = this.confUI.tip;
+        for (let i = 0; i < 4; i++) {
+            const tip = new Text({
+                x: 0,
+                y: 0,
+                around: "center",
+                text: "",
+                fill: tipConf.FILL,
+                stroke: tipConf.STROKE,
+                fontSize: tipConf.FONT_SIZE,
+                fontFamily: this.confUI.FONT_FAMILY,
+                opacity: tipConf.OPACITY,
+                shadow: {
+                    x: 1,
+                    y: 1,
+                    blur: 10,
+                    color: tipConf.SHADOW_COLOR,
+                },
+                visible: false,
+            });
+            tip.render_();
+            this.tipPool.push(tip);
+        }
     }
 
     #$setupEventListeners(): void {
         evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
         evBus.on(GEV.RESIZE, (payload) => this.relocate_(payload.data));
         evBus.on(GEV.GAME_RESET, this.reset_.bind(this));
-        evBus.on(GEV.PLAYER_SCORE, (payload) => {
+        // 使用合并事件 SCORE_HIT，一次分发同时处理得分更新 + combo 显示
+        evBus.on(GEV.SCORE_HIT, (payload) => {
             const deltaStr = this.delta_(payload.delta);
             this.tip_(deltaStr);
-        });
-        evBus.on(GEV.PLAYER_COMBO, (payload) => {
             this.updateCombo_(payload.combo, payload.multiplier);
         });
     }
@@ -301,10 +330,10 @@ export default class E_Scoring extends Group {
         const act = GP.ENV.actUnitInterval;
         const actN = typeof act === "string" ? parseFloat(act) : act;
         const ballSpeedAffect = (0.7 * Ball.vx * 600) / actN;
-        const direction = Math.random() >= 0.5 ? 1 : -1;
-        let initialOffsetX = (10 + Math.random() * 20) * direction;
-        let transitionX0 = (40 + Math.random() * 20) * direction;
-        const transitionY = (Math.random() - 0.4) * 24;
+        const direction = fastRandom() >= 0.5 ? 1 : -1;
+        let initialOffsetX = (10 + fastRandom() * 20) * direction;
+        let transitionX0 = (40 + fastRandom() * 20) * direction;
+        const transitionY = (fastRandom() - 0.4) * 24;
         const totalTranslationX = initialOffsetX + transitionX0 + ballSpeedAffect;
         if (Ball.cx + totalTranslationX <= GP.ENV.paddingSide) {
             initialOffsetX *= -1;

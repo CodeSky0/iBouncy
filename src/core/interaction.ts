@@ -124,7 +124,7 @@ export default class Interaction {
     }
 
     registerHit(): { combo: number; multiplier: number } {
-        const now = performance.now();
+        const now = this.#GP.frameTimeStamp;
         if (this.comboLastHit > 0 && now - this.comboLastHit <= this.comboResetWindow) {
             this.combo++;
         } else {
@@ -132,20 +132,18 @@ export default class Interaction {
         }
         this.comboLastHit = now;
         const multiplier = Math.min(1 + (this.combo - 1) * this.comboMultiplierStep, this.comboMaxMultiplier);
-        const payload = { combo: this.combo, multiplier };
-        evBus.emit(GEV.PLAYER_COMBO, payload);
-        return payload;
+        return { combo: this.combo, multiplier };
     }
 
     resetCombo(): void {
         this.combo = 0;
         this.comboLastHit = 0;
-        evBus.emit(GEV.PLAYER_COMBO, { combo: 0, multiplier: 1 });
+        evBus.emit(GEV.SCORE_HIT, { delta: 0, combo: 0, multiplier: 1 });
     }
 
     tempAccelerate(direction: Axis): number {
         if (direction !== "x" && direction !== "y") return 0;
-        const now = performance.now();
+        const now = this.#GP.frameTimeStamp;
         const patI = direction === "x" ? 0 : 1;
         if (this.prevAccTime[patI] !== void 0 && now - this.prevAccTime[patI] < this.accelerateCD) return 0;
         this.prevAccTime[patI] = now;

@@ -1,14 +1,8 @@
-import { Ellipse } from "leafer-game";
-import type { IAnimate } from "@leafer-ui/interface";
+import { Ellipse, AnimateEvent } from "leafer-game";
 import { leafer } from "../core/instances";
 import { effectsEnabled } from "../core/effects";
+import { fastRandom } from "../utils/prng";
 import { UIConf } from "../config";
-
-interface Particle {
-    shape: Ellipse;
-    vx: number;
-    vy: number;
-}
 
 const conf = UIConf.CollisionParticle;
 
@@ -17,33 +11,51 @@ export default class X_CollisionParticle {
     private readonly activeSet = new Set<Ellipse>();
     private readonly poolLimit = 64;
 
+    /** 碰撞粒子节流：避免高频碰撞时 20+ 并发 Leafer 动画 */
+    private lastEmitTime = 0;
+    private readonly emitThrottleMs = 60;
+
+    constructor() {
+        // 对象池预分配：避免首次碰撞时 new Ellipse 产生的 GC 抖动
+        for (let i = 0; i < conf.COUNT; i++) {
+            const shape = new Ellipse({
+                x: -100,
+                y: -100,
+                width: 4,
+                height: 4,
+                around: "center",
+                visible: false,
+            });
+            shape.render_();
+            this.pool.push(shape);
+        }
+    }
+
     emit(x: number, y: number): void {
         if (!effectsEnabled) return;
 
+        // 节流：60ms 内只触发一次粒子发射
+        const now = performance.now();
+        if (now - this.lastEmitTime < this.emitThrottleMs) return;
+        this.lastEmitTime = now;
+
         for (let i = 0; i < conf.COUNT; i++) {
             const p = this.acquireShape();
-            const angle = (Math.PI * 2 * i) / conf.COUNT + (Math.random() - 0.5) * 0.5;
-            const speed = 0.3 + Math.random() * 0.7;
+            const angle = (Math.PI * 2 * i) / conf.COUNT + (fastRandom() - 0.5) * 0.5;
+            const speed = 0.3 + fastRandom() * 0.7;
             const vx = Math.cos(angle) * conf.SPREAD * speed;
             const vy = Math.sin(angle) * conf.SPREAD * speed;
 
             p.x = x;
             p.y = y;
-            p.w = p.h = (conf.MIN_RADIUS + Math.random() * (conf.MAX_RADIUS - conf.MIN_RADIUS)) * 2;
-            const c = conf.COLORS[Math.floor(Math.random() * conf.COLORS.length)];
+            p.w = p.h = (conf.MIN_RADIUS + fastRandom() * (conf.MAX_RADIUS - conf.MIN_RADIUS)) * 2;
+            const c = conf.COLORS[Math.floor(fastRandom() * conf.COLORS.length)];
             p.fill = c;
             p.opacity = 0.9;
             p.visible = true;
 
-            const duration = conf.DURATION * (0.5 + Math.random() * 0.5);
+            const duration = conf.DURATION * (0.5 + fastRandom() * 0.5);
 
-            const aniMove = p.animate(
-                [
-                    { style: { offsetX: 0, offsetY: 0 } },
-                    { style: { offsetX: vx, offsetY: vy } },
-                ],
-                { duration, easing: "quad-out", join: true },
-            );
             const aniFade = p.animate(
                 [
                     { opacity: 0.9 },
@@ -52,19 +64,22 @@ export default class X_CollisionParticle {
                 { duration, easing: "sine-in", join: true },
             );
 
-            const handleComplete = () => {
-                p.visible = false;
-                (p as unknown as Record<string, unknown>).offsetX = 0;
-                (p as unknown as Record<string, unknown>).offsetY = 0;
-                this.activeSet.delete(p);
-                if (this.pool.length < this.poolLimit) {
-                    this.pool.push(p);
-                } else {
-                    p.destroy();
-                }
-            };
+            // 使用 Leafer AnimateEvent.COMPLETED 替代 setTimeout，消除闭包/定时器开销
+            aniFade.on(AnimateEvent.COMPLETED, () => {
+                this.recycleShape(p);
+            });
+        }
+    }
 
-            setTimeout(handleComplete, duration * 1000 + 50);
+    private recycleShape(shape: Ellipse): void {
+        shape.visible = false;
+        (shape as unknown as Record<string, unknown>).offsetX = 0;
+        (shape as unknown as Record<string, unknown>).offsetY = 0;
+        this.activeSet.delete(shape);
+        if (this.pool.length < this.poolLimit) {
+            this.pool.push(shape);
+        } else {
+            shape.destroy();
         }
     }
 

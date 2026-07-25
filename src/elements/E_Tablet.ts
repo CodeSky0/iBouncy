@@ -17,6 +17,10 @@ export default class E_Tablet extends Rect {
     /** 复用 `{ paddings }`，避免每子步分配新对象 */
     private readonly tabletBoundaryOpts: { paddings: [number, number, number, number] };
 
+    /** 键盘状态每帧缓存，避免子步循环内重复调用 Keyboard.isHold */
+    private kbState = { w: false, a: false, s: false, d: false };
+    private kbCacheFrame = -1;
+
     constructor() {
         super({
             width: UIConf.Tablet.WIDTH,
@@ -44,20 +48,25 @@ export default class E_Tablet extends Rect {
 
     frameLoop(prog: number): void {
         this.vx = this.vy = 0;
-        const kbW = Keyboard.isHold("KeyW") || Keyboard.isHold("ArrowUp");
-        const kbS = Keyboard.isHold("KeyS") || Keyboard.isHold("ArrowDown");
-        const kbA = Keyboard.isHold("KeyA") || Keyboard.isHold("ArrowLeft");
-        const kbD = Keyboard.isHold("KeyD") || Keyboard.isHold("ArrowRight");
+
+        // 每帧只读取一次键盘状态（使用 GP.frameCount 做脏标记）
+        if (GP.frameCount !== this.kbCacheFrame) {
+            this.kbCacheFrame = GP.frameCount;
+            this.kbState.w = Keyboard.isHold("KeyW") || Keyboard.isHold("ArrowUp");
+            this.kbState.s = Keyboard.isHold("KeyS") || Keyboard.isHold("ArrowDown");
+            this.kbState.a = Keyboard.isHold("KeyA") || Keyboard.isHold("ArrowLeft");
+            this.kbState.d = Keyboard.isHold("KeyD") || Keyboard.isHold("ArrowRight");
+        }
 
         // 触摸优先：有触摸活动时使用触摸方向，否则用键盘
         if (touchCtrl.active) {
             this.vx += touchCtrl.dx * this.vxMax * prog;
             this.vy += touchCtrl.dy * this.vyMax * prog;
         } else {
-            if (kbW) this.vy -= this.vyMax * prog;
-            if (kbS) this.vy += this.vyMax * prog;
-            if (kbA) this.vx -= this.vxMax * prog;
-            if (kbD) this.vx += this.vxMax * prog;
+            if (this.kbState.w) this.vy -= this.vyMax * prog;
+            if (this.kbState.s) this.vy += this.vyMax * prog;
+            if (this.kbState.a) this.vx -= this.vxMax * prog;
+            if (this.kbState.d) this.vx += this.vxMax * prog;
         }
 
         this.x! += this.vx;

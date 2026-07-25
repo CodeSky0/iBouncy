@@ -38,6 +38,8 @@ export const GEV = {
     // --- player ---
     PLAYER_SCORE: "player:score",
     PLAYER_COMBO: "player:combo",
+    /** 合并得分+连击单一事件，减少碰撞帧的事件分发次数 */
+    SCORE_HIT: "player:score:hit",
 } as const;
 
 export type GameEventName = (typeof GEV)[keyof typeof GEV];

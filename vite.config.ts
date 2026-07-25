@@ -3,21 +3,19 @@ import { defineConfig } from "vite";
 export default defineConfig({
     root: ".",
     build: {
+        target: "es2022",
+        minify: true,
         rollupOptions: {
             output: {
                 manualChunks(id) {
-                    if (id.includes("leafer-game")) {
-                        return "leafer";
-                    }
-                    if (id.includes("@leafer-ui")) {
-                        return "leafer-ui";
-                    }
+                    if (id.includes("leafer-game")) return "leafer";
+                    if (id.includes("@leafer-ui")) return "leafer-ui";
                 },
             },
         },
         outDir: "dist",
-        minify: true,
         sourcemap: false,
+        reportCompressedSize: false,
     },
     server: {
         port: 5173,

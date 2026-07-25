@@ -24,4 +24,6 @@ export type GameEventPayloadMap = {
     [GEV.GAME_TIME_UP]: undefined;
     [GEV.PLAYER_SCORE]: { delta: number },
     [GEV.PLAYER_COMBO]: { combo: number; multiplier: number },
+    /** 合并得分+连击载荷，减少事件分发次数 */
+    [GEV.SCORE_HIT]: { delta: number; combo: number; multiplier: number },
 };

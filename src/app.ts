@@ -12,6 +12,7 @@ import { addLocalScore, clearSynced, markSynced } from "./cloud/localScores";
 import { soundManager } from "./audio/SoundManager";
 import { touchCtrl } from "./utils/TouchController";
 import X_CollisionParticle from "./elements_extensions/X_CollisionParticle";
+import X_NativeParticle from "./elements_extensions/X_NativeParticle";
 
 /** 碰撞加分公式用：板宽恒定，提出循环外避免每子步除法。 */
 const TABLET_2PI_OVER_W = (Math.PI * 2) / UIConf.Tablet.WIDTH;
@@ -19,6 +20,12 @@ const BV_ANGLE_SCALE = Math.PI / 30;
 
 const cloudUI = initCloudOverlay();
 const collisionParticle = new X_CollisionParticle();
+/** 原生 Canvas 粒子系统：绕过 Leafer 场景图，碰撞帧渲染快 5-10x */
+const nativeParticle = (() => {
+    const cvs = document.querySelector("canvas");
+    if (!cvs) return null;
+    try { return new X_NativeParticle(cvs as HTMLCanvasElement); } catch { return null; }
+})();
 
 let accumulated = 0;
 let rafId = 0;
@@ -70,6 +77,8 @@ function firstFrame(timeStamp: number): void {
 function gameLoop(timeStamp: number): void {
     const deltaTime = timeStamp - prevTimeStamp;
     setPrevTimeStamp(timeStamp);
+    GP.frameTimeStamp = timeStamp;
+    GP.frameCount++;
     timer.timeDetect(timeStamp);
 
     // 卡顿恢复机制：连续低 FPS 时关闭视觉特效，保障物理计算更稳定。
@@ -111,12 +120,16 @@ function gameLoop(timeStamp: number): void {
                 const bvP = Math.log2(bv) + 1 / Math.cos(BV_ANGLE_SCALE * bv);
                 const d = abs(Tablet.cx - Ball.cx);
                 const dP = Math.cos(TABLET_2PI_OVER_W * d) + 0.5;
-                const { multiplier } = GI.registerHit();
-                evBus.emit(GEV.PLAYER_SCORE, { delta: (0.4 * bvP + 0.16 * dP) * multiplier });
+                const { combo, multiplier } = GI.registerHit();
+                // 合并得分+连击为单一事件，减少一次事件分发
+                evBus.emit(GEV.SCORE_HIT, { delta: (0.4 * bvP + 0.16 * dP) * multiplier, combo, multiplier });
                 soundManager.playBounce();
                 collisionParticle.emit(Ball.cx, Math.min(Ball.oy, Tablet.ty));
+                nativeParticle?.emit(Ball.cx, Math.min(Ball.oy, Tablet.ty));
             }
         }
+        // 原生 Canvas 粒子系统渲染（绕过 Leafer 场景图）
+        nativeParticle?.render(deltaTime / 1000);
     }
 
     rafId = requestAnimationFrame(gameLoop);
@@ -161,6 +174,7 @@ evBus.on(GEV.GAME_BALL_LOST, () => {
 // 触摸视口同步
 evBus.on(GEV.RESIZE, (payload) => {
     touchCtrl.syncViewport(payload.data.width, payload.data.height);
+    nativeParticle?.syncSize(payload.data.width, payload.data.height);
 });
 
 // 初始视口同步
