@@ -606,16 +606,17 @@ canvas {
  *  5d. Modal System
  */
 
-/* Backdrop */
+/* Backdrop — atmospheric vignette that reveals game background */
 #cloud-ui-root .modal-backdrop {
     position: absolute;
     inset: 0;
     display: none;
     place-items: center;
     pointer-events: auto;
-    background: rgba(0,0,0,0.50);
-    backdrop-filter: saturate(160%) blur(10px);
-    -webkit-backdrop-filter: saturate(160%) blur(10px);
+    background:
+        radial-gradient(ellipse 70% 60% at 50% 45%, rgba(8,10,26,0.08) 0%, rgba(4,4,14,0.55) 100%);
+    backdrop-filter: saturate(190%) blur(34px);
+    -webkit-backdrop-filter: saturate(190%) blur(34px);
     opacity: 0;
     transition: opacity 0.45s var(--ease-fluid);
     perspective: 1400px;
@@ -653,15 +654,15 @@ canvas {
             rgba(200,195,245,0.03) 55%,
             rgba(255,255,255,0.05) 100%
         );
-    backdrop-filter: var(--glass-blur-deep);
-    -webkit-backdrop-filter: var(--glass-blur-deep);
+    backdrop-filter: saturate(240%) blur(48px);
+    -webkit-backdrop-filter: saturate(240%) blur(48px);
     box-shadow:
-        0 0 0 0.5px rgba(120,170,255,0.06),
-        0 0 0 1px rgba(255,140,170,0.04),
-        var(--depth-deep),
+        0 0 0 0.5px rgba(120,170,255,0.07),
+        0 0 0 1px rgba(255,140,170,0.05),
+        var(--depth-mid),
         var(--spec-top),
-        inset 0 0 160px rgba(74,158,255,0.02),
-        inset 0 0 80px rgba(94,234,212,0.015);
+        inset 0 0 140px rgba(74,158,255,0.015),
+        inset 0 0 70px rgba(94,234,212,0.010);
     transform: scale(0.88) translateY(35px) translateZ(0);
     opacity: 0;
     transition: all 0.55s cubic-bezier(0.22, 1, 0.14, 1);
@@ -745,9 +746,9 @@ canvas {
     box-shadow:
         0 0 0 0.5px rgba(160,200,255,0.08),
         0 0 0 1px rgba(200,170,255,0.04),
-        var(--depth-deep),
+        var(--depth-mid),
         var(--spec-top),
-        0 0 100px rgba(74,158,255,0.04);
+        0 0 80px rgba(74,158,255,0.03);
 }
 
 #cloud-ui-root .modal-history {
@@ -763,7 +764,7 @@ canvas {
     box-shadow:
         0 0 0 0.5px rgba(160,180,255,0.08),
         0 0 0 1px rgba(180,160,240,0.04),
-        var(--depth-deep),
+        var(--depth-mid),
         var(--spec-top);
 }
 
@@ -778,9 +779,9 @@ canvas {
             rgba(255,255,255,0.03) 100%
         );
     box-shadow:
-        0 0 0 0.5px rgba(245,215,140,0.08),
-        0 0 0 1px rgba(230,210,160,0.04),
-        var(--depth-deep),
+        0 0 0 0.5px rgba(245,215,140,0.09),
+        0 0 0 1px rgba(230,210,160,0.05),
+        var(--depth-mid),
         var(--spec-top);
 }
 
@@ -1463,9 +1464,9 @@ canvas {
     display: grid;
     place-items: center;
     border-radius: inherit;
-    background: rgba(0,0,0,0.40);
-    backdrop-filter: saturate(160%) blur(16px);
-    -webkit-backdrop-filter: saturate(160%) blur(16px);
+    background: rgba(8,8,20,0.32);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.35s ease;
