@@ -8,11 +8,15 @@ import { csrfCheck } from "../_lib/csrf.js";
 import { toUserPayload, type UserRow } from "../_lib/user.js";
 
 function normalizeEmail(email: unknown) {
-    return String(email || "").trim().toLowerCase();
+    return String(email || "")
+        .trim()
+        .toLowerCase();
 }
 
 function normalizeUsername(u: unknown) {
-    return String(u || "").trim().toLowerCase();
+    return String(u || "")
+        .trim()
+        .toLowerCase();
 }
 
 function normalizeNickname(n: unknown) {
@@ -43,7 +47,9 @@ export default async function handler(req: any, res: any) {
             return badRequest(res, "用户名为 3–20 位小写字母、数字或下划线");
         }
         if (!email || !email.includes("@")) return badRequest(res, "邮箱格式不正确");
+        if (email.length > 254) return badRequest(res, "邮箱地址过长");
         if (password.length < 6) return badRequest(res, "密码至少 6 位");
+        if (password.length > 128) return badRequest(res, "密码不能超过 128 位");
 
         const sql = getSql();
         await ensureSchema(sql);

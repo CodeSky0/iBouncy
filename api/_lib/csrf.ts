@@ -10,11 +10,7 @@
  * 本模块作为额外防护层，覆盖旧浏览器和配置错误场景。
  */
 
-const ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "https://ibouncy.one",
-];
+const ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:3000", "https://ibouncy.one"];
 
 function normalizeOrigin(origin: string | undefined): string {
     if (!origin) return "";

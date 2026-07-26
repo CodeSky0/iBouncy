@@ -20,7 +20,12 @@ export type BoundsEntity = {
     cy: number;
 };
 
-export type BoundaryCallbacks = [(() => unknown) | null, (() => unknown) | null, (() => unknown) | null, (() => unknown) | null];
+export type BoundaryCallbacks = [
+    (() => unknown) | null,
+    (() => unknown) | null,
+    (() => unknown) | null,
+    (() => unknown) | null,
+];
 
 export default class Interaction {
     collisionStat = 0;
@@ -153,7 +158,7 @@ export default class Interaction {
         const ballV = direction === "x" ? this.#Ball.vx : this.#Ball.vy;
         const tabletV = direction === "x" ? this.#Tablet.vx : this.#Tablet.vy;
         const tabletMax = direction === "x" ? this.#Tablet.vxMax : this.#Tablet.vyMax;
-        const vBuffRatio = ratio1 - Math.sign(ballV) * tabletV * ratio2 / tabletMax;
+        const vBuffRatio = ratio1 - (Math.sign(ballV) * tabletV * ratio2) / tabletMax;
         const vBuff = abs(ballV * (vBuffRatio - 1));
         const vUnitNerf = vBuff / DECAY_TIMES;
         this.#timer.newInterval(

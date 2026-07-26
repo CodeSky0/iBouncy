@@ -65,7 +65,7 @@ export default class X_BallTrailing {
             if (this.activeAnimations.has(idx)) {
                 const oldAni = this.activeAnimations.get(idx)!;
                 oldAni.off(AnimateEvent.COMPLETED);
-                leafer.killAnimate(oldAni as never);
+                leafer.killAnimate(oldAni);
                 this.activeAnimations.delete(idx);
             }
             const std = GP.ENV.stdUnitInterval;

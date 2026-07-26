@@ -36,11 +36,7 @@ export class SoundManager {
     setMuted(muted: boolean): boolean {
         this._muted = muted;
         if (this.masterGain) {
-            this.masterGain.gain.setTargetAtTime(
-                this._muted ? 0 : this._volume,
-                this.ctx!.currentTime,
-                0.05,
-            );
+            this.masterGain.gain.setTargetAtTime(this._muted ? 0 : this._volume, this.ctx!.currentTime, 0.05);
         }
         // 持久化到 localStorage
         try {

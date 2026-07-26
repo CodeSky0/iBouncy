@@ -28,11 +28,7 @@ export interface ModalHelpers {
 }
 
 /** 发送验证码按钮（带 60 秒冷却） */
-function createSendCodeButton(
-    text: string,
-    sendFn: () => Promise<void>,
-    helpers: ModalHelpers,
-): HTMLButtonElement {
+function createSendCodeButton(text: string, sendFn: () => Promise<void>, helpers: ModalHelpers): HTMLButtonElement {
     const btn = createButtonWithLoader(text, "btn");
     btn.type = "button";
     let cooldown = 0;
@@ -49,7 +45,10 @@ function createSendCodeButton(
                     if (cooldown <= 0) {
                         btn.disabled = false;
                         btn.textContent = text;
-                        if (timer) { clearInterval(timer); timer = null; }
+                        if (timer) {
+                            clearInterval(timer);
+                            timer = null;
+                        }
                     } else {
                         btn.textContent = `${cooldown}s 后可重发`;
                     }
@@ -122,10 +121,7 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
     const closeBtn = createButtonWithLoader("关闭", "btn");
     closeBtn.onclick = () => helpers.setBackdropOpen(false);
 
-    const submitBtn = createButtonWithLoader(
-        ctx.mode === "register" ? "创建账号并登录" : "登录",
-        "btn primary",
-    );
+    const submitBtn = createButtonWithLoader(ctx.mode === "register" ? "创建账号并登录" : "登录", "btn primary");
 
     const hint = el("div", "hint auth-hint");
 
@@ -531,7 +527,11 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
             clearBtn.textContent = "确认清空？";
             clearBtn.style.background = "linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.75))";
             clearBtn.style.borderBottomColor = "rgba(220, 38, 38, 0.5)";
-            setTimeout(() => { clearPending = false; clearBtn.textContent = "清空记录"; clearBtn.removeAttribute("style"); }, 4000);
+            setTimeout(() => {
+                clearPending = false;
+                clearBtn.textContent = "清空记录";
+                clearBtn.removeAttribute("style");
+            }, 4000);
             return;
         }
         void (async () => {
@@ -584,17 +584,24 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
                 const last = games ? local[0].score : 0;
 
                 const c1 = el("div", "card");
-                const c1k = el("div", "k"); c1k.textContent = "游客 · 总局数";
-                const c1v = el("div", "v"); c1v.textContent = String(games);
-                c1.appendChild(c1k); c1.appendChild(c1v);
+                const c1k = el("div", "k");
+                c1k.textContent = "游客 · 总局数";
+                const c1v = el("div", "v");
+                c1v.textContent = String(games);
+                c1.appendChild(c1k);
+                c1.appendChild(c1v);
 
                 const c2 = el("div", "card");
-                const c2k = el("div", "k"); c2k.textContent = "游客 · 最高分";
-                const c2v = el("div", "v"); c2v.textContent = fmtScore(best);
-                c2.appendChild(c2k); c2.appendChild(c2v);
+                const c2k = el("div", "k");
+                c2k.textContent = "游客 · 最高分";
+                const c2v = el("div", "v");
+                c2v.textContent = fmtScore(best);
+                c2.appendChild(c2k);
+                c2.appendChild(c2v);
 
                 const c3 = el("div", "card wide");
-                const c3k = el("div", "k"); c3k.textContent = "游客 · 近7天（每日最高分）";
+                const c3k = el("div", "k");
+                c3k.textContent = "游客 · 近7天（每日最高分）";
                 const c3v = el("div", "v");
                 c3v.textContent = `最近一次：${fmtScore(last)} · 累计：${fmtScore(total)}`;
                 const sparkWrap = el("div", "spark");
@@ -616,7 +623,9 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
                     return out;
                 })();
                 sparkWrap.appendChild(buildSparkline(values));
-                c3.appendChild(c3k); c3.appendChild(c3v); c3.appendChild(sparkWrap);
+                c3.appendChild(c3k);
+                c3.appendChild(c3v);
+                c3.appendChild(sparkWrap);
                 cards.appendChild(c1);
                 cards.appendChild(c2);
                 cards.appendChild(c3);
@@ -653,22 +662,31 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
 
             const s = summary.summary;
             const c1 = el("div", "card");
-            const c1k = el("div", "k"); c1k.textContent = "云端 · 总局数";
-            const c1v = el("div", "v"); c1v.textContent = String(s.games);
-            c1.appendChild(c1k); c1.appendChild(c1v);
+            const c1k = el("div", "k");
+            c1k.textContent = "云端 · 总局数";
+            const c1v = el("div", "v");
+            c1v.textContent = String(s.games);
+            c1.appendChild(c1k);
+            c1.appendChild(c1v);
 
             const c2 = el("div", "card");
-            const c2k = el("div", "k"); c2k.textContent = "云端 · 最高分";
-            const c2v = el("div", "v"); c2v.textContent = fmtScore(s.bestScore);
-            c2.appendChild(c2k); c2.appendChild(c2v);
+            const c2k = el("div", "k");
+            c2k.textContent = "云端 · 最高分";
+            const c2v = el("div", "v");
+            c2v.textContent = fmtScore(s.bestScore);
+            c2.appendChild(c2k);
+            c2.appendChild(c2v);
 
             const c3 = el("div", "card wide");
-            const c3k = el("div", "k"); c3k.textContent = "云端 · 近7天（每日最高分）";
+            const c3k = el("div", "k");
+            c3k.textContent = "云端 · 近7天（每日最高分）";
             const c3v = el("div", "v");
             c3v.textContent = `最近一次：${fmtScore(s.lastScore)} · 累计：${fmtScore(s.totalScore)}`;
             const sparkWrap = el("div", "spark");
             sparkWrap.appendChild(buildSparkline(summary.trend7d.map((p) => p.bestScore)));
-            c3.appendChild(c3k); c3.appendChild(c3v); c3.appendChild(sparkWrap);
+            c3.appendChild(c3k);
+            c3.appendChild(c3v);
+            c3.appendChild(sparkWrap);
             cards.appendChild(c1);
             cards.appendChild(c2);
             cards.appendChild(c3);

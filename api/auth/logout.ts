@@ -10,4 +10,3 @@ export default async function handler(req: any, res: any) {
         return serverError(res, e);
     }
 }
-

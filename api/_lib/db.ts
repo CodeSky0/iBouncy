@@ -23,7 +23,9 @@ export function sqlRows<T extends Record<string, unknown> = Record<string, unkno
     return [];
 }
 
-export function firstSqlRow<T extends Record<string, unknown> = Record<string, unknown>>(result: unknown): T | undefined {
+export function firstSqlRow<T extends Record<string, unknown> = Record<string, unknown>>(
+    result: unknown,
+): T | undefined {
     return sqlRows<T>(result)[0];
 }
 

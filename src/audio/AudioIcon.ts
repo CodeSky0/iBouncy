@@ -33,20 +33,27 @@ export default class AudioIcon extends Group {
 
         // 锥形
         this.cone = new Polygon({
-            points: [
-                8 * s, 8 * s,
-                8 * s, 16 * s,
-                14 * s, 20 * s,
-                14 * s, 4 * s,
-            ],
+            points: [8 * s, 8 * s, 8 * s, 16 * s, 14 * s, 20 * s, 14 * s, 4 * s],
             fill: "#CCCCCC",
         });
 
         // 音波 (两条弧线用近似折线替代)
         const wave1 = new Polygon({
             points: [
-                17 * s, 9 * s, 18.5 * s, 8 * s, 19 * s, 9 * s, 19 * s, 11 * s,
-                19 * s, 13 * s, 18.5 * s, 14 * s, 17 * s, 15 * s,
+                17 * s,
+                9 * s,
+                18.5 * s,
+                8 * s,
+                19 * s,
+                9 * s,
+                19 * s,
+                11 * s,
+                19 * s,
+                13 * s,
+                18.5 * s,
+                14 * s,
+                17 * s,
+                15 * s,
             ],
             stroke: "#CCCCCC",
             strokeWidth: 1.5,
@@ -58,8 +65,20 @@ export default class AudioIcon extends Group {
 
         const wave2 = new Polygon({
             points: [
-                20 * s, 6 * s, 22 * s, 4 * s, 23 * s, 6 * s, 23 * s, 11 * s,
-                23 * s, 16 * s, 22 * s, 18 * s, 20 * s, 18 * s,
+                20 * s,
+                6 * s,
+                22 * s,
+                4 * s,
+                23 * s,
+                6 * s,
+                23 * s,
+                11 * s,
+                23 * s,
+                16 * s,
+                22 * s,
+                18 * s,
+                20 * s,
+                18 * s,
             ],
             stroke: "#CCCCCC",
             strokeWidth: 1.5,
@@ -74,19 +93,6 @@ export default class AudioIcon extends Group {
             visible: !soundManager.muted,
         });
 
-        // 静音 X
-        const muteX1 = new Rect({
-            x: 16.5 * s,
-            y: 7 * s,
-            width: 8 * s,
-            height: 2.5 * s,
-            fill: "#EE6666",
-            rotation: 42,
-            cornerRadius: 1,
-            around: "center",
-        });
-        // Need to adjust: Rect rotation requires specifying origin
-        // Better approach: use diagonal lines via Polygon
         const muteXLine1 = new Polygon({
             points: [16.5 * s, 7 * s, 23 * s, 17 * s],
             stroke: "#EE6666",
@@ -113,15 +119,15 @@ export default class AudioIcon extends Group {
         this.add([this.body, this.cone, this.waveGroup, this.muteGroup]);
 
         // 点击切换
-        (this as any).on("tap", () => {
+        this.on("tap", () => {
             soundManager.toggleMute();
             this.syncMuteState();
             this.#setHover(false);
         });
 
         // 悬停效果
-        (this as any).on("pointer.enter", () => this.#setHover(true));
-        (this as any).on("pointer.leave", () => this.#setHover(false));
+        this.on("pointer.enter", () => this.#setHover(true));
+        this.on("pointer.leave", () => this.#setHover(false));
     }
 
     #setHover(hover: boolean): void {

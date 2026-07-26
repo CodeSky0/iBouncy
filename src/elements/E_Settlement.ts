@@ -68,9 +68,9 @@ export default class E_Settlement extends Group {
 
     relocate_(e: { width: number; height: number }): void {
         this.cx = e.width / 2;
-        this.Title.y = e.height * 2 / 7;
-        this.Hint1.y = e.height * 9 / 14 - 12;
-        this.Hint2.y = e.height * 9 / 14 + 12;
+        this.Title.y = (e.height * 2) / 7;
+        this.Hint1.y = (e.height * 9) / 14 - 12;
+        this.Hint2.y = (e.height * 9) / 14 + 12;
     }
 
     async init_(): Promise<void> {
@@ -106,7 +106,10 @@ export default class E_Settlement extends Group {
             join: true,
         });
         this.Hint1.fadeOut_(this.confUI.Hint1.FADE_OUT_DURATION);
-        this.Hint2.fadeOut_(this.confUI.Hint2.FADE_OUT_DURATION).once(AnimateEvent.COMPLETED, () => (this.visible = false));
+        this.Hint2.fadeOut_(this.confUI.Hint2.FADE_OUT_DURATION).once(
+            AnimateEvent.COMPLETED,
+            () => (this.visible = false),
+        );
     }
 
     win_(): void {

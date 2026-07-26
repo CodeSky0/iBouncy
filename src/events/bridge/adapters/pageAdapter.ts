@@ -1,4 +1,5 @@
 import { ResizeEvent } from "leafer-game";
+import type { IResizeEvent } from "@leafer/interface";
 import { GEV } from "../../channels";
 import { eventBus } from "../../bus";
 import type { EventBridgeDeps } from "../deps";
@@ -9,7 +10,8 @@ import type { EventBridgeDeps } from "../deps";
 export function wirePageEventBridge(deps: EventBridgeDeps): void {
     const { leafer, syncViewport } = deps;
 
-    leafer.on(ResizeEvent.RESIZE, (e) => {
+    leafer.on(ResizeEvent.RESIZE, (raw) => {
+        const e = raw as IResizeEvent;
         syncViewport(e.width, e.height);
         eventBus.emit(GEV.RESIZE, { data: e });
     });

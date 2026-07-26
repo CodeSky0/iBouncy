@@ -94,4 +94,3 @@ export function clearSynced(): void {
 export function clearLocalScores(): void {
     save([]);
 }
-

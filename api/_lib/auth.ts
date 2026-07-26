@@ -70,4 +70,3 @@ export function buildLogoutCookie(): string {
         maxAge: 0,
     });
 }
-

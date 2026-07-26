@@ -2,15 +2,7 @@ import type { Leafer } from "leafer-game";
 import { Platform, Resource } from "leafer-game";
 import { evBus, GEV } from "../events";
 
-export type GameState =
-    | "init"
-    | "init1"
-    | "init2"
-    | "almost-prepared"
-    | "prepared"
-    | "playing"
-    | "paused"
-    | "over";
+export type GameState = "init" | "init1" | "init2" | "almost-prepared" | "prepared" | "playing" | "paused" | "over";
 
 /** Runtime timing environment; `actUnitInterval` may become a string from `toFixed` after refresh-rate probing. */
 export type ProcessorEnvironment = {

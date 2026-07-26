@@ -25,7 +25,13 @@ export default class TextLine extends Group {
         this.$defWeight = weight;
     }
 
-    #$addMethod(text: string, gap: number, fill: string | undefined, size: number | undefined, weight: string | number | undefined): void {
+    #$addMethod(
+        text: string,
+        gap: number,
+        fill: string | undefined,
+        size: number | undefined,
+        weight: string | number | undefined,
+    ): void {
         this.add(
             new Text({
                 x: ++this.$cnt ? (this.children[this.$cnt - 1] as Text).ox + gap : 0,

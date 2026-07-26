@@ -19,7 +19,11 @@ export default async function handler(req: any, res: any) {
             timeFilter = sql` AND s.created_at >= ${since}`;
         } else if (period === "week") {
             const dayOfWeek = now.getDay();
-            const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((dayOfWeek + 6) % 7)).toISOString();
+            const monday = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate() - ((dayOfWeek + 6) % 7),
+            ).toISOString();
             timeFilter = sql` AND s.created_at >= ${monday}`;
         } else if (period === "month") {
             const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();

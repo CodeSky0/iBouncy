@@ -17,6 +17,8 @@ declare module "@leafer-ui/display" {
         rx: number;
         ty: number;
         by: number;
+        offsetX: number;
+        offsetY: number;
         render_(): void;
         cull_(): void;
         show_(): void;
@@ -26,5 +28,13 @@ declare module "@leafer-ui/display" {
         fadeTo_(target: number, dur: number, dly?: number): IAnimate;
         fadeIn_(dur: number, dly?: number): IAnimate;
         fadeOut_(dur: number, dly?: number): IAnimate;
+        hoverStyle?: Record<string, unknown> | null;
+        on(event: string, handler: (...args: unknown[]) => void): void;
+    }
+}
+
+declare module "leafer-game" {
+    interface Leafer {
+        killAnimate(ani: IAnimate): void;
     }
 }

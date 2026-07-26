@@ -11,7 +11,13 @@ export type CloudUser = {
 export type ScoreRecord = { id: number; score: number; createdAt: string };
 export type LeaderboardEntry = { rank: number; userId: number; displayName: string; bestScore: number; bestAt: string };
 export type TrendPoint = { day: string; games: number; bestScore: number; totalScore: number };
-export type ScoreSummary = { games: number; bestScore: number; totalScore: number; lastScore: number; lastAt: string | null };
+export type ScoreSummary = {
+    games: number;
+    bestScore: number;
+    totalScore: number;
+    lastScore: number;
+    lastAt: string | null;
+};
 
 export async function me(): Promise<CloudUser | null> {
     const r = await apiFetch<{ user: CloudUser | null }>("/api/auth/me");
@@ -78,7 +84,10 @@ export async function resetPassword(email: string, code: string, password: strin
  * 写入成绩（整数）。本项目 UI 显示 1 位小数，因此这里建议传「score * 10」。
  */
 export async function addScore(score: number, clientId?: string | null): Promise<void> {
-    await apiFetch<{ saved: boolean }>("/api/scores/add", { method: "POST", json: { score, clientId: clientId || null } });
+    await apiFetch<{ saved: boolean }>("/api/scores/add", {
+        method: "POST",
+        json: { score, clientId: clientId || null },
+    });
 }
 
 export async function listScores(limit = 20): Promise<ScoreRecord[]> {

@@ -23,8 +23,8 @@ export default class KeyboardSolution {
                 code: e.code,
             });
         };
-        leafer.on(KeyEvent.HOLD, (e) => KeyEventCallback(e, this.HOLD));
-        leafer.on(KeyEvent.UP, (e) => KeyEventCallback(e, this.UP));
+        leafer.on(KeyEvent.HOLD, (raw) => KeyEventCallback(raw as { code: string }, this.HOLD));
+        leafer.on(KeyEvent.UP, (raw) => KeyEventCallback(raw as { code: string }, this.UP));
     }
 
     whenHold(callback: (payload: RoutedKeyboardPayload) => void): void {

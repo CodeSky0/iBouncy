@@ -65,7 +65,7 @@ export default class E_Timing extends Group {
     }
 
     start_(): void {
-        this.alarm && timer.cancelInterval(this.alarm);
+        if (this.alarm) timer.cancelInterval(this.alarm);
         this.alarm = timer.newInterval(this.#loopPerSecond.bind(this), 1000);
     }
 

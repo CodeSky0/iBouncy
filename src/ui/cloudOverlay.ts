@@ -6,21 +6,10 @@
  * {@link ./cloudModals} while utilities live in {@link ./cloudUtils}.
  */
 import * as cloud from "../cloud/client";
-import { clearSynced, markSynced, pendingLocalScores } from "../cloud/localScores";
+import { markSynced, pendingLocalScores } from "../cloud/localScores";
 import { eventBus, GEV } from "../events";
-import {
-    type SyncLocalResult,
-    type CloudUIContext,
-    el,
-    addRippleEffect,
-    addRippleStyle,
-} from "./cloudUtils";
-import {
-    type ModalHelpers,
-    renderAuthModal,
-    renderHistoryModal,
-    renderLeaderboardModal,
-} from "./cloudModals";
+import { type SyncLocalResult, type CloudUIContext, el, addRippleEffect, addRippleStyle } from "./cloudUtils";
+import { type ModalHelpers, renderAuthModal, renderHistoryModal, renderLeaderboardModal } from "./cloudModals";
 import { soundManager } from "../audio/SoundManager";
 
 export type { SyncLocalResult } from "./cloudUtils";
@@ -54,7 +43,7 @@ export function initCloudOverlay(): {
     root.appendChild(soundBtn);
     updateSoundIcon();
 
-    soundBtn.addEventListener("click", (e) => {
+    soundBtn.addEventListener("click", (_e) => {
         soundManager.toggleMute();
         updateSoundIcon();
     });

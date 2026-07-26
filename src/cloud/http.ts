@@ -1,10 +1,7 @@
 export type ApiOk<T> = { ok: true } & T;
 export type ApiErr = { ok: false; error: string };
 
-export async function apiFetch<T>(
-    input: string,
-    init?: RequestInit & { json?: unknown },
-): Promise<ApiOk<T>> {
+export async function apiFetch<T>(input: string, init?: RequestInit & { json?: unknown }): Promise<ApiOk<T>> {
     const headers: Record<string, string> = {
         "X-Requested-With": "XMLHttpRequest",
         ...(init?.headers as Record<string, string> | undefined),
@@ -33,4 +30,3 @@ export async function apiFetch<T>(
     }
     return data as ApiOk<T>;
 }
-

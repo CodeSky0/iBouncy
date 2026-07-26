@@ -2,7 +2,7 @@ import { initializeApp, KS } from "./app/bootstrap";
 import { GameConf, UIConf } from "./config";
 import { evBus, GEV } from "./events";
 import { abs, floor } from "./utils/math";
-import { effectsEnabled, setEffectsEnabled } from "./core/effects";
+import { setEffectsEnabled } from "./core/effects";
 import { prevTimeStamp, setPrevTimeStamp } from "./app/timing";
 import { GI, GP, timer, leafer, Ball, Tablet } from "./core/instances";
 import { Mask, FPS } from "./ui/elements";
@@ -24,7 +24,11 @@ const collisionParticle = new X_CollisionParticle();
 const nativeParticle = (() => {
     const cvs = document.querySelector("canvas");
     if (!cvs) return null;
-    try { return new X_NativeParticle(cvs as HTMLCanvasElement); } catch { return null; }
+    try {
+        return new X_NativeParticle(cvs as HTMLCanvasElement);
+    } catch {
+        return null;
+    }
 })();
 
 let accumulated = 0;
@@ -36,6 +40,35 @@ Mask.show_("#FFF", 1, 0.7, 0.4);
 GP.renderElse();
 rafId = requestAnimationFrame(firstFrame);
 timer.newInterval(() => FPS.assign_(timer.FPS), GameConf.FPS_DETECT_INTERVAL * 1000);
+
+// Service Worker 注册（PWA 离线支持）
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+        // SW 注册失败不影响游戏运行
+    });
+}
+
+// 开发模式性能日志
+if (import.meta.env.DEV) {
+    const perfLog: number[] = [];
+    timer.newInterval(() => {
+        const fps = timer.FPS;
+        if (Number.isFinite(fps)) {
+            perfLog.push(fps);
+            if (perfLog.length >= 150) {
+                const avg = perfLog.reduce((a, b) => a + b, 0) / perfLog.length;
+                const sorted = [...perfLog].sort((a, b) => a - b);
+                const p1 = sorted[Math.floor(sorted.length * 0.01)];
+                const p99 = sorted[Math.floor(sorted.length * 0.99)];
+                console.debug(
+                    `[Perf] FPS: avg=${avg.toFixed(1)} p1=${p1.toFixed(1)} p99=${p99.toFixed(1)} samples=${perfLog.length}`,
+                );
+                perfLog.length = 0;
+            }
+        }
+    }, GameConf.FPS_DETECT_INTERVAL * 1000);
+}
+
 initializeApp().catch((err) => {
     console.error("Initialization failed...\n", err);
     // 显示错误边界
@@ -136,7 +169,7 @@ function gameLoop(timeStamp: number): void {
 }
 
 evBus.on(GEV.VISIBILITY_CHANGE, (payload) => {
-    !payload.visible && GP.pause();
+    if (!payload.visible) GP.pause();
 });
 
 // 游戏结束时：如果已登录则把本局成绩写入云端。

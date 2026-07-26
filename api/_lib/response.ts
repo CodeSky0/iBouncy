@@ -28,7 +28,8 @@ export function methodNotAllowed(res: any, allow: string) {
 }
 
 export function serverError(res: any, err: unknown) {
-    const msg = err && typeof err === "object" && "message" in err ? String((err as any).message) : "Internal Server Error";
+    const msg =
+        err && typeof err === "object" && "message" in err ? String((err as any).message) : "Internal Server Error";
     return json(res, 500, { ok: false, error: msg });
 }
 
@@ -40,4 +41,3 @@ export function tooManyRequests(res: any, message?: string) {
 export function forbidden(res: any, message?: string) {
     return json(res, 403, { ok: false, error: message || "Forbidden" });
 }
-

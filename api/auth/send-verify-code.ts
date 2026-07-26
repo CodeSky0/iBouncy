@@ -12,7 +12,9 @@ import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
 import { smtpConfigured, sendVerificationCode } from "../_lib/mail.js";
 
 function normalizeEmail(email: unknown) {
-    return String(email || "").trim().toLowerCase();
+    return String(email || "")
+        .trim()
+        .toLowerCase();
 }
 
 function generateCode(): string {
@@ -37,6 +39,7 @@ export default async function handler(req: any, res: any) {
         const purpose = body.purpose === "reset" ? "reset" : "verify";
 
         if (!email || !email.includes("@")) return badRequest(res, "邮箱格式不正确");
+        if (email.length > 254) return badRequest(res, "邮箱地址过长");
 
         const code = generateCode();
         const sql = getSql();

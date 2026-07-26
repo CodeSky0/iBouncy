@@ -1,5 +1,4 @@
 import { Ellipse, AnimateEvent } from "leafer-game";
-import { leafer } from "../core/instances";
 import { effectsEnabled } from "../core/effects";
 import { fastRandom } from "../utils/prng";
 import { UIConf } from "../config";
@@ -41,11 +40,6 @@ export default class X_CollisionParticle {
 
         for (let i = 0; i < conf.COUNT; i++) {
             const p = this.acquireShape();
-            const angle = (Math.PI * 2 * i) / conf.COUNT + (fastRandom() - 0.5) * 0.5;
-            const speed = 0.3 + fastRandom() * 0.7;
-            const vx = Math.cos(angle) * conf.SPREAD * speed;
-            const vy = Math.sin(angle) * conf.SPREAD * speed;
-
             p.x = x;
             p.y = y;
             p.w = p.h = (conf.MIN_RADIUS + fastRandom() * (conf.MAX_RADIUS - conf.MIN_RADIUS)) * 2;
@@ -56,13 +50,7 @@ export default class X_CollisionParticle {
 
             const duration = conf.DURATION * (0.5 + fastRandom() * 0.5);
 
-            const aniFade = p.animate(
-                [
-                    { opacity: 0.9 },
-                    { opacity: 0 },
-                ],
-                { duration, easing: "sine-in", join: true },
-            );
+            const aniFade = p.animate([{ opacity: 0.9 }, { opacity: 0 }], { duration, easing: "sine-in", join: true });
 
             // 使用 Leafer AnimateEvent.COMPLETED 替代 setTimeout，消除闭包/定时器开销
             aniFade.on(AnimateEvent.COMPLETED, () => {
@@ -73,8 +61,8 @@ export default class X_CollisionParticle {
 
     private recycleShape(shape: Ellipse): void {
         shape.visible = false;
-        (shape as unknown as Record<string, unknown>).offsetX = 0;
-        (shape as unknown as Record<string, unknown>).offsetY = 0;
+        shape.offsetX = 0;
+        shape.offsetY = 0;
         this.activeSet.delete(shape);
         if (this.pool.length < this.poolLimit) {
             this.pool.push(shape);

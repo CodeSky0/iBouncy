@@ -1,9 +1,7 @@
 import type { GameEventName } from "./channels";
 import type { GameEventPayloadMap } from "./payloads";
 
-type AnyHandler =
-    | (() => void)
-    | ((payload: GameEventPayloadMap[GameEventName]) => void);
+type AnyHandler = (() => void) | ((payload: GameEventPayloadMap[GameEventName]) => void);
 
 /**
  * 应用级类型安全事件总线（同步派发、订阅即返回取消函数）。
@@ -13,9 +11,7 @@ export class GameEventBus {
 
     on<K extends keyof GameEventPayloadMap>(
         event: K,
-        callback: GameEventPayloadMap[K] extends undefined
-            ? () => void
-            : (payload: GameEventPayloadMap[K]) => void,
+        callback: GameEventPayloadMap[K] extends undefined ? () => void : (payload: GameEventPayloadMap[K]) => void,
     ): () => void {
         if (!this.events.has(event)) {
             this.events.set(event, new Set());
@@ -28,9 +24,7 @@ export class GameEventBus {
 
     once<K extends keyof GameEventPayloadMap>(
         event: K,
-        callback: GameEventPayloadMap[K] extends undefined
-            ? () => void
-            : (payload: GameEventPayloadMap[K]) => void,
+        callback: GameEventPayloadMap[K] extends undefined ? () => void : (payload: GameEventPayloadMap[K]) => void,
     ): void {
         const wrapped = ((...args: unknown[]) => {
             this.off(event, wrapped as AnyHandler);

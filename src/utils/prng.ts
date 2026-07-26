@@ -13,7 +13,7 @@
  * 碰撞帧 10+ 次 Math.random() → ~0.01ms,
  * fastRandom 可降至 ~0.0001ms。
  */
-let seed = (Date.now() % 2147483647) || 1;
+let seed = Date.now() % 2147483647 || 1;
 
 export function fastRandom(): number {
     seed = (seed * 16807) % 2147483647;

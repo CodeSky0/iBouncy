@@ -161,13 +161,10 @@ export default function extendUI(): void {
         },
         fade_: {
             value: function (this: UI, original: number, target: number, dur: number, dly = 0) {
-                return this.animate(
-                    [{ opacity: original }, { opacity: target }],
-                    {
-                        duration: dur,
-                        delay: dly,
-                    },
-                );
+                return this.animate([{ opacity: original }, { opacity: target }], {
+                    duration: dur,
+                    delay: dly,
+                });
             },
         },
         fadeTo_: {

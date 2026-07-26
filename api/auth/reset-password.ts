@@ -11,7 +11,9 @@ import { ok, badRequest, methodNotAllowed, serverError, tooManyRequests } from "
 import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
 
 function normalizeEmail(email: unknown) {
-    return String(email || "").trim().toLowerCase();
+    return String(email || "")
+        .trim()
+        .toLowerCase();
 }
 
 export default async function handler(req: any, res: any) {
@@ -28,8 +30,10 @@ export default async function handler(req: any, res: any) {
         const password = String(body.password || "");
 
         if (!email || !email.includes("@")) return badRequest(res, "邮箱格式不正确");
+        if (email.length > 254) return badRequest(res, "邮箱地址过长");
         if (!/^\d{6}$/.test(code)) return badRequest(res, "验证码为 6 位数字");
         if (password.length < 6) return badRequest(res, "密码至少 6 位");
+        if (password.length > 128) return badRequest(res, "密码不能超过 128 位");
 
         const sql = getSql();
         await ensureSchema(sql);

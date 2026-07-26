@@ -129,10 +129,11 @@ export default class E_Scoring extends Group {
             if (effectsEnabled) {
                 this.Combo.opacity = 1;
                 this.Combo.scaleX = this.Combo.scaleY = 0.6;
-                this.Combo.animate(
-                    [{ style: { scaleX: 1, scaleY: 1 } }],
-                    { duration: 0.15, easing: "back-out", join: true },
-                );
+                this.Combo.animate([{ style: { scaleX: 1, scaleY: 1 } }], {
+                    duration: 0.15,
+                    easing: "back-out",
+                    join: true,
+                });
             }
         } else {
             this.Combo.visible = false;
@@ -290,15 +291,14 @@ export default class E_Scoring extends Group {
         tip.fontSize = initialFontSize;
 
         // Leafer 的 translate 使用 `offsetX/offsetY`，这里强制把起点归零，避免复用时从上次动画终点开始。
-        // 由于类型声明可能不包含 offsetX/offsetY，这里通过类型断言写回。
-        (tip as unknown as { offsetX?: number }).offsetX = 0;
-        (tip as unknown as { offsetY?: number }).offsetY = 0;
+        tip.offsetX = 0;
+        tip.offsetY = 0;
     }
 
     #killTipAnimations_(tip: Text): void {
         const anis = this.tipAnis.get(tip);
         if (anis) {
-            for (const ani of anis) leafer.killAnimate(ani as never);
+            for (const ani of anis) leafer.killAnimate(ani);
         }
         this.tipAnis.delete(tip);
 

@@ -106,8 +106,8 @@ export default class EmbeddedTimer {
             }
             if (duty.paused) continue;
             if (timeStamp < duty.start) continue;
-            duty.options.recFramesCnt && ++duty.data.framesCnt;
-            duty.options.recElapsedTime && (duty.data.elapsed = timeStamp - duty.start);
+            if (duty.options.recFramesCnt) ++duty.data.framesCnt;
+            if (duty.options.recElapsedTime) duty.data.elapsed = timeStamp - duty.start;
             if (timeStamp - duty.step >= duty.duration) {
                 ++duty.data.cnt;
                 duty.callback(duty.data);

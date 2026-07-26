@@ -1,14 +1,24 @@
 import bcrypt from "bcryptjs";
 import { getSql, ensureSchema, firstSqlRow } from "../_lib/db.js";
 import { readJsonBody } from "../_lib/body.js";
-import { ok, badRequest, unauthorized, methodNotAllowed, serverError, tooManyRequests, forbidden } from "../_lib/response.js";
+import {
+    ok,
+    badRequest,
+    unauthorized,
+    methodNotAllowed,
+    serverError,
+    tooManyRequests,
+    forbidden,
+} from "../_lib/response.js";
 import { signToken, buildAuthCookie } from "../_lib/auth.js";
 import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
 import { csrfCheck } from "../_lib/csrf.js";
-import { toUserPayload, type UserRow } from "../_lib/user.js";
+import { toUserPayload } from "../_lib/user.js";
 
 function normalizeEmail(email: unknown) {
-    return String(email || "").trim().toLowerCase();
+    return String(email || "")
+        .trim()
+        .toLowerCase();
 }
 
 type LoginUserRow = {
@@ -36,7 +46,9 @@ export default async function handler(req: any, res: any) {
         const password = String(body.password || "");
 
         if (!raw) return badRequest(res, "请输入用户名或邮箱");
+        if (raw.length > 254) return badRequest(res, "输入过长");
         if (!password) return badRequest(res, "请输入密码");
+        if (password.length > 128) return badRequest(res, "密码不能超过 128 位");
 
         const sql = getSql();
         await ensureSchema(sql);

@@ -32,7 +32,7 @@ class MaskLayer {
         } else {
             Mask.show_("#FFF", 0, 0.4, 0.8);
         }
-        autoShow && this.$pages.get(i)!.show_();
+        if (autoShow) this.$pages.get(i)!.show_();
         this.$showing = i;
     }
 
