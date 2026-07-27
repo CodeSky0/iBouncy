@@ -2,7 +2,7 @@ import { Group, Rect, Path, Text } from "leafer-game";
 import { evBus, GEV } from "../events";
 import { GP, Ball, Tablet, Timing } from "../core/instances";
 import { Scoring } from "../ui/elements";
-import { ReplayPlayer, type ReplayMetadata } from "../core/replay";
+import { ReplayPlayer, ReplayRecorder, type ReplayMetadata } from "../core/replay";
 import { UIConf } from "../config";
 
 export default class E_ReplayControls extends Group {
@@ -15,9 +15,13 @@ export default class E_ReplayControls extends Group {
     private progressHandle: Rect;
     private speedText: Text;
     private timeText: Text;
+    private exportBtn: Group;
+    private exportText: Text;
     private replayPlayer: ReplayPlayer;
+    private replayRecorder: ReplayRecorder;
     private isDraggingProgress = false;
     private isReplayMode = false;
+    private currentReplayId: string | null = null;
 
     constructor() {
         super({
@@ -30,6 +34,7 @@ export default class E_ReplayControls extends Group {
         });
 
         this.replayPlayer = new ReplayPlayer();
+        this.replayRecorder = new ReplayRecorder();
         this.#setupUI();
         this.#setupEventListeners();
         this.#setupPlayerCallbacks();
@@ -119,6 +124,23 @@ export default class E_ReplayControls extends Group {
             around: "center",
         });
 
+        // Export button
+        this.exportBtn = new Group({
+            x: GP.bw - 150,
+            y: 40,
+            origin: "center",
+            cursor: "pointer",
+        });
+
+        this.exportText = new Text({
+            text: "导出",
+            fill: "#FFFFFF",
+            fontSize: 14,
+            around: "center",
+        });
+
+        this.exportBtn.add(this.exportText);
+
         this.add([
             this.background,
             this.playPauseBtn,
@@ -127,6 +149,7 @@ export default class E_ReplayControls extends Group {
             this.progressHandle,
             this.speedText,
             this.timeText,
+            this.exportBtn,
         ]);
     }
 
@@ -159,6 +182,13 @@ export default class E_ReplayControls extends Group {
             const nextIndex = (currentIndex + 1) % speeds.length;
             this.replayPlayer.setPlaybackSpeed(speeds[nextIndex]);
             this.speedText.text = `${speeds[nextIndex].toFixed(1)}x`;
+        });
+
+        // Export button
+        this.exportBtn.on("pointerdown", () => {
+            if (this.currentReplayId) {
+                this.replayRecorder.exportReplay(this.currentReplayId);
+            }
         });
 
         // Global drag events for progress handle
@@ -204,6 +234,7 @@ export default class E_ReplayControls extends Group {
         this.progressBar.width = data.width - 200;
         this.speedText.x = data.width - 80;
         this.timeText.x = data.width - 80;
+        this.exportBtn.x = data.width - 150;
     }
 
     #updatePlayPauseIcon(isPlaying: boolean): void {
@@ -267,6 +298,7 @@ export default class E_ReplayControls extends Group {
     loadReplay(replayId: string): boolean {
         const success = this.replayPlayer.loadReplay(replayId);
         if (success) {
+            this.currentReplayId = replayId;
             this.isReplayMode = true;
             this.#updateProgressUI();
             const metadata = this.replayPlayer.getMetadata();

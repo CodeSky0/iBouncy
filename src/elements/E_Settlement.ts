@@ -1,7 +1,6 @@
 import { AnimateEvent, Group, Text } from "leafer-game";
 import { evBus, GEV } from "../events";
-import { GP, ReplayControls } from "../core/instances";
-import { ReplayRecorder } from "../core/replay";
+import { GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
 import { t } from "../i18n";
@@ -12,7 +11,6 @@ export default class E_Settlement extends Group {
     Hint1: TextLine;
     Hint2: TextLine;
     Hint3: TextLine;
-    private replayRecorder: ReplayRecorder;
 
     constructor() {
         super({
@@ -23,7 +21,6 @@ export default class E_Settlement extends Group {
             visible: false,
             zIndex: 991,
         });
-        this.replayRecorder = new ReplayRecorder();
 
         this.Title = new Text({
             x: GP.bw * this.confUI.X_RATIO,
@@ -61,11 +58,12 @@ export default class E_Settlement extends Group {
             GP.bw * this.confUI.X_RATIO,
             GP.bh * this.confUI.Hint2.Y_RATIO + this.confUI.Hint2.Y_OFFSET + 30,
             "center",
-            "#FFA500",
+            "#000000",
             this.confUI.Hint2.FONT_SIZE,
         )
-            .$append("Watch Replay")
-            .$append(" [R]", 3, void 0, void 0, "bold");
+            .$append("按 ")
+            .$append("R", 3, void 0, void 0, "bold")
+            .$append(" 观看回放");
         this.Hint3.opacity = 0;
         this.add([this.Title, this.Hint1, this.Hint2, this.Hint3]);
 

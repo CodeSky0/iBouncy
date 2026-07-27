@@ -57,4 +57,5 @@ export const Tablet = new E_Tablet();
 export const GI = new Interaction({ Ball, Tablet, timer, GP });
 
 export const Timing = new E_Timing();
-export const ReplayControls = new E_ReplayControls();
+// ReplayControls will be initialized later after viewport is ready
+export let ReplayControls: E_ReplayControls | null = null;

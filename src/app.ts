@@ -4,7 +4,7 @@ import { evBus, GEV } from "./events";
 import { abs, floor } from "./utils/math";
 import { setEffectsEnabled } from "./core/effects";
 import { prevTimeStamp, setPrevTimeStamp } from "./app/timing";
-import { GI, GP, timer, leafer, Ball, Tablet, Timing, ReplayControls } from "./core/instances";
+import { GI, GP, timer, leafer, Ball, Tablet, Timing } from "./core/instances";
 import { Mask, FPS, Scoring } from "./ui/elements";
 import { initCloudOverlay } from "./ui/cloudOverlay";
 import { addScore } from "./cloud/client";
@@ -14,6 +14,7 @@ import { touchCtrl } from "./utils/TouchController";
 import X_CollisionParticle from "./elements_extensions/X_CollisionParticle";
 import X_NativeParticle from "./elements_extensions/X_NativeParticle";
 import { ReplayRecorder } from "./core/replay";
+import E_ReplayControls from "./elements/E_ReplayControls";
 
 /** 碰撞加分公式用：板宽恒定，提出循环外避免每子步除法。 */
 const TABLET_2PI_OVER_W = (Math.PI * 2) / UIConf.Tablet.WIDTH;
@@ -34,6 +35,7 @@ const nativeParticle = (() => {
 
 /** 赛后回放系统 */
 const replayRecorder = new ReplayRecorder();
+let replayControls: E_ReplayControls | null = null;
 
 // 设置回放记录器的数据源
 replayRecorder.setScoreSource(() => (Scoring as any).v / 10);
@@ -50,12 +52,12 @@ GP.renderElse();
 rafId = requestAnimationFrame(firstFrame);
 timer.newInterval(() => FPS.assign_(timer.FPS), GameConf.FPS_DETECT_INTERVAL * 1000);
 
-// Service Worker 注册（PWA 离线支持）
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/sw.js").catch(() => {
-        // SW 注册失败不影响游戏运行
-    });
-}
+// Service Worker 注册（PWA 离线支持）- 暂时禁用以避免开发环境问题
+// if ("serviceWorker" in navigator && import.meta.env.PROD) {
+//     navigator.serviceWorker.register("/sw.js").catch(() => {
+//         // SW 注册失败不影响游戏运行
+//     });
+// }
 
 // 开发模式性能日志
 if (import.meta.env.DEV) {
@@ -171,7 +173,7 @@ function gameLoop(timeStamp: number): void {
             }
         }
         // 记录回放帧（每帧记录一次，而非每个子步）
-        if (!ReplayControls.isPlaying()) {
+        if (!replayControls?.isPlaying()) {
             replayRecorder.recordFrame();
         }
         // 原生 Canvas 粒子系统渲染（绕过 Leafer 场景图）
@@ -179,7 +181,7 @@ function gameLoop(timeStamp: number): void {
     }
 
     // 更新回放播放器
-    ReplayControls.update();
+    replayControls?.update();
 
     rafId = requestAnimationFrame(gameLoop);
 }
@@ -258,21 +260,25 @@ KS.whenUp((e) => {
             break;
         case "KeyR":
             if (GP.at("over")) {
+                // Initialize replay controls if not already done
+                if (!replayControls) {
+                    replayControls = new E_ReplayControls();
+                }
                 // Start replay of the last game
                 const replays = replayRecorder.getReplays();
                 if (replays.length > 0) {
                     const lastReplay = replays[replays.length - 1];
-                    if (ReplayControls.loadReplay(lastReplay.metadata.id)) {
-                        ReplayControls.show();
-                        ReplayControls.startPlayback();
+                    if (replayControls.loadReplay(lastReplay.metadata.id)) {
+                        replayControls.show();
+                        replayControls.startPlayback();
                     }
                 }
             }
             break;
         case "Escape":
-            if (ReplayControls.isPlaying()) {
-                ReplayControls.stopPlayback();
-                ReplayControls.hide();
+            if (replayControls?.isPlaying()) {
+                replayControls.stopPlayback();
+                replayControls.hide();
                 GP.prepared();
             }
             break;

@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#20A8D7">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="iBouncy">
     <link rel="preload" href="/fonts/HYDiSiKe-U.woff2" as="font" type="font/woff2" crossorigin>
@@ -20,10 +20,6 @@
 <body>
 <canvas></canvas>
     <img id="loading" src="/svg/loading.svg" alt="Loading..." draggable="false">
-    <script>
-        // 根据浏览器语言预设错误页面文本（i18n 模块加载前）
-        (function(){var l=(navigator.language||"").startsWith("zh")?1:0;var m=l?["游戏加载失败","请检查网络连接或尝试刷新页面。如果问题持续存在，请尝试使用最新版 Chrome 或 Edge 浏览器。","重新加载"]:["Failed to load game","Please check your network connection or try refreshing the page. If the problem persists, try using the latest version of Chrome or Edge.","Reload"];document.getElementById("error-title").textContent=m[0];document.getElementById("error-message").textContent=m[1];document.getElementById("error-retry-btn").textContent=m[2];})();
-    </script>
 <div id="cloud-ui-root"></div>
 <div id="error-screen">
     <div class="error-icon">!</div>
@@ -31,6 +27,19 @@
     <p id="error-message"></p>
     <button class="error-retry-btn" id="error-retry-btn" onclick="location.reload()"></button>
 </div>
+    <script>
+        // 根据浏览器语言预设错误页面文本（i18n 模块加载前）
+        (function(){
+            var l=(navigator.language||"").startsWith("zh")?1:0;
+            var m=l?["游戏加载失败","请检查网络连接或尝试刷新页面。如果问题持续存在，请尝试使用最新版 Chrome 或 Edge 浏览器。","重新加载"]:["Failed to load game","Please check your network connection or try refreshing the page. If the problem persists, try using the latest version of Chrome or Edge.","Reload"];
+            var errorTitle=document.getElementById("error-title");
+            var errorMessage=document.getElementById("error-message");
+            var errorRetryBtn=document.getElementById("error-retry-btn");
+            if(errorTitle) errorTitle.textContent=m[0];
+            if(errorMessage) errorMessage.textContent=m[1];
+            if(errorRetryBtn) errorRetryBtn.textContent=m[2];
+        })();
+    </script>
 <script defer type="module" src="src/app.ts"></script>
 </body>
 </html>

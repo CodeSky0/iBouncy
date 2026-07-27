@@ -175,6 +175,74 @@ export class ReplayRecorder {
             console.error("Failed to clear replays:", e);
         }
     }
+
+    exportReplay(replayId: string): void {
+        try {
+            const replays = this.#loadAllReplays();
+            const replay = replays.find((r) => r.metadata.id === replayId);
+            if (!replay) {
+                console.error("Replay not found:", replayId);
+                return;
+            }
+
+            const dataStr = JSON.stringify(replay, null, 2);
+            const dataBlob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `ibouncy_replay_${replay.metadata.id}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error("Failed to export replay:", e);
+        }
+    }
+
+    async importReplay(file: File): Promise<ReplayData | null> {
+        try {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target?.result as string);
+                        if (this.#validateReplayData(data)) {
+                            this.#saveReplay(data);
+                            resolve(data);
+                        } else {
+                            console.error("Invalid replay data format");
+                            resolve(null);
+                        }
+                    } catch (e) {
+                        console.error("Failed to parse replay file:", e);
+                        resolve(null);
+                    }
+                };
+                reader.onerror = () => {
+                    console.error("Failed to read replay file");
+                    resolve(null);
+                };
+                reader.readAsText(file);
+            });
+        } catch (e) {
+            console.error("Failed to import replay:", e);
+            return null;
+        }
+    }
+
+    #validateReplayData(data: any): data is ReplayData {
+        return (
+            data &&
+            data.metadata &&
+            typeof data.metadata.id === "string" &&
+            typeof data.metadata.score === "number" &&
+            typeof data.metadata.win === "boolean" &&
+            data.frames &&
+            Array.isArray(data.frames) &&
+            data.frames.length > 0
+        );
+    }
 }
 
 export class ReplayPlayer {
