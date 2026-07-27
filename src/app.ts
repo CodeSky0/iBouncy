@@ -39,7 +39,10 @@ let replayControls: E_ReplayControls | null = null;
 
 // 设置回放记录器的数据源
 replayRecorder.setScoreSource(() => (Scoring as any).v / 10);
-replayRecorder.setComboSource(() => ({ combo: (Scoring as any).currentCombo, multiplier: (Scoring as any).currentMultiplier }));
+replayRecorder.setComboSource(() => ({
+    combo: (Scoring as any).currentCombo,
+    multiplier: (Scoring as any).currentMultiplier,
+}));
 replayRecorder.setTimingSource(() => Timing.remaining);
 
 let accumulated = 0;

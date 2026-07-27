@@ -1,6 +1,6 @@
 /**
  * Replay System - Records and plays back game sessions
- * 
+ *
  * Records minimal state per frame to enable efficient storage and playback.
  * State includes ball/tablet positions/velocities, score, combo, timing.
  */
@@ -331,7 +331,7 @@ export class ReplayPlayer {
 
         if (elapsed >= targetFrameTime) {
             this.lastFrameTime = now;
-            
+
             if (this.currentFrame < this.replayData.frames.length) {
                 const frame = this.replayData.frames[this.currentFrame];
                 this.onFrameUpdate?.(frame);

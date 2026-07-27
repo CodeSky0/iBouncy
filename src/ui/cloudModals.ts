@@ -122,7 +122,10 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
     const closeBtn = createButtonWithLoader(t("common.close"), "btn");
     closeBtn.onclick = () => helpers.setBackdropOpen(false);
 
-    const submitBtn = createButtonWithLoader(ctx.mode === "register" ? t("auth.createAccount") : t("auth.login"), "btn primary");
+    const submitBtn = createButtonWithLoader(
+        ctx.mode === "register" ? t("auth.createAccount") : t("auth.login"),
+        "btn primary",
+    );
 
     const hint = el("div", "hint auth-hint");
 

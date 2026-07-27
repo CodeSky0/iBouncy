@@ -5,15 +5,16 @@ export type Locale = "zh" | "en";
 
 const messages = { zh, en } as const;
 type Messages = typeof zh;
-type NestedKeyOf<Obj, Prefix extends string = ""> = Obj extends Record<string, any>
-    ? {
-          [K in keyof Obj & string]: K extends string
-              ? Obj[K] extends string
-                  ? `${Prefix}${K}`
-                  : NestedKeyOf<Obj[K], `${Prefix}${K}.`>
-              : never;
-      }[keyof Obj & string]
-    : never;
+type NestedKeyOf<Obj, Prefix extends string = ""> =
+    Obj extends Record<string, any>
+        ? {
+              [K in keyof Obj & string]: K extends string
+                  ? Obj[K] extends string
+                      ? `${Prefix}${K}`
+                      : NestedKeyOf<Obj[K], `${Prefix}${K}.`>
+                  : never;
+          }[keyof Obj & string]
+        : never;
 
 type TranslationKey = NestedKeyOf<Messages>;
 

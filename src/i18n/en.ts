@@ -133,7 +133,8 @@ export const en: typeof import("./zh").zh = {
         cloudBestScore: "Cloud · Best Score",
         cloudTrend: "Cloud · Last 7 Days (Daily Best)",
         noRecordsTitle: "No records",
-        noRecordsDesc: "You are not logged in. Only local records are shown (currently empty). Press L to log in for cloud sync.",
+        noRecordsDesc:
+            "You are not logged in. Only local records are shown (currently empty). Press L to log in for cloud sync.",
         pendingSyncTitle: "Pending Sync",
         pendingSyncDesc: "{0} local records not synced. Click Sync Local to upload (deduplication applied).",
         startGameTitle: "Start a game",
@@ -171,8 +172,7 @@ export const en: typeof import("./zh").zh = {
         requirePassword: "Please enter your password",
         passwordTooLong: "Password cannot exceed 128 characters",
         invalidEmail: "Invalid email format",
-        invalidUsernameLogin:
-            "Username must be 3–20 lowercase letters, digits, or underscores, or use email to login",
+        invalidUsernameLogin: "Username must be 3–20 lowercase letters, digits, or underscores, or use email to login",
         invalidCredentials: "Incorrect username/email or password",
         invalidUsernameFormat: "Username must be 3–20 lowercase letters, digits, or underscores",
         emailTooLong: "Email address too long",

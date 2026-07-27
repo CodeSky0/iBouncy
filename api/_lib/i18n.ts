@@ -47,8 +47,7 @@ const messages: Record<Locale, Record<string, string>> = {
         requirePassword: "Please enter your password",
         passwordTooLong: "Password cannot exceed 128 characters",
         invalidEmail: "Invalid email format",
-        invalidUsernameLogin:
-            "Username must be 3–20 lowercase letters, digits, or underscores, or use email to login",
+        invalidUsernameLogin: "Username must be 3–20 lowercase letters, digits, or underscores, or use email to login",
         invalidCredentials: "Incorrect username/email or password",
         invalidUsernameFormat: "Username must be 3–20 lowercase letters, digits, or underscores",
         emailTooLong: "Email address too long",
@@ -76,8 +75,7 @@ const messages: Record<Locale, Record<string, string>> = {
         mailResetSubject: "iBouncy - Password Reset Code",
         mailResetTitle: "iBouncy Password Reset",
         mailResetBody: "You are requesting a password reset for your iBouncy account. Here is your verification code:",
-        mailResetExpiry:
-            "This code is valid for 10 minutes. If you did not request this, please ignore this email.",
+        mailResetExpiry: "This code is valid for 10 minutes. If you did not request this, please ignore this email.",
     },
 };
 
