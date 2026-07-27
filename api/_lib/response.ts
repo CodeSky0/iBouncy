@@ -35,7 +35,7 @@ export function serverError(res: any, err: unknown) {
 
 export function tooManyRequests(res: any, message?: string) {
     res.setHeader("Retry-After", "60");
-    return json(res, 429, { ok: false, error: message || "请求过于频繁，请稍后再试" });
+    return json(res, 429, { ok: false, error: message || "Too Many Requests" });
 }
 
 export function forbidden(res: any, message?: string) {

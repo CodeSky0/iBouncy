@@ -11,6 +11,7 @@ import { eventBus, GEV } from "../events";
 import { type SyncLocalResult, type CloudUIContext, el, addRippleEffect, addRippleStyle } from "./cloudUtils";
 import { type ModalHelpers, renderAuthModal, renderHistoryModal, renderLeaderboardModal } from "./cloudModals";
 import { soundManager } from "../audio/SoundManager";
+import { t } from "../i18n";
 
 export type { SyncLocalResult } from "./cloudUtils";
 
@@ -39,7 +40,7 @@ export function initCloudOverlay(): {
     // ---- Sound toggle button ----
     const soundBtn = el("button", "sound-toggle-btn");
     soundBtn.type = "button";
-    soundBtn.title = "音效开关";
+    soundBtn.title = t("cloudOverlay.soundToggle");
     root.appendChild(soundBtn);
     updateSoundIcon();
 
@@ -51,7 +52,7 @@ export function initCloudOverlay(): {
     function updateSoundIcon(): void {
         const muted = soundManager.muted;
         soundBtn.innerHTML = muted ? SOUND_OFF_SVG_STR : SOUND_ON_SVG_STR;
-        soundBtn.setAttribute("aria-label", muted ? "开启音效" : "关闭音效");
+        soundBtn.setAttribute("aria-label", muted ? t("cloudOverlay.soundOn") : t("cloudOverlay.soundOff"));
     }
 
     // ---- Mutable state ----
@@ -76,7 +77,7 @@ export function initCloudOverlay(): {
     ctx.btnHistory.type = "button";
     ctx.btnLogout.type = "button";
     ctx.backdrop.appendChild(ctx.modalBox);
-    ctx.successToast.textContent = "操作成功！";
+    ctx.successToast.textContent = t("cloudOverlay.successToast");
     root.appendChild(ctx.successToast);
     root.appendChild(ctx.fab);
     root.appendChild(ctx.backdrop);
@@ -151,13 +152,13 @@ export function initCloudOverlay(): {
         pill.replaceChildren();
 
         if (!ctx.user) {
-            ctx.badge.textContent = "未登录";
-            ctx.btnLeaderboard.textContent = "排行榜";
+            ctx.badge.textContent = t("cloudOverlay.notLoggedIn");
+            ctx.btnLeaderboard.textContent = t("cloudOverlay.leaderboard");
             ctx.btnLeaderboard.onclick = (e) => {
                 addRippleEffect(ctx.btnLeaderboard, e as MouseEvent);
                 openLeaderboard();
             };
-            ctx.btnAuth.textContent = "登录 / 注册";
+            ctx.btnAuth.textContent = t("cloudOverlay.loginRegister");
             ctx.btnAuth.onclick = (e) => {
                 addRippleEffect(ctx.btnAuth, e as MouseEvent);
                 openAuth();
@@ -170,14 +171,14 @@ export function initCloudOverlay(): {
         }
 
         ctx.badge.textContent = ctx.user.displayName;
-        ctx.btnLeaderboard.textContent = "排行榜";
+        ctx.btnLeaderboard.textContent = t("cloudOverlay.leaderboard");
         ctx.btnLeaderboard.onclick = (e) => {
             addRippleEffect(ctx.btnLeaderboard, e as MouseEvent);
             openLeaderboard();
         };
-        ctx.btnHistory.textContent = "历史记录";
-        ctx.btnLogout.textContent = "退出";
-        ctx.btnAuth.textContent = "切换账号";
+        ctx.btnHistory.textContent = t("cloudOverlay.history");
+        ctx.btnLogout.textContent = t("cloudOverlay.logout");
+        ctx.btnAuth.textContent = t("cloudOverlay.switchAccount");
 
         ctx.btnHistory.onclick = (e) => {
             addRippleEffect(ctx.btnHistory, e as MouseEvent);
@@ -191,7 +192,7 @@ export function initCloudOverlay(): {
             try {
                 await cloud.logout();
                 ctx.user = null;
-                showSuccess("已退出登录");
+                showSuccess(t("cloudOverlay.loggedOut"));
                 renderFab();
             } catch (e) {
                 console.error(e);

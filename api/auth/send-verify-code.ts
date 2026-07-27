@@ -10,6 +10,7 @@ import { readJsonBody } from "../_lib/body.js";
 import { ok, badRequest, methodNotAllowed, serverError, tooManyRequests } from "../_lib/response.js";
 import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
 import { smtpConfigured, sendVerificationCode } from "../_lib/mail.js";
+import { t } from "../_lib/i18n.js";
 
 function normalizeEmail(email: unknown) {
     return String(email || "")
@@ -31,15 +32,15 @@ export default async function handler(req: any, res: any) {
         }
 
         if (!smtpConfigured()) {
-            return serverError(res, new Error("SMTP 邮件服务未配置，请联系管理员"));
+            return serverError(res, new Error(t(req, "smtpNotConfigured")));
         }
 
         const body = await readJsonBody(req);
         const email = normalizeEmail(body.email);
         const purpose = body.purpose === "reset" ? "reset" : "verify";
 
-        if (!email || !email.includes("@")) return badRequest(res, "邮箱格式不正确");
-        if (email.length > 254) return badRequest(res, "邮箱地址过长");
+        if (!email || !email.includes("@")) return badRequest(res, t(req, "invalidEmail"));
+        if (email.length > 254) return badRequest(res, t(req, "emailTooLong"));
 
         const code = generateCode();
         const sql = getSql();
@@ -51,7 +52,7 @@ export default async function handler(req: any, res: any) {
             VALUES (${email}, ${code}, ${purpose}, NOW() + INTERVAL '10 minutes')
         `;
 
-        await sendVerificationCode(email, code);
+        await sendVerificationCode(email, code, req);
 
         return ok(res, { sent: true });
     } catch (e: any) {

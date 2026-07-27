@@ -1,6 +1,7 @@
 import { getSql, ensureSchema, firstSqlRow, sqlRows } from "../_lib/db.js";
 import { ok, unauthorized, methodNotAllowed, serverError } from "../_lib/response.js";
 import { getUserFromRequest } from "../_lib/auth.js";
+import { t } from "../_lib/i18n.js";
 
 type TrendPoint = { day: string; games: number; bestScore: number; totalScore: number };
 
@@ -13,7 +14,7 @@ export default async function handler(req: any, res: any) {
     if (req.method !== "GET") return methodNotAllowed(res, "GET");
     try {
         const user = getUserFromRequest(req);
-        if (!user) return unauthorized(res, "请先登录");
+        if (!user) return unauthorized(res, t(req, "requireLogin"));
 
         const sql = getSql();
         await ensureSchema(sql);

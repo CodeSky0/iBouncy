@@ -6,6 +6,7 @@ import { signToken, buildAuthCookie } from "../_lib/auth.js";
 import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
 import { csrfCheck } from "../_lib/csrf.js";
 import { toUserPayload, type UserRow } from "../_lib/user.js";
+import { t } from "../_lib/i18n.js";
 
 function normalizeEmail(email: unknown) {
     return String(email || "")
@@ -28,7 +29,7 @@ export default async function handler(req: any, res: any) {
     if (req.method !== "POST") return methodNotAllowed(res, "POST");
     try {
         // CSRF
-        if (!csrfCheck(req)) return forbidden(res, "CSRF 验证失败");
+        if (!csrfCheck(req)) return forbidden(res, t(req, "csrfFailed"));
 
         // 速率限制：同 IP 每分钟最多 5 次注册
         const ip = getClientIp(req);
@@ -44,12 +45,12 @@ export default async function handler(req: any, res: any) {
         const verifyCode = String(body.verifyCode || "").trim();
 
         if (!username || !/^[a-z0-9_]{3,20}$/.test(username)) {
-            return badRequest(res, "用户名为 3–20 位小写字母、数字或下划线");
+            return badRequest(res, t(req, "invalidUsernameFormat"));
         }
-        if (!email || !email.includes("@")) return badRequest(res, "邮箱格式不正确");
-        if (email.length > 254) return badRequest(res, "邮箱地址过长");
-        if (password.length < 6) return badRequest(res, "密码至少 6 位");
-        if (password.length > 128) return badRequest(res, "密码不能超过 128 位");
+        if (!email || !email.includes("@")) return badRequest(res, t(req, "invalidEmail"));
+        if (email.length > 254) return badRequest(res, t(req, "emailTooLong"));
+        if (password.length < 6) return badRequest(res, t(req, "passwordTooShort"));
+        if (password.length > 128) return badRequest(res, t(req, "passwordTooLong"));
 
         const sql = getSql();
         await ensureSchema(sql);
@@ -57,7 +58,7 @@ export default async function handler(req: any, res: any) {
         // 验证邮箱验证码
         if (verifyCode) {
             if (!/^\d{6}$/.test(verifyCode)) {
-                return badRequest(res, "验证码为 6 位数字");
+                return badRequest(res, t(req, "invalidVerifyCode"));
             }
             const codeRows = await sql`
                 SELECT id FROM email_codes
@@ -71,7 +72,7 @@ export default async function handler(req: any, res: any) {
             `;
             const codeRow = firstSqlRow<{ id: unknown }>(codeRows);
             if (!codeRow) {
-                return badRequest(res, "验证码无效或已过期");
+                return badRequest(res, t(req, "verifyCodeInvalid"));
             }
             // 标记验证码已使用
             await sql`UPDATE email_codes SET used = true WHERE id = ${codeRow.id}`;
@@ -87,7 +88,7 @@ export default async function handler(req: any, res: any) {
         `;
 
         const row = firstSqlRow<UserRow>(rows);
-        if (!row) return serverError(res, new Error("注册后未返回用户行"));
+        if (!row) return serverError(res, new Error(t(req, "registerNoReturn")));
         const user = toUserPayload(row);
         const token = signToken({ userId: user.id, email: user.email });
         const cookie = buildAuthCookie(token);
@@ -96,12 +97,12 @@ export default async function handler(req: any, res: any) {
         const msg = String(e?.message || e).toLowerCase();
         if (msg.includes("duplicate") || msg.includes("unique")) {
             if (msg.includes("email") || msg.includes("(email)")) {
-                return badRequest(res, "该邮箱已注册");
+                return badRequest(res, t(req, "emailRegistered"));
             }
             if (msg.includes("username") || msg.includes("uq_users_username")) {
-                return badRequest(res, "该用户名已被占用");
+                return badRequest(res, t(req, "usernameTaken"));
             }
-            return badRequest(res, "该邮箱或用户名已存在");
+            return badRequest(res, t(req, "emailOrUsernameExists"));
         }
         return serverError(res, e);
     }

@@ -9,6 +9,7 @@ import { getSql, ensureSchema, firstSqlRow } from "../_lib/db.js";
 import { readJsonBody } from "../_lib/body.js";
 import { ok, badRequest, methodNotAllowed, serverError, tooManyRequests } from "../_lib/response.js";
 import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
+import { t } from "../_lib/i18n.js";
 
 function normalizeEmail(email: unknown) {
     return String(email || "")
@@ -29,11 +30,11 @@ export default async function handler(req: any, res: any) {
         const code = String(body.code || "").trim();
         const password = String(body.password || "");
 
-        if (!email || !email.includes("@")) return badRequest(res, "邮箱格式不正确");
-        if (email.length > 254) return badRequest(res, "邮箱地址过长");
-        if (!/^\d{6}$/.test(code)) return badRequest(res, "验证码为 6 位数字");
-        if (password.length < 6) return badRequest(res, "密码至少 6 位");
-        if (password.length > 128) return badRequest(res, "密码不能超过 128 位");
+        if (!email || !email.includes("@")) return badRequest(res, t(req, "invalidEmail"));
+        if (email.length > 254) return badRequest(res, t(req, "emailTooLong"));
+        if (!/^\d{6}$/.test(code)) return badRequest(res, t(req, "invalidVerifyCode"));
+        if (password.length < 6) return badRequest(res, t(req, "passwordTooShort"));
+        if (password.length > 128) return badRequest(res, t(req, "passwordTooLong"));
 
         const sql = getSql();
         await ensureSchema(sql);
@@ -51,7 +52,7 @@ export default async function handler(req: any, res: any) {
         `;
         const codeRow = firstSqlRow<{ id: unknown }>(codeRows);
         if (!codeRow) {
-            return badRequest(res, "验证码无效或已过期");
+            return badRequest(res, t(req, "verifyCodeInvalid"));
         }
 
         // 标记验证码已使用

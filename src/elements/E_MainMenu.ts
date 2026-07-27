@@ -3,6 +3,7 @@ import { evBus, GEV } from "../events";
 import { GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
+import { t } from "../i18n";
 
 export default class E_MainMenu extends Group {
     confUI = UIConf.MainMenu;
@@ -41,9 +42,9 @@ export default class E_MainMenu extends Group {
             this.confUI.Hint1.FILL,
             this.confUI.Hint1.FONT_SIZE,
         )
-            .$append("按")
-            .$append("空格键", 3, void 0, void 0, "bold")
-            .$append("开始游戏");
+            .$append(t("mainMenu.press"))
+            .$append(t("mainMenu.spaceKey"), 3, void 0, void 0, "bold")
+            .$append(t("mainMenu.startGame"));
         this.Hint1.opacity = 0;
         this.Hint2 = new TextLine(
             GP.bw * this.confUI.X_RATIO,
@@ -52,11 +53,11 @@ export default class E_MainMenu extends Group {
             this.confUI.Hint2.FILL,
             this.confUI.Hint2.FONT_SIZE,
         )
-            .$append("通过")
-            .$append("方向键", 3, void 0, void 0, "bold")
-            .$append("或")
-            .$append("W/A/S/D", 3, void 0, void 0, "bold")
-            .$append("来控制平板的移动");
+            .$append(t("mainMenu.controlVia"))
+            .$append(t("mainMenu.arrowKeys"), 3, void 0, void 0, "bold")
+            .$append(t("mainMenu.or"))
+            .$append(t("mainMenu.wasd"), 3, void 0, void 0, "bold")
+            .$append(t("mainMenu.controlTablet"));
         this.Hint2.opacity = 0;
         this.add([this.Brand, this.Hint1, this.Hint2]);
         this.#$setupEventListeners();

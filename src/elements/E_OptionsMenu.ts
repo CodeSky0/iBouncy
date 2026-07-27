@@ -3,6 +3,7 @@ import { evBus, GEV } from "../events";
 import { GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
+import { t } from "../i18n";
 
 export default class E_OptionsMenu extends Group {
     confUI = UIConf.OptionsMenu;
@@ -23,7 +24,7 @@ export default class E_OptionsMenu extends Group {
             x: GP.bw * this.confUI.X_RATIO,
             y: GP.bh * this.confUI.Title.Y_RATIO,
             around: "center",
-            text: "游戏已暂停",
+            text: t("optionsMenu.paused"),
             fontFamily: this.confUI.Title.FONT_FAMILY,
             fontSize: this.confUI.Title.FONT_SIZE,
         });
@@ -34,9 +35,9 @@ export default class E_OptionsMenu extends Group {
             this.confUI.Hint1.FILL,
             this.confUI.Hint1.FONT_SIZE,
         )
-            .$append("按")
-            .$append("空格键", 3, void 0, void 0, "bold")
-            .$append("继续游戏");
+            .$append(t("optionsMenu.resume"))
+            .$append(t("optionsMenu.resumeKey"), 3, void 0, void 0, "bold")
+            .$append(t("optionsMenu.resumeGame"));
         this.Hint1.opacity = 0;
         this.Hint2 = new TextLine(
             GP.bw * this.confUI.X_RATIO,
@@ -45,9 +46,9 @@ export default class E_OptionsMenu extends Group {
             this.confUI.Hint2.FILL,
             this.confUI.Hint2.FONT_SIZE,
         )
-            .$append("按")
-            .$append("回车键", 3, void 0, void 0, "bold")
-            .$append("结束游戏并返回开始菜单");
+            .$append(t("optionsMenu.quit"))
+            .$append(t("optionsMenu.quitKey"), 3, void 0, void 0, "bold")
+            .$append(t("optionsMenu.quitGame"));
         this.Hint2.opacity = 0;
         this.add([this.Title, this.Hint1, this.Hint2]);
         this.#$setupEventListeners();

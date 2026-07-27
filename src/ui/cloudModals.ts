@@ -18,6 +18,7 @@ import {
     createButtonWithLoader,
     addRippleEffect,
 } from "./cloudUtils";
+import { t } from "../i18n";
 
 export interface ModalHelpers {
     renderFab: () => void;
@@ -38,7 +39,7 @@ function createSendCodeButton(text: string, sendFn: () => Promise<void>, helpers
         cooldown = sec;
         if (sec > 0) {
             btn.disabled = true;
-            btn.textContent = `${sec}s 后可重发`;
+            btn.textContent = t("auth.codeResend", sec);
             if (!timer) {
                 timer = setInterval(() => {
                     cooldown--;
@@ -50,7 +51,7 @@ function createSendCodeButton(text: string, sendFn: () => Promise<void>, helpers
                             timer = null;
                         }
                     } else {
-                        btn.textContent = `${cooldown}s 后可重发`;
+                        btn.textContent = t("auth.codeResend", cooldown);
                     }
                 }, 1000);
             }
@@ -83,15 +84,15 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
 
     const head = el("div", "auth-head");
     const title = el("h2");
-    title.textContent = "云端账号";
+    title.textContent = t("auth.title");
 
     const tabs = el("div", "tabs tabs-auth");
     const tabLogin = el("button", "tab");
     const tabRegister = el("button", "tab");
     tabLogin.type = "button";
     tabRegister.type = "button";
-    tabLogin.textContent = "登录";
-    tabRegister.textContent = "注册";
+    tabLogin.textContent = t("auth.login");
+    tabRegister.textContent = t("auth.register");
     tabs.appendChild(tabLogin);
     tabs.appendChild(tabRegister);
     head.appendChild(title);
@@ -103,10 +104,10 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
     const fieldPwd = el("div", "field auth-stagger");
     fieldPwd.style.setProperty("--i", String(stagger++));
     const pwdLabel = el("label");
-    pwdLabel.textContent = "密码";
+    pwdLabel.textContent = t("auth.password");
     const pwdInput = el("input") as HTMLInputElement;
     pwdInput.type = "password";
-    pwdInput.placeholder = "至少 6 位";
+    pwdInput.placeholder = t("auth.passwordPlaceholder");
     pwdInput.autocomplete = ctx.mode === "register" ? "new-password" : "current-password";
     fieldPwd.appendChild(pwdLabel);
     fieldPwd.appendChild(pwdInput);
@@ -118,10 +119,10 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
     const actionsRight = el("div");
     actionsRight.className = "auth-actions-right";
 
-    const closeBtn = createButtonWithLoader("关闭", "btn");
+    const closeBtn = createButtonWithLoader(t("common.close"), "btn");
     closeBtn.onclick = () => helpers.setBackdropOpen(false);
 
-    const submitBtn = createButtonWithLoader(ctx.mode === "register" ? "创建账号并登录" : "登录", "btn primary");
+    const submitBtn = createButtonWithLoader(ctx.mode === "register" ? t("auth.createAccount") : t("auth.login"), "btn primary");
 
     const hint = el("div", "hint auth-hint");
 
@@ -132,10 +133,10 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
         fieldId.style.setProperty("--i", "0");
         fieldPwd.style.setProperty("--i", "1");
         const idLabel = el("label");
-        idLabel.textContent = "用户名或邮箱";
+        idLabel.textContent = t("auth.usernameOrEmail");
         const identifierInput = el("input") as HTMLInputElement;
         identifierInput.type = "text";
-        identifierInput.placeholder = "用户名 或 邮箱";
+        identifierInput.placeholder = t("auth.usernameOrEmailPlaceholder");
         identifierInput.autocomplete = "username";
         fieldId.appendChild(idLabel);
         fieldId.appendChild(identifierInput);
@@ -145,7 +146,7 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
 
         // 忘记密码链接
         const forgotLink = el("a", "forgot-link");
-        forgotLink.textContent = "忘记密码？";
+        forgotLink.textContent = t("auth.forgotPassword");
         forgotLink.href = "#";
         forgotLink.onclick = (e) => {
             e.preventDefault();
@@ -159,13 +160,13 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
             helpers.setError(null);
             const raw = identifierInput.value.trim();
             const password = pwdInput.value;
-            if (!raw) return helpers.setError("请输入用户名或邮箱");
+            if (!raw) return helpers.setError(t("auth.requireUsernameOrEmail"));
             if (raw.includes("@")) {
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) return helpers.setError("邮箱格式不正确");
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) return helpers.setError(t("auth.invalidEmail"));
             } else if (!/^[a-zA-Z0-9_]{3,20}$/.test(raw)) {
-                return helpers.setError("用户名须为 3–20 位字母、数字或下划线");
+                return helpers.setError(t("auth.invalidUsername"));
             }
-            if (!password || password.length < 6) return helpers.setError("密码至少 6 位");
+            if (!password || password.length < 6) return helpers.setError(t("auth.passwordTooShort"));
 
             ctx.busy = true;
             submitBtn.classList.add("loading");
@@ -173,7 +174,7 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
                 ctx.user = await cloud.login(raw, password);
                 helpers.renderFab();
                 await helpers.syncLocalToCloud();
-                helpers.showSuccess("登录成功！");
+                helpers.showSuccess(t("auth.loginSuccess"));
                 helpers.setBackdropOpen(false);
             } catch (e) {
                 helpers.setError(e instanceof Error ? e.message : String(e));
@@ -188,8 +189,8 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
         pwdInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
 
         hint.innerHTML = `
-            <strong>提示</strong><br>
-            可用<strong>用户名</strong>或<strong>邮箱</strong>登录。登录后成绩会同步云端，在「历史记录」中查看。
+            <strong>${t("auth.tip")}</strong><br>
+            ${t("auth.loginHint")}
         `;
 
         // 将忘记密码链接放在 hint 下方
@@ -200,10 +201,10 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
         const fieldUser = el("div", "field auth-stagger");
         fieldUser.style.setProperty("--i", String(stagger++));
         const userLabel = el("label");
-        userLabel.textContent = "用户名";
+        userLabel.textContent = t("auth.username");
         const usernameInput = el("input") as HTMLInputElement;
         usernameInput.type = "text";
-        usernameInput.placeholder = "例如：player_one";
+        usernameInput.placeholder = t("auth.usernamePlaceholder");
         usernameInput.autocomplete = "username";
         usernameInput.spellcheck = false;
         fieldUser.appendChild(userLabel);
@@ -212,10 +213,10 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
         const fieldNick = el("div", "field auth-stagger optional-field");
         fieldNick.style.setProperty("--i", String(stagger++));
         const nickLabel = el("label");
-        nickLabel.innerHTML = '昵称 <span class="optional-tag">选填</span>';
+        nickLabel.innerHTML = `${t("auth.nickname")} <span class="optional-tag">${t("auth.nicknameOptional")}</span>`;
         const nicknameInput = el("input") as HTMLInputElement;
         nicknameInput.type = "text";
-        nicknameInput.placeholder = "不填则使用用户名";
+        nicknameInput.placeholder = t("auth.nicknamePlaceholder");
         nicknameInput.autocomplete = "off";
         fieldNick.appendChild(nickLabel);
         fieldNick.appendChild(nicknameInput);
@@ -223,10 +224,10 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
         const fieldEmail = el("div", "field auth-stagger");
         fieldEmail.style.setProperty("--i", String(stagger++));
         const emailLabel = el("label");
-        emailLabel.textContent = "邮箱";
+        emailLabel.textContent = t("auth.email");
         const emailInput = el("input") as HTMLInputElement;
         emailInput.type = "email";
-        emailInput.placeholder = "例如：me@example.com";
+        emailInput.placeholder = t("auth.emailPlaceholder");
         emailInput.autocomplete = "email";
         fieldEmail.appendChild(emailLabel);
         fieldEmail.appendChild(emailInput);
@@ -235,22 +236,22 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
         const fieldCode = el("div", "field auth-stagger field-verify-code");
         fieldCode.style.setProperty("--i", String(stagger++));
         const codeLabel = el("label");
-        codeLabel.textContent = "邮箱验证码";
+        codeLabel.textContent = t("auth.verifyCode");
         const codeRow = el("div", "code-input-row");
         const codeInput = el("input") as HTMLInputElement;
         codeInput.type = "text";
-        codeInput.placeholder = "6 位数字";
+        codeInput.placeholder = t("auth.verifyCodePlaceholder");
         codeInput.maxLength = 6;
         codeInput.autocomplete = "one-time-code";
         codeInput.inputMode = "numeric";
         codeInput.pattern = "[0-9]*";
 
         const sendCodeBtn = createSendCodeButton(
-            "发送验证码",
+            t("auth.sendVerifyCode"),
             async () => {
                 const email = emailInput.value.trim();
                 if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    throw new Error("请先输入正确的邮箱地址");
+                    throw new Error(t("auth.requireValidEmailFirst"));
                 }
                 await cloud.sendVerifyCode(email, "verify");
             },
@@ -279,11 +280,11 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
             const password = pwdInput.value;
             const verifyCode = codeInput.value.trim();
             if (!/^[a-z0-9_]{3,20}$/.test(username)) {
-                return helpers.setError("用户名为 3–20 位小写字母、数字或下划线");
+                return helpers.setError(t("auth.invalidUsernameFormat"));
             }
-            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return helpers.setError("邮箱格式不正确");
-            if (verifyCode && !/^\d{6}$/.test(verifyCode)) return helpers.setError("验证码为 6 位数字");
-            if (!password || password.length < 6) return helpers.setError("密码至少 6 位");
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return helpers.setError(t("auth.invalidEmail"));
+            if (verifyCode && !/^\d{6}$/.test(verifyCode)) return helpers.setError(t("auth.invalidVerifyCode"));
+            if (!password || password.length < 6) return helpers.setError(t("auth.passwordTooShort"));
 
             ctx.busy = true;
             submitBtn.classList.add("loading");
@@ -297,7 +298,7 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
                 });
                 helpers.renderFab();
                 await helpers.syncLocalToCloud();
-                helpers.showSuccess("注册成功！");
+                helpers.showSuccess(t("auth.registerSuccess"));
                 helpers.setBackdropOpen(false);
             } catch (e) {
                 helpers.setError(e instanceof Error ? e.message : String(e));
@@ -315,9 +316,8 @@ export function renderAuthModal(ctx: CloudUIContext, helpers: ModalHelpers): voi
         pwdInput.addEventListener("keydown", (e) => e.key === "Enter" && doSubmit());
 
         hint.innerHTML = `
-            <strong>注册说明</strong><br>
-            用户名用于登录（小写字母、数字、下划线，3–20 位）。昵称为展示名称，可不填（将显示用户名）。<br>
-            建议填写验证码以验证邮箱所有权。
+            <strong>${t("auth.registerNote")}</strong><br>
+            ${t("auth.registerHint")}
         `;
     }
 
@@ -353,12 +353,12 @@ export function renderForgotModal(ctx: CloudUIContext, helpers: ModalHelpers): v
 
     const head = el("div", "auth-head");
     const title = el("h2");
-    title.textContent = "忘记密码";
+    title.textContent = t("forgot.title");
     head.appendChild(title);
 
     // 返回登录链接
     const backLink = el("a", "forgot-link");
-    backLink.textContent = "返回登录";
+    backLink.textContent = t("forgot.backToLogin");
     backLink.href = "#";
     backLink.onclick = (e) => {
         e.preventDefault();
@@ -371,10 +371,10 @@ export function renderForgotModal(ctx: CloudUIContext, helpers: ModalHelpers): v
     const fieldEmail = el("div", "field auth-stagger");
     fieldEmail.style.setProperty("--i", "0");
     const emailLabel = el("label");
-    emailLabel.textContent = "注册邮箱";
+    emailLabel.textContent = t("forgot.registeredEmail");
     const emailInput = el("input") as HTMLInputElement;
     emailInput.type = "email";
-    emailInput.placeholder = "请输入注册时使用的邮箱";
+    emailInput.placeholder = t("forgot.emailPlaceholder");
     emailInput.autocomplete = "email";
     fieldEmail.appendChild(emailLabel);
     fieldEmail.appendChild(emailInput);
@@ -382,22 +382,22 @@ export function renderForgotModal(ctx: CloudUIContext, helpers: ModalHelpers): v
     const fieldCode = el("div", "field auth-stagger");
     fieldCode.style.setProperty("--i", "1");
     const codeLabel = el("label");
-    codeLabel.textContent = "验证码";
+    codeLabel.textContent = t("forgot.verifyCode");
     const codeRow = el("div", "code-input-row");
     const codeInput = el("input") as HTMLInputElement;
     codeInput.type = "text";
-    codeInput.placeholder = "6 位数字";
+    codeInput.placeholder = t("forgot.verifyCodePlaceholder");
     codeInput.maxLength = 6;
     codeInput.autocomplete = "one-time-code";
     codeInput.inputMode = "numeric";
     codeInput.pattern = "[0-9]*";
 
     const sendCodeBtn = createSendCodeButton(
-        "发送验证码",
+        t("forgot.sendVerifyCode"),
         async () => {
             const email = emailInput.value.trim();
             if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                throw new Error("请先输入正确的邮箱地址");
+                throw new Error(t("auth.requireValidEmailFirst"));
             }
             await cloud.forgotPassword(email);
         },
@@ -412,10 +412,10 @@ export function renderForgotModal(ctx: CloudUIContext, helpers: ModalHelpers): v
     const fieldNewPwd = el("div", "field auth-stagger");
     fieldNewPwd.style.setProperty("--i", "2");
     const newPwdLabel = el("label");
-    newPwdLabel.textContent = "新密码";
+    newPwdLabel.textContent = t("forgot.newPassword");
     const newPwdInput = el("input") as HTMLInputElement;
     newPwdInput.type = "password";
-    newPwdInput.placeholder = "至少 6 位";
+    newPwdInput.placeholder = t("forgot.newPasswordPlaceholder");
     newPwdInput.autocomplete = "new-password";
     fieldNewPwd.appendChild(newPwdLabel);
     fieldNewPwd.appendChild(newPwdInput);
@@ -431,10 +431,10 @@ export function renderForgotModal(ctx: CloudUIContext, helpers: ModalHelpers): v
     const actionsRight = el("div");
     actionsRight.className = "auth-actions-right";
 
-    const closeBtn = createButtonWithLoader("关闭", "btn");
+    const closeBtn = createButtonWithLoader(t("common.close"), "btn");
     closeBtn.onclick = () => helpers.setBackdropOpen(false);
 
-    const submitBtn = createButtonWithLoader("重置密码", "btn primary");
+    const submitBtn = createButtonWithLoader(t("forgot.resetPassword"), "btn primary");
 
     const doSubmit = async () => {
         if (ctx.busy) return;
@@ -442,15 +442,15 @@ export function renderForgotModal(ctx: CloudUIContext, helpers: ModalHelpers): v
         const email = emailInput.value.trim();
         const code = codeInput.value.trim();
         const password = newPwdInput.value;
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return helpers.setError("邮箱格式不正确");
-        if (!/^\d{6}$/.test(code)) return helpers.setError("验证码为 6 位数字");
-        if (!password || password.length < 6) return helpers.setError("密码至少 6 位");
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return helpers.setError(t("auth.invalidEmail"));
+        if (!/^\d{6}$/.test(code)) return helpers.setError(t("auth.invalidVerifyCode"));
+        if (!password || password.length < 6) return helpers.setError(t("auth.passwordTooShort"));
 
         ctx.busy = true;
         submitBtn.classList.add("loading");
         try {
             await cloud.resetPassword(email, code, password);
-            helpers.showSuccess("密码已重置，请登录");
+            helpers.showSuccess(t("forgot.resetSuccess"));
             ctx.mode = "login";
             renderAuthModal(ctx, helpers);
         } catch (e) {
@@ -468,8 +468,8 @@ export function renderForgotModal(ctx: CloudUIContext, helpers: ModalHelpers): v
 
     const hint = el("div", "hint auth-hint");
     hint.innerHTML = `
-        <strong>密码重置</strong><br>
-        输入注册邮箱后点击「发送验证码」，收到验证码后输入新密码即可重置。
+        <strong>${t("forgot.hintTitle")}</strong><br>
+        ${t("forgot.hint")}
     `;
     hint.appendChild(el("br"));
     hint.appendChild(backLink);
@@ -496,11 +496,11 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
     const titleRow = el("div", "row title-row history-head");
     const titleBlock = el("div", "history-title-block");
     const title = el("h2");
-    title.textContent = "历史成绩";
+    title.textContent = t("history.title");
     const titleAccent = el("div", "history-title-accent");
     titleBlock.appendChild(title);
     titleBlock.appendChild(titleAccent);
-    const closeBtn = createButtonWithLoader("关闭", "btn");
+    const closeBtn = createButtonWithLoader(t("history.close"), "btn");
     closeBtn.onclick = () => helpers.setBackdropOpen(false);
     titleRow.appendChild(titleBlock);
     titleRow.appendChild(closeBtn);
@@ -513,23 +513,23 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
     const actionsRight = el("div");
     actionsRight.className = "history-actions-right";
 
-    const refreshBtn = createButtonWithLoader("刷新", "btn");
+    const refreshBtn = createButtonWithLoader(t("history.refresh"), "btn");
     refreshBtn.onclick = () => void load();
 
-    const syncBtn = createButtonWithLoader("同步本地", "btn primary");
+    const syncBtn = createButtonWithLoader(t("history.syncLocal"), "btn primary");
     syncBtn.onclick = () => void doSync();
 
     let clearPending = false;
-    const clearBtn = createButtonWithLoader("清空记录", "btn danger clear-btn");
+    const clearBtn = createButtonWithLoader(t("history.clearRecords"), "btn danger clear-btn");
     clearBtn.onclick = () => {
         if (!clearPending) {
             clearPending = true;
-            clearBtn.textContent = "确认清空？";
+            clearBtn.textContent = t("history.confirmClear");
             clearBtn.style.background = "linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.75))";
             clearBtn.style.borderBottomColor = "rgba(220, 38, 38, 0.5)";
             setTimeout(() => {
                 clearPending = false;
-                clearBtn.textContent = "清空记录";
+                clearBtn.textContent = t("history.clearRecords");
                 clearBtn.removeAttribute("style");
             }, 4000);
             return;
@@ -538,22 +538,22 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
             if (ctx.busy) return;
             ctx.busy = true;
             clearBtn.classList.add("loading");
-            clearBtn.textContent = "清空中...";
+            clearBtn.textContent = t("history.clearing");
             try {
                 if (ctx.user) {
                     await cloud.clearScores();
                     clearLocalScores();
-                    helpers.showSuccess("云端成绩已清空");
+                    helpers.showSuccess(t("history.cloudCleared"));
                 } else {
                     clearLocalScores();
-                    helpers.showSuccess("本地记录已清空");
+                    helpers.showSuccess(t("history.localCleared"));
                 }
                 clearPending = false;
                 clearBtn.removeAttribute("style");
                 await load();
             } catch (e) {
                 helpers.setError(e instanceof Error ? e.message : String(e));
-                clearBtn.textContent = "清空记录";
+                clearBtn.textContent = t("history.clearRecords");
                 ctx.busy = false;
                 clearBtn.classList.remove("loading");
             }
@@ -585,7 +585,7 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
 
                 const c1 = el("div", "card");
                 const c1k = el("div", "k");
-                c1k.textContent = "游客 · 总局数";
+                c1k.textContent = t("history.guestTotalGames");
                 const c1v = el("div", "v");
                 c1v.textContent = String(games);
                 c1.appendChild(c1k);
@@ -593,7 +593,7 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
 
                 const c2 = el("div", "card");
                 const c2k = el("div", "k");
-                c2k.textContent = "游客 · 最高分";
+                c2k.textContent = t("history.guestBestScore");
                 const c2v = el("div", "v");
                 c2v.textContent = fmtScore(best);
                 c2.appendChild(c2k);
@@ -601,9 +601,9 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
 
                 const c3 = el("div", "card wide");
                 const c3k = el("div", "k");
-                c3k.textContent = "游客 · 近7天（每日最高分）";
+                c3k.textContent = t("history.guestTrend");
                 const c3v = el("div", "v");
-                c3v.textContent = `最近一次：${fmtScore(last)} · 累计：${fmtScore(total)}`;
+                c3v.textContent = t("history.recentAndTotal", fmtScore(last), fmtScore(total));
                 const sparkWrap = el("div", "spark");
                 const values = (() => {
                     const m = new Map<string, number>();
@@ -633,8 +633,8 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
                 if (local.length === 0) {
                     const empty = el("div", "hint");
                     empty.innerHTML = `
-                        <strong>暂无记录</strong><br>
-                        你还没登录，当前只有本地记录（目前为空）。按 <kbd style="background:rgba(83,103,255,0.3);padding:2px 8px;border-radius:4px;">L</kbd> 登录后可云端保存。
+                        <strong>${t("history.noRecordsTitle")}</strong><br>
+                        ${t("history.noRecordsDesc")}
                     `;
                     list.appendChild(empty);
                 } else {
@@ -663,7 +663,7 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
             const s = summary.summary;
             const c1 = el("div", "card");
             const c1k = el("div", "k");
-            c1k.textContent = "云端 · 总局数";
+            c1k.textContent = t("history.cloudTotalGames");
             const c1v = el("div", "v");
             c1v.textContent = String(s.games);
             c1.appendChild(c1k);
@@ -671,7 +671,7 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
 
             const c2 = el("div", "card");
             const c2k = el("div", "k");
-            c2k.textContent = "云端 · 最高分";
+            c2k.textContent = t("history.cloudBestScore");
             const c2v = el("div", "v");
             c2v.textContent = fmtScore(s.bestScore);
             c2.appendChild(c2k);
@@ -679,9 +679,9 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
 
             const c3 = el("div", "card wide");
             const c3k = el("div", "k");
-            c3k.textContent = "云端 · 近7天（每日最高分）";
+            c3k.textContent = t("history.cloudTrend");
             const c3v = el("div", "v");
-            c3v.textContent = `最近一次：${fmtScore(s.lastScore)} · 累计：${fmtScore(s.totalScore)}`;
+            c3v.textContent = t("history.recentAndTotal", fmtScore(s.lastScore), fmtScore(s.totalScore));
             const sparkWrap = el("div", "spark");
             sparkWrap.appendChild(buildSparkline(summary.trend7d.map((p) => p.bestScore)));
             c3.appendChild(c3k);
@@ -694,8 +694,8 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
             if (localPending.length > 0) {
                 const hint = el("div", "hint");
                 hint.innerHTML = `
-                    <strong>待同步</strong><br>
-                    本地有 ${localPending.length} 条未同步成绩，点击「同步本地」即可上传到云端（已做去重）。
+                    <strong>${t("history.pendingSyncTitle")}</strong><br>
+                    ${t("history.pendingSyncDesc", localPending.length)}
                 `;
                 list.appendChild(hint);
             }
@@ -703,8 +703,8 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
             if (records.length === 0 && localPending.length === 0) {
                 const empty = el("div", "hint");
                 empty.innerHTML = `
-                    <strong>开始游戏</strong><br>
-                    还没有历史成绩，去玩一局吧！
+                    <strong>${t("history.startGameTitle")}</strong><br>
+                    ${t("history.startGameDesc")}
                 `;
                 list.appendChild(empty);
             } else {
@@ -715,7 +715,7 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
                     const score = el("div", "score");
                     score.textContent = fmtScore(r.score);
                     const time = el("div", "time");
-                    time.innerHTML = `${fmtTime(r.createdAt)} <span class="sync-badge">本地未同步</span>`;
+                    time.innerHTML = `${fmtTime(r.createdAt)} <span class="sync-badge">${t("history.notSynced")}</span>`;
                     leftCol.appendChild(score);
                     leftCol.appendChild(time);
                     item.appendChild(leftCol);
@@ -744,7 +744,7 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
     };
 
     const doSync = async () => {
-        if (!ctx.user) return helpers.setError("请先登录");
+        if (!ctx.user) return helpers.setError(t("history.loginFirst"));
         if (ctx.busy) return;
         ctx.busy = true;
         syncBtn.classList.add("loading");
@@ -755,17 +755,17 @@ export async function renderHistoryModal(ctx: CloudUIContext, helpers: ModalHelp
                 clearSynced();
             }
             if (r.pendingAtStart === 0) {
-                helpers.showSuccess("所有记录已同步！");
+                helpers.showSuccess(t("history.allSynced"));
                 syncOk = true;
             } else if (r.uploaded === r.pendingAtStart) {
-                helpers.showSuccess(r.uploaded === 1 ? "同步成功！" : `成功同步 ${r.uploaded} 条记录！`);
+                helpers.showSuccess(r.uploaded === 1 ? t("history.syncSuccess") : t("history.syncedCount", r.uploaded));
                 syncOk = true;
             } else if (r.uploaded > 0) {
-                helpers.showSuccess(`已同步 ${r.uploaded} 条`);
-                helpers.setError(r.lastError || "部分记录未能同步，请重试");
+                helpers.showSuccess(t("history.syncedPartial", r.uploaded));
+                helpers.setError(r.lastError || t("history.syncPartialFail"));
                 syncOk = true;
             } else {
-                helpers.setError(r.lastError || "同步失败，请检查网络或登录状态后重试");
+                helpers.setError(r.lastError || t("history.syncFail"));
             }
         } catch (e) {
             helpers.setError(e instanceof Error ? e.message : String(e));
@@ -794,21 +794,21 @@ export async function renderLeaderboardModal(ctx: CloudUIContext, helpers: Modal
     const titleRow = el("div", "row title-row history-head");
     const titleBlock = el("div", "history-title-block");
     const title = el("h2");
-    title.textContent = "排行榜";
+    title.textContent = t("leaderboard.title");
     const titleAccent = el("div", "history-title-accent");
     titleBlock.appendChild(title);
     titleBlock.appendChild(titleAccent);
-    const closeBtn = createButtonWithLoader("关闭", "btn");
+    const closeBtn = createButtonWithLoader(t("leaderboard.close"), "btn");
     closeBtn.onclick = () => helpers.setBackdropOpen(false);
     titleRow.appendChild(titleBlock);
     titleRow.appendChild(closeBtn);
 
     const periodTabs = el("div", "period-tabs");
     const periods: { key: string; label: string }[] = [
-        { key: "all", label: "全部" },
-        { key: "day", label: "日榜" },
-        { key: "week", label: "周榜" },
-        { key: "month", label: "月榜" },
+        { key: "all", label: t("leaderboard.all") },
+        { key: "day", label: t("leaderboard.daily") },
+        { key: "week", label: t("leaderboard.weekly") },
+        { key: "month", label: t("leaderboard.monthly") },
     ];
     for (const p of periods) {
         const tab = document.createElement("button");
@@ -834,7 +834,7 @@ export async function renderLeaderboardModal(ctx: CloudUIContext, helpers: Modal
     const actionsLeft = el("div");
     const actionsRight = el("div");
     actionsRight.className = "history-actions-right";
-    const refreshBtn = createButtonWithLoader("刷新", "btn");
+    const refreshBtn = createButtonWithLoader(t("leaderboard.refresh"), "btn");
     refreshBtn.onclick = () => void load();
     actions.appendChild(actionsLeft);
     actionsRight.appendChild(refreshBtn);
@@ -855,7 +855,7 @@ export async function renderLeaderboardModal(ctx: CloudUIContext, helpers: Modal
                 try {
                     const { summary: s } = await cloud.summary();
                     const hint = el("div", "hint leaderboard-my-best");
-                    hint.textContent = `我的最佳：${fmtScore(s.bestScore)}`;
+                    hint.textContent = t("leaderboard.myBest", fmtScore(s.bestScore));
                     footer.appendChild(hint);
                     footer.style.display = "";
                 } catch {
@@ -865,7 +865,7 @@ export async function renderLeaderboardModal(ctx: CloudUIContext, helpers: Modal
 
             if (entries.length === 0) {
                 const empty = el("div", "hint");
-                empty.innerHTML = "<strong>暂无数据</strong><br>还没有玩家上传成绩。";
+                empty.innerHTML = `<strong>${t("leaderboard.noDataTitle")}</strong><br>${t("leaderboard.noDataDesc")}`;
                 list.appendChild(empty);
                 return;
             }

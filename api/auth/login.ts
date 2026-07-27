@@ -14,6 +14,7 @@ import { signToken, buildAuthCookie } from "../_lib/auth.js";
 import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
 import { csrfCheck } from "../_lib/csrf.js";
 import { toUserPayload } from "../_lib/user.js";
+import { t } from "../_lib/i18n.js";
 
 function normalizeEmail(email: unknown) {
     return String(email || "")
@@ -33,7 +34,7 @@ export default async function handler(req: any, res: any) {
     if (req.method !== "POST") return methodNotAllowed(res, "POST");
     try {
         // CSRF
-        if (!csrfCheck(req)) return forbidden(res, "CSRF 验证失败");
+        if (!csrfCheck(req)) return forbidden(res, t(req, "csrfFailed"));
 
         // 速率限制：同 IP 每分钟最多 10 次登录尝试
         const ip = getClientIp(req);
@@ -45,10 +46,10 @@ export default async function handler(req: any, res: any) {
         const raw = String(body.identifier ?? body.email ?? "").trim();
         const password = String(body.password || "");
 
-        if (!raw) return badRequest(res, "请输入用户名或邮箱");
-        if (raw.length > 254) return badRequest(res, "输入过长");
-        if (!password) return badRequest(res, "请输入密码");
-        if (password.length > 128) return badRequest(res, "密码不能超过 128 位");
+        if (!raw) return badRequest(res, t(req, "requireUsernameOrEmail"));
+        if (raw.length > 254) return badRequest(res, t(req, "inputTooLong"));
+        if (!password) return badRequest(res, t(req, "requirePassword"));
+        if (password.length > 128) return badRequest(res, t(req, "passwordTooLong"));
 
         const sql = getSql();
         await ensureSchema(sql);
@@ -56,7 +57,7 @@ export default async function handler(req: any, res: any) {
         let rows;
         if (raw.includes("@")) {
             const email = normalizeEmail(raw);
-            if (!email || !email.includes("@")) return badRequest(res, "邮箱格式不正确");
+            if (!email || !email.includes("@")) return badRequest(res, t(req, "invalidEmail"));
             rows = await sql`
                 SELECT id, email, username, nickname, password_hash
                 FROM users WHERE email = ${email} LIMIT 1
@@ -64,7 +65,7 @@ export default async function handler(req: any, res: any) {
         } else {
             const uname = raw.toLowerCase();
             if (!/^[a-z0-9_]{3,20}$/.test(uname)) {
-                return badRequest(res, "用户名须为 3–20 位小写字母、数字或下划线，或使用邮箱登录");
+                return badRequest(res, t(req, "invalidUsernameLogin"));
             }
             rows = await sql`
                 SELECT id, email, username, nickname, password_hash
@@ -73,10 +74,10 @@ export default async function handler(req: any, res: any) {
         }
 
         const row = firstSqlRow<LoginUserRow>(rows);
-        if (!row) return unauthorized(res, "用户名/邮箱或密码不正确");
+        if (!row) return unauthorized(res, t(req, "invalidCredentials"));
 
         const okPwd = await bcrypt.compare(password, row.password_hash);
-        if (!okPwd) return unauthorized(res, "用户名/邮箱或密码不正确");
+        if (!okPwd) return unauthorized(res, t(req, "invalidCredentials"));
 
         const user = toUserPayload(row);
         const token = signToken({ userId: user.id, email: user.email });

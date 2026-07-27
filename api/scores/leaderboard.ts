@@ -1,5 +1,6 @@
 import { getSql, ensureSchema, sqlRows } from "../_lib/db.js";
 import { ok, methodNotAllowed, serverError } from "../_lib/response.js";
+import { t } from "../_lib/i18n.js";
 
 export default async function handler(req: any, res: any) {
     if (req.method !== "GET") return methodNotAllowed(res, "GET");
@@ -30,6 +31,8 @@ export default async function handler(req: any, res: any) {
             timeFilter = sql` AND s.created_at >= ${firstDay}`;
         }
 
+        const playerPrefix = t(req, "defaultPlayer");
+
         const rows = await sql`
             WITH per_user AS (
                 SELECT user_id, MAX(score)::int AS best_score
@@ -50,7 +53,7 @@ export default async function handler(req: any, res: any) {
                 CASE
                     WHEN NULLIF(TRIM(COALESCE(u.nickname, '')), '') IS NOT NULL THEN TRIM(u.nickname)
                     WHEN NULLIF(TRIM(COALESCE(u.username, '')), '') IS NOT NULL THEN TRIM(u.username)
-                    ELSE '玩家#' || u.id::text
+                    ELSE ${playerPrefix} || u.id::text
                 END AS display_name,
                 p.best_score,
                 bt.best_at

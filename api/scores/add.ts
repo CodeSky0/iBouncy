@@ -12,15 +12,16 @@ import {
 import { getUserFromRequest } from "../_lib/auth.js";
 import { isRateLimited, getClientIp } from "../_lib/ratelimit.js";
 import { csrfCheck } from "../_lib/csrf.js";
+import { t } from "../_lib/i18n.js";
 
 export default async function handler(req: any, res: any) {
     if (req.method !== "POST") return methodNotAllowed(res, "POST");
     try {
         const user = getUserFromRequest(req);
-        if (!user) return unauthorized(res, "请先登录");
+        if (!user) return unauthorized(res, t(req, "requireLogin"));
 
         // CSRF
-        if (!csrfCheck(req)) return forbidden(res, "CSRF 验证失败");
+        if (!csrfCheck(req)) return forbidden(res, t(req, "csrfFailed"));
 
         // 速率限制：同 IP 每分钟最多 30 次提交
         const ip = getClientIp(req);
@@ -31,12 +32,12 @@ export default async function handler(req: any, res: any) {
         const body = await readJsonBody(req);
         const score = Number(body.score);
         const clientId = body.clientId ? String(body.clientId) : null;
-        if (!Number.isFinite(score)) return badRequest(res, "score 必须是数字");
-        if (score < 0) return badRequest(res, "score 不能为负数");
-        if (score > 1_000_000) return badRequest(res, "score 超出合理范围");
+        if (!Number.isFinite(score)) return badRequest(res, t(req, "scoreMustBeNumber"));
+        if (score < 0) return badRequest(res, t(req, "scoreMustBePositive"));
+        if (score > 1_000_000) return badRequest(res, t(req, "scoreOutOfRange"));
 
         const scoreInt = Math.round(score);
-        if (clientId && clientId.length > 80) return badRequest(res, "clientId 太长");
+        if (clientId && clientId.length > 80) return badRequest(res, t(req, "clientIdTooLong"));
 
         const sql = getSql();
         await ensureSchema(sql);
@@ -56,7 +57,7 @@ export default async function handler(req: any, res: any) {
 
         type ScoreRow = { id: unknown; score: unknown; created_at: unknown };
         const row = firstSqlRow<ScoreRow>(rows);
-        if (!row) return serverError(res, new Error("保存分数失败"));
+        if (!row) return serverError(res, new Error(t(req, "saveScoreFailed")));
         return ok(res, {
             saved: true,
             record: { id: Number(row.id), score: Number(row.score), createdAt: row.created_at },

@@ -1,6 +1,8 @@
 export type ApiOk<T> = { ok: true } & T;
 export type ApiErr = { ok: false; error: string };
 
+import { t } from "../i18n";
+
 export async function apiFetch<T>(input: string, init?: RequestInit & { json?: unknown }): Promise<ApiOk<T>> {
     const headers: Record<string, string> = {
         "X-Requested-With": "XMLHttpRequest",
@@ -22,10 +24,10 @@ export async function apiFetch<T>(input: string, init?: RequestInit & { json?: u
 
     const data = (await res.json().catch(() => null)) as ApiOk<T> | ApiErr | null;
     if (!data || typeof data !== "object") {
-        throw new Error(`网络错误（${res.status}）`);
+        throw new Error(t("http.networkError", res.status));
     }
     if (!("ok" in data) || data.ok !== true) {
-        const errMsg = "error" in data && data.error ? data.error : `请求失败（${res.status}）`;
+        const errMsg = "error" in data && data.error ? data.error : t("http.requestFailed", res.status);
         throw new Error(errMsg);
     }
     return data as ApiOk<T>;

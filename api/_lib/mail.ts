@@ -12,6 +12,46 @@
 import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 
+const mailMessages = {
+    en: {
+        mailVerifySubject: "iBouncy - Verification Code",
+        mailVerifyTitle: "iBouncy Email Verification",
+        mailVerifyBody: "You are registering an iBouncy account. Here is your verification code:",
+        mailVerifyExpiry: "This code is valid for 10 minutes. Do not share it with anyone.",
+        mailAutoSent: "This email was sent automatically. Please do not reply.",
+        mailResetSubject: "iBouncy - Password Reset Code",
+        mailResetTitle: "iBouncy Password Reset",
+        mailResetBody: "You are requesting a password reset for your iBouncy account. Here is your verification code:",
+        mailResetExpiry: "This code is valid for 10 minutes. If you did not request this, please ignore this email.",
+    },
+    zh: {
+        mailVerifySubject: "iBouncy — 邮箱验证码",
+        mailVerifyTitle: "iBouncy 邮箱验证",
+        mailVerifyBody: "您正在注册 iBouncy 账号，以下是您的验证码：",
+        mailVerifyExpiry: "验证码 10 分钟内有效，请勿转发给他人。",
+        mailAutoSent: "此邮件由系统自动发送，请勿回复。",
+        mailResetSubject: "iBouncy — 密码重置验证码",
+        mailResetTitle: "iBouncy 密码重置",
+        mailResetBody: "您正在请求重置 iBouncy 账号密码，以下是您的验证码：",
+        mailResetExpiry: "验证码 10 分钟内有效，如非本人操作请忽略此邮件。",
+    },
+};
+
+function detectLocale(req?: any): "zh" | "en" {
+    try {
+        const header = req?.headers?.["accept-language"] || "";
+        if (typeof header === "string" && header.includes("zh")) return "zh";
+    } catch {
+        /* ignore */
+    }
+    return "en";
+}
+
+function m(req: any | undefined, key: keyof typeof mailMessages.en): string {
+    const locale = detectLocale(req);
+    return mailMessages[locale][key];
+}
+
 let transporter: Transporter | null = null;
 
 function getTransporter(): Transporter {
@@ -23,7 +63,7 @@ function getTransporter(): Transporter {
     const pass = process.env.SMTP_PASS;
 
     if (!host || !user || !pass) {
-        const err: any = new Error("SMTP 未配置（缺少 SMTP_HOST / SMTP_USER / SMTP_PASS 环境变量）");
+        const err: any = new Error("SMTP not configured (missing SMTP_HOST / SMTP_USER / SMTP_PASS)");
         err.code = "MISSING_SMTP_CONFIG";
         throw err;
     }
@@ -53,12 +93,12 @@ export async function sendMail(to: string, subject: string, html: string): Promi
  * @param to 收件人邮箱
  * @param code 6 位数字验证码
  */
-export async function sendVerificationCode(to: string, code: string): Promise<void> {
-    const subject = "iBouncy — 邮箱验证码";
+export async function sendVerificationCode(to: string, code: string, req?: any): Promise<void> {
+    const subject = m(req, "mailVerifySubject");
     const html = `
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-            <h2 style="color: #20A8D7;">iBouncy 邮箱验证</h2>
-            <p>您正在注册 iBouncy 账号，以下是您的验证码：</p>
+            <h2 style="color: #20A8D7;">${m(req, "mailVerifyTitle")}</h2>
+            <p>${m(req, "mailVerifyBody")}</p>
             <div style="
                 font-size: 32px;
                 font-weight: bold;
@@ -70,9 +110,9 @@ export async function sendVerificationCode(to: string, code: string): Promise<vo
                 text-align: center;
                 margin: 16px 0;
             ">${code}</div>
-            <p style="color: #777;">验证码 10 分钟内有效，请勿转发给他人。</p>
+            <p style="color: #777;">${m(req, "mailVerifyExpiry")}</p>
             <hr style="border: none; border-top: 1px solid #EEE; margin: 24px 0;">
-            <p style="color: #AAA; font-size: 12px;">此邮件由系统自动发送，请勿回复。</p>
+            <p style="color: #AAA; font-size: 12px;">${m(req, "mailAutoSent")}</p>
         </div>
     `;
     await sendMail(to, subject, html);
@@ -83,12 +123,12 @@ export async function sendVerificationCode(to: string, code: string): Promise<vo
  * @param to 收件人邮箱
  * @param code 6 位数字验证码
  */
-export async function sendPasswordResetCode(to: string, code: string): Promise<void> {
-    const subject = "iBouncy — 密码重置验证码";
+export async function sendPasswordResetCode(to: string, code: string, req?: any): Promise<void> {
+    const subject = m(req, "mailResetSubject");
     const html = `
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-            <h2 style="color: #20A8D7;">iBouncy 密码重置</h2>
-            <p>您正在请求重置 iBouncy 账号密码，以下是您的验证码：</p>
+            <h2 style="color: #20A8D7;">${m(req, "mailResetTitle")}</h2>
+            <p>${m(req, "mailResetBody")}</p>
             <div style="
                 font-size: 32px;
                 font-weight: bold;
@@ -100,9 +140,9 @@ export async function sendPasswordResetCode(to: string, code: string): Promise<v
                 text-align: center;
                 margin: 16px 0;
             ">${code}</div>
-            <p style="color: #777;">验证码 10 分钟内有效，如非本人操作请忽略此邮件。</p>
+            <p style="color: #777;">${m(req, "mailResetExpiry")}</p>
             <hr style="border: none; border-top: 1px solid #EEE; margin: 24px 0;">
-            <p style="color: #AAA; font-size: 12px;">此邮件由系统自动发送，请勿回复。</p>
+            <p style="color: #AAA; font-size: 12px;">${m(req, "mailAutoSent")}</p>
         </div>
     `;
     await sendMail(to, subject, html);

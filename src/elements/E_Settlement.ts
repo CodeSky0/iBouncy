@@ -3,6 +3,7 @@ import { evBus, GEV } from "../events";
 import { GP } from "../core/instances";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
+import { t } from "../i18n";
 
 export default class E_Settlement extends Group {
     confUI = UIConf.Settlement;
@@ -36,9 +37,9 @@ export default class E_Settlement extends Group {
             this.confUI.Hint1.FILL,
             this.confUI.Hint1.FONT_SIZE,
         )
-            .$append("按")
-            .$append("空格键", 3, void 0, void 0, "bold")
-            .$append("重新开始");
+            .$append(t("settlement.restart"))
+            .$append(t("settlement.restartKey"), 3, void 0, void 0, "bold")
+            .$append(t("settlement.restartGame"));
         this.Hint1.opacity = 0;
         this.Hint2 = new TextLine(
             GP.bw * this.confUI.X_RATIO,
@@ -47,9 +48,9 @@ export default class E_Settlement extends Group {
             this.confUI.Hint2.FILL,
             this.confUI.Hint2.FONT_SIZE,
         )
-            .$append("按")
-            .$append("回车键", 3, void 0, void 0, "bold")
-            .$append("返回开始菜单");
+            .$append(t("settlement.back"))
+            .$append(t("settlement.backKey"), 3, void 0, void 0, "bold")
+            .$append(t("settlement.backToMenu"));
         this.Hint2.opacity = 0;
         this.add([this.Title, this.Hint1, this.Hint2]);
 
@@ -113,14 +114,14 @@ export default class E_Settlement extends Group {
     }
 
     win_(): void {
-        this.Title.text = " You Win! ";
+        this.Title.text = t("settlement.youWin");
         this.#setTextFill_("leafer://GL.jpg", this.confUI.Title.WIN_BG_Y_OFFSET);
         this.#setShadowColor_(this.confUI.Title.WIN_SHADOW_COLOR);
         this.show_();
     }
 
     fail_(): void {
-        this.Title.text = " FAIL ";
+        this.Title.text = t("settlement.fail");
         this.#setTextFill_("leafer://DL.jpg", this.confUI.Title.FAIL_BG_Y_OFFSET);
         this.#setShadowColor_(this.confUI.Title.FAIL_SHADOW_COLOR);
         this.show_();
