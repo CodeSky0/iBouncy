@@ -5,7 +5,7 @@ import { abs, floor } from "./utils/math";
 import { setEffectsEnabled } from "./core/effects";
 import { prevTimeStamp, setPrevTimeStamp } from "./app/timing";
 import { GI, GP, timer, leafer, Ball, Tablet, Timing } from "./core/instances";
-import { Mask, FPS, Scoring } from "./ui/elements";
+import { Mask, FPS, Scoring, Settlement } from "./ui/elements";
 import { initCloudOverlay } from "./ui/cloudOverlay";
 import { addScore } from "./cloud/client";
 import { addLocalScore, clearSynced, markSynced } from "./cloud/localScores";
@@ -269,6 +269,8 @@ KS.whenUp((e) => {
                 if (replays.length > 0) {
                     const lastReplay = replays[replays.length - 1];
                     if (replayControls.loadReplay(lastReplay.metadata.id)) {
+                        // Hide settlement screen before showing replay
+                        Settlement.hide_();
                         replayControls.show();
                         replayControls.startPlayback();
                     }
