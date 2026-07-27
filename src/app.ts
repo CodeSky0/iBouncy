@@ -4,8 +4,8 @@ import { evBus, GEV } from "./events";
 import { abs, floor } from "./utils/math";
 import { setEffectsEnabled } from "./core/effects";
 import { prevTimeStamp, setPrevTimeStamp } from "./app/timing";
-import { GI, GP, timer, leafer, Ball, Tablet } from "./core/instances";
-import { Mask, FPS } from "./ui/elements";
+import { GI, GP, timer, leafer, Ball, Tablet, Timing, ReplayControls } from "./core/instances";
+import { Mask, FPS, Scoring } from "./ui/elements";
 import { initCloudOverlay } from "./ui/cloudOverlay";
 import { addScore } from "./cloud/client";
 import { addLocalScore, clearSynced, markSynced } from "./cloud/localScores";
@@ -13,6 +13,7 @@ import { soundManager } from "./audio/SoundManager";
 import { touchCtrl } from "./utils/TouchController";
 import X_CollisionParticle from "./elements_extensions/X_CollisionParticle";
 import X_NativeParticle from "./elements_extensions/X_NativeParticle";
+import { ReplayRecorder } from "./core/replay";
 
 /** 碰撞加分公式用：板宽恒定，提出循环外避免每子步除法。 */
 const TABLET_2PI_OVER_W = (Math.PI * 2) / UIConf.Tablet.WIDTH;
@@ -30,6 +31,14 @@ const nativeParticle = (() => {
         return null;
     }
 })();
+
+/** 赛后回放系统 */
+const replayRecorder = new ReplayRecorder();
+
+// 设置回放记录器的数据源
+replayRecorder.setScoreSource(() => (Scoring as any).v / 10);
+replayRecorder.setComboSource(() => ({ combo: (Scoring as any).currentCombo, multiplier: (Scoring as any).currentMultiplier }));
+replayRecorder.setTimingSource(() => Timing.remaining);
 
 let accumulated = 0;
 let rafId = 0;
@@ -151,19 +160,26 @@ function gameLoop(timeStamp: number): void {
             if (GI.collisionDetect() && Ball.vy < 0) {
                 const bv = Math.hypot(Ball.vx, Ball.vy);
                 const bvP = Math.log2(bv) + 1 / Math.cos(BV_ANGLE_SCALE * bv);
-                const d = abs(Tablet.cx - Ball.cx);
+                const d = abs((Tablet as any).cx - (Ball as any).cx);
                 const dP = Math.cos(TABLET_2PI_OVER_W * d) + 0.5;
                 const { combo, multiplier } = GI.registerHit();
                 // 合并得分+连击为单一事件，减少一次事件分发
                 evBus.emit(GEV.SCORE_HIT, { delta: (0.4 * bvP + 0.16 * dP) * multiplier, combo, multiplier });
                 soundManager.playBounce();
-                collisionParticle.emit(Ball.cx, Math.min(Ball.oy, Tablet.ty));
-                nativeParticle?.emit(Ball.cx, Math.min(Ball.oy, Tablet.ty));
+                collisionParticle.emit((Ball as any).cx, Math.min((Ball as any).oy, (Tablet as any).ty));
+                nativeParticle?.emit((Ball as any).cx, Math.min((Ball as any).oy, (Tablet as any).ty));
             }
+        }
+        // 记录回放帧（每帧记录一次，而非每个子步）
+        if (!ReplayControls.isPlaying()) {
+            replayRecorder.recordFrame();
         }
         // 原生 Canvas 粒子系统渲染（绕过 Leafer 场景图）
         nativeParticle?.render(deltaTime / 1000);
     }
+
+    // 更新回放播放器
+    ReplayControls.update();
 
     rafId = requestAnimationFrame(gameLoop);
 }
@@ -237,6 +253,26 @@ KS.whenUp((e) => {
         case "Enter":
         case "NumpadEnter":
             if (GP.at("over") || GP.at("paused")) {
+                GP.prepared();
+            }
+            break;
+        case "KeyR":
+            if (GP.at("over")) {
+                // Start replay of the last game
+                const replays = replayRecorder.getReplays();
+                if (replays.length > 0) {
+                    const lastReplay = replays[replays.length - 1];
+                    if (ReplayControls.loadReplay(lastReplay.metadata.id)) {
+                        ReplayControls.show();
+                        ReplayControls.startPlayback();
+                    }
+                }
+            }
+            break;
+        case "Escape":
+            if (ReplayControls.isPlaying()) {
+                ReplayControls.stopPlayback();
+                ReplayControls.hide();
                 GP.prepared();
             }
             break;

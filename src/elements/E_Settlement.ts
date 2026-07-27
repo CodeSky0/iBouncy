@@ -1,6 +1,7 @@
 import { AnimateEvent, Group, Text } from "leafer-game";
 import { evBus, GEV } from "../events";
-import { GP } from "../core/instances";
+import { GP, ReplayControls } from "../core/instances";
+import { ReplayRecorder } from "../core/replay";
 import TextLine from "../utils/TextLine";
 import { UIConf } from "../config";
 import { t } from "../i18n";
@@ -10,6 +11,8 @@ export default class E_Settlement extends Group {
     Title: Text;
     Hint1: TextLine;
     Hint2: TextLine;
+    Hint3: TextLine;
+    private replayRecorder: ReplayRecorder;
 
     constructor() {
         super({
@@ -20,6 +23,8 @@ export default class E_Settlement extends Group {
             visible: false,
             zIndex: 991,
         });
+        this.replayRecorder = new ReplayRecorder();
+
         this.Title = new Text({
             x: GP.bw * this.confUI.X_RATIO,
             y: GP.bh * this.confUI.Title.Y_RATIO,
@@ -52,7 +57,17 @@ export default class E_Settlement extends Group {
             .$append(t("settlement.backKey"), 3, void 0, void 0, "bold")
             .$append(t("settlement.backToMenu"));
         this.Hint2.opacity = 0;
-        this.add([this.Title, this.Hint1, this.Hint2]);
+        this.Hint3 = new TextLine(
+            GP.bw * this.confUI.X_RATIO,
+            GP.bh * this.confUI.Hint2.Y_RATIO + this.confUI.Hint2.Y_OFFSET + 30,
+            "center",
+            "#FFA500",
+            this.confUI.Hint2.FONT_SIZE,
+        )
+            .$append("Watch Replay")
+            .$append(" [R]", 3, void 0, void 0, "bold");
+        this.Hint3.opacity = 0;
+        this.add([this.Title, this.Hint1, this.Hint2, this.Hint3]);
 
         this.init_ = this.init_.bind(this);
         this.#$setupEventListeners();
@@ -99,6 +114,7 @@ export default class E_Settlement extends Group {
         });
         this.Hint1.fadeIn_(this.confUI.Hint1.FADE_IN_DURATION, this.confUI.Hint1.FADE_IN_DELAY);
         this.Hint2.fadeIn_(this.confUI.Hint2.FADE_IN_DURATION, this.confUI.Hint2.FADE_IN_DELAY);
+        this.Hint3.fadeIn_(this.confUI.Hint2.FADE_IN_DURATION, this.confUI.Hint2.FADE_IN_DELAY + 0.2);
     }
 
     hide_(): void {
@@ -107,7 +123,8 @@ export default class E_Settlement extends Group {
             join: true,
         });
         this.Hint1.fadeOut_(this.confUI.Hint1.FADE_OUT_DURATION);
-        this.Hint2.fadeOut_(this.confUI.Hint2.FADE_OUT_DURATION).once(
+        this.Hint2.fadeOut_(this.confUI.Hint2.FADE_OUT_DURATION);
+        this.Hint3.fadeOut_(this.confUI.Hint2.FADE_OUT_DURATION).once(
             AnimateEvent.COMPLETED,
             () => (this.visible = false),
         );
