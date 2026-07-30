@@ -5,10 +5,22 @@ import { Scoring } from "../ui/elements";
 import { ReplayPlayer, ReplayRecorder } from "../core/replay";
 import { t } from "../i18n";
 
-const PANEL_WIDTH = 240;
-const PANEL_PADDING = 12;
-const PANEL_RADIUS = 12;
+const PANEL_WIDTH = 260;
+const PANEL_PADDING = 14;
+const PANEL_RADIUS = 20;
 const PANEL_MARGIN = 16;
+const PANEL_HEIGHT = 164;
+
+// Glass-morphism colors matching cloud FAB style
+const GLASS_BG = "rgba(255, 255, 255, 0.05)";
+const GLASS_BORDER = "rgba(255, 255, 255, 0.14)";
+const GLASS_BTN_BG = "rgba(255, 255, 255, 0.06)";
+const GLASS_BTN_BORDER = "rgba(255, 255, 255, 0.12)";
+const GLASS_TEXT = "rgba(255, 255, 255, 0.92)";
+const GLASS_TEXT_DIM = "rgba(255, 255, 255, 0.50)";
+const ACCENT_COLOR = "rgba(94, 234, 212, 0.85)"; // prism-teal
+const ACCENT_FILL = "rgba(94, 234, 212, 0.15)";
+const ACCENT_STROKE = "rgba(94, 234, 212, 0.35)";
 
 export default class E_ReplayControls extends Group {
     private background!: Rect;
@@ -37,7 +49,7 @@ export default class E_ReplayControls extends Group {
             x: GP.bw - PANEL_WIDTH - PANEL_MARGIN,
             y: PANEL_MARGIN,
             width: PANEL_WIDTH,
-            height: 160,
+            height: PANEL_HEIGHT,
             visible: false,
             zIndex: 1000,
         });
@@ -53,16 +65,31 @@ export default class E_ReplayControls extends Group {
         const w = PANEL_WIDTH;
         const p = PANEL_PADDING;
 
-        // Background
+        // Glass background
         this.background = new Rect({
             x: 0,
             y: 0,
             width: w,
-            height: 160,
-            fill: "rgba(30, 30, 30, 0.92)",
+            height: PANEL_HEIGHT,
+            fill: GLASS_BG,
             corner: PANEL_RADIUS,
-            stroke: "rgba(255, 255, 255, 0.12)",
-            strokeWidth: 1,
+            stroke: GLASS_BORDER,
+            strokeWidth: 0.5,
+            shadow: {
+                x: 0,
+                y: 4,
+                blur: 20,
+                color: "rgba(0, 0, 0, 0.30)",
+            },
+        });
+        // Inner specular highlight (top edge)
+        const specHighlight = new Rect({
+            x: 1,
+            y: 0.5,
+            width: w - 2,
+            height: 1,
+            fill: "rgba(255, 255, 255, 0.18)",
+            corner: PANEL_RADIUS,
         });
 
         // Title
@@ -70,82 +97,93 @@ export default class E_ReplayControls extends Group {
             x: p,
             y: p + 2,
             text: t("replayControls.title"),
-            fill: "rgba(255, 255, 255, 0.9)",
-            fontSize: 14,
+            fill: GLASS_TEXT,
+            fontSize: 13,
             fontWeight: "bold",
         });
 
         // Close (exit) button
         this.closeBtn = new Group({
-            x: w - p - 18,
+            x: w - p - 20,
             y: p,
-            width: 18,
-            height: 18,
+            width: 20,
+            height: 20,
             cursor: "pointer",
         });
-        this.closeIcon = new Path({
-            path: "M4 4L14 14M14 4L4 14",
-            stroke: "rgba(255, 255, 255, 0.6)",
-            strokeWidth: 2,
+        const closeBg = new Rect({
+            x: 0,
+            y: 0,
+            width: 20,
+            height: 20,
+            fill: "rgba(255, 255, 255, 0.04)",
+            corner: 10,
         });
-        this.closeBtn.add(this.closeIcon);
+        this.closeIcon = new Path({
+            path: "M5 5L15 15M15 5L5 15",
+            stroke: "rgba(255, 255, 255, 0.55)",
+            strokeWidth: 1.5,
+        });
+        this.closeBtn.add([closeBg, this.closeIcon]);
 
         // Play/Pause button
         this.playPauseBtn = new Group({
             x: p,
-            y: 68,
-            width: 36,
-            height: 36,
+            y: 72,
+            width: 38,
+            height: 38,
             cursor: "pointer",
         });
-        // Button background
         const ppBg = new Rect({
             x: 0,
             y: 0,
-            width: 36,
-            height: 36,
-            fill: "rgba(255, 255, 255, 0.1)",
-            corner: 8,
+            width: 38,
+            height: 38,
+            fill: GLASS_BTN_BG,
+            corner: 12,
+            stroke: GLASS_BTN_BORDER,
+            strokeWidth: 0.5,
         });
         this.playPauseBtn.add(ppBg);
 
         this.playIcon = new Path({
             path: "M10 7v22l16-11z",
-            fill: "#FFFFFF",
-            x: 12,
-            y: 7,
+            fill: GLASS_TEXT,
+            x: 13,
+            y: 8,
         });
         this.pauseIcon = new Path({
             path: "M8 7h6v22H8V7zm14 0h6v22h-6V7z",
-            fill: "#FFFFFF",
-            x: 10,
-            y: 7,
+            fill: GLASS_TEXT,
+            x: 11,
+            y: 8,
             visible: false,
         });
         this.playPauseBtn.add([this.playIcon, this.pauseIcon]);
 
         // Speed button
         this.speedBtn = new Group({
-            x: p + 46,
-            y: 68,
-            width: 52,
-            height: 36,
+            x: p + 48,
+            y: 72,
+            width: 54,
+            height: 38,
             cursor: "pointer",
         });
         const speedBg = new Rect({
             x: 0,
             y: 0,
-            width: 52,
-            height: 36,
-            fill: "rgba(255, 255, 255, 0.1)",
-            corner: 8,
+            width: 54,
+            height: 38,
+            fill: GLASS_BTN_BG,
+            corner: 12,
+            stroke: GLASS_BTN_BORDER,
+            strokeWidth: 0.5,
         });
         this.speedBtn.add(speedBg);
         this.speedText = new Text({
-            x: 26,
-            y: 18,
+            x: 27,
+            y: 19,
             text: "1.0x",
-            fill: "#FFFFFF",
+            fill: GLASS_TEXT,
             fontSize: 12,
             fontWeight: "bold",
             around: "center",
@@ -154,45 +192,46 @@ export default class E_ReplayControls extends Group {
         this.speedBtn.add(this.speedText);
 
         // Export button
+        const exportW = w - p * 2 - 112;
         this.exportBtn = new Group({
-            x: p + 108,
-            y: 68,
-            width: w - p * 2 - 108,
-            height: 36,
+            x: p + 112,
+            y: 72,
+            width: exportW,
+            height: 38,
             cursor: "pointer",
         });
         const exportBg = new Rect({
             x: 0,
             y: 0,
-            width: w - p * 2 - 108,
-            height: 36,
-            fill: "rgba(76, 175, 80, 0.2)",
-            stroke: "rgba(76, 175, 80, 0.5)",
-            strokeWidth: 1,
-            corner: 8,
+            width: exportW,
+            height: 38,
+            fill: ACCENT_FILL,
+            stroke: ACCENT_STROKE,
+            strokeWidth: 0.5,
+            corner: 12,
         });
         this.exportBtn.add(exportBg);
         this.exportText = new Text({
             text: t("replayControls.export"),
-            fill: "#4CAF50",
+            fill: ACCENT_COLOR,
             fontSize: 12,
             fontWeight: "bold",
             around: "center",
         });
-        this.exportText.x = (w - p * 2 - 108) / 2;
-        this.exportText.y = 18;
+        this.exportText.x = exportW / 2;
+        this.exportText.y = 19;
         this.exportText.origin = "center";
         this.exportBtn.add(this.exportText);
 
         // Progress bar
-        const barY = 36;
+        const barY = 38;
         const barHeight = 4;
         this.progressBar = new Rect({
             x: p,
             y: barY,
             width: w - p * 2,
             height: barHeight,
-            fill: "rgba(255, 255, 255, 0.15)",
+            fill: "rgba(255, 255, 255, 0.10)",
             corner: 2,
         });
         this.progressFill = new Rect({
@@ -200,7 +239,7 @@ export default class E_ReplayControls extends Group {
             y: barY,
             width: 0,
             height: barHeight,
-            fill: "#4CAF50",
+            fill: ACCENT_COLOR,
             corner: 2,
         });
         this.progressHandle = new Rect({
@@ -209,8 +248,14 @@ export default class E_ReplayControls extends Group {
             width: 10,
             height: 12,
             fill: "#FFFFFF",
-            corner: 3,
+            corner: 5,
             cursor: "pointer",
+            shadow: {
+                x: 0,
+                y: 1,
+                blur: 4,
+                color: "rgba(0, 0, 0, 0.3)",
+            },
         });
 
         // Time display
@@ -218,18 +263,19 @@ export default class E_ReplayControls extends Group {
             x: p,
             y: barY + barHeight + 6,
             text: "0:00 / 0:00",
-            fill: "rgba(255, 255, 255, 0.5)",
+            fill: GLASS_TEXT_DIM,
             fontSize: 11,
         });
 
         this.add([
             this.background,
-            this.titleText,
-            this.closeBtn,
+            specHighlight,
             this.progressBar,
             this.progressFill,
             this.progressHandle,
             this.timeText,
+            this.titleText,
+            this.closeBtn,
             this.playPauseBtn,
             this.speedBtn,
             this.exportBtn,
