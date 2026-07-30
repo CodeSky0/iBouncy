@@ -604,6 +604,256 @@ canvas {
 
 
 /*
+ *  5c-2. Replay FAB — same position & glass as cloud FAB
+ */
+#cloud-ui-root .replay-fab {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    pointer-events: auto;
+    transform-origin: top right;
+    opacity: 1;
+    transform: scale(1) translateZ(0);
+    filter: blur(0);
+    transition:
+        opacity 0.45s var(--ease-fluid),
+        transform 0.45s var(--ease-spring),
+        filter 0.38s ease;
+    z-index: 2001;
+}
+
+#cloud-ui-root .replay-fab.replay-fab--hidden {
+    opacity: 0;
+    transform: scale(0.6) translateY(8px);
+    pointer-events: none;
+    filter: blur(4px);
+    transition:
+        opacity 0.28s var(--ease-exit),
+        transform 0.28s var(--ease-exit),
+        filter 0.25s ease;
+}
+
+#cloud-ui-root .replay-pill {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--radius-lg);
+    color: rgba(255,255,255,0.96);
+    border: 0.5px solid rgba(255,255,255,0.14);
+    background: var(--glass-depth-low);
+    backdrop-filter: var(--glass-blur-mid);
+    -webkit-backdrop-filter: var(--glass-blur-mid);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    box-shadow:
+        0 0 0 0.5px rgba(120,170,255,0.08),
+        0 0 0 1px rgba(255,140,170,0.06),
+        var(--depth-near),
+        var(--spec-top);
+    animation: pillBreathe 5s ease-in-out infinite, prismRim 7s ease-in-out infinite;
+    transform-style: preserve-3d;
+    position: relative;
+    min-width: 220px;
+}
+
+/* Ambient light orb inside replay pill */
+#cloud-ui-root .replay-pill::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: radial-gradient(
+        ellipse 120% 80% at 30% 20%,
+        rgba(160,200,255,0.12) 0%,
+        transparent 60%
+    );
+    pointer-events: none;
+    animation: orbShift 6s ease-in-out infinite;
+}
+
+#cloud-ui-root .replay-pill:hover {
+    box-shadow:
+        0 0 0 0.5px rgba(140,250,210,0.18),
+        0 0 0 1px rgba(120,170,255,0.10),
+        var(--depth-mid),
+        var(--spec-top),
+        0 0 48px rgba(74,158,255,0.10),
+        0 0 24px rgba(94,234,212,0.06);
+    border-color: rgba(255,255,255,0.18);
+}
+
+/* Progress bar */
+#cloud-ui-root .replay-progress {
+    position: relative;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: rgba(255,255,255,0.08);
+    cursor: pointer;
+    overflow: visible;
+}
+
+#cloud-ui-root .replay-progress-track {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+}
+
+#cloud-ui-root .replay-progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--prism-blue), var(--prism-teal));
+    transition: width 0.08s linear;
+}
+
+#cloud-ui-root .replay-progress-handle {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    transform: translate(-50%, -50%);
+    box-shadow:
+        0 1px 4px rgba(0,0,0,0.35),
+        0 0 0 0.5px rgba(255,255,255,0.20);
+    cursor: grab;
+    transition: left 0.08s linear, transform 0.15s var(--ease-spring);
+    z-index: 2;
+}
+
+#cloud-ui-root .replay-progress-handle:hover {
+    transform: translate(-50%, -50%) scale(1.25);
+}
+
+#cloud-ui-root .replay-progress-handle:active {
+    cursor: grabbing;
+    transform: translate(-50%, -50%) scale(1.15);
+}
+
+/* Controls row */
+#cloud-ui-root .replay-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#cloud-ui-root .replay-time {
+    font-size: 11px;
+    font-weight: 520;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    min-width: 72px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Icon buttons inside replay pill */
+#cloud-ui-root .replay-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: var(--radius-full);
+    background: var(--glass-depth-high);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    backdrop-filter: var(--glass-blur-surface);
+    -webkit-backdrop-filter: var(--glass-blur-surface);
+    color: rgba(255,255,255,0.92);
+    cursor: pointer;
+    box-shadow: var(--depth-surface), var(--spec-top);
+    transition:
+        all 0.3s var(--ease-fluid),
+        transform 0.35s var(--ease-spring);
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+#cloud-ui-root .replay-btn svg {
+    width: 14px;
+    height: 14px;
+    display: block;
+}
+
+#cloud-ui-root .replay-btn:hover {
+    transform: translateY(-1px);
+    background: var(--glass-depth-active);
+    border-color: rgba(180,200,255,0.25);
+    box-shadow:
+        var(--depth-mid),
+        var(--spec-top),
+        0 0 20px rgba(74,158,255,0.08);
+}
+
+#cloud-ui-root .replay-btn:active {
+    transform: translateY(0) scale(0.92);
+    transition: transform 0.06s ease;
+}
+
+/* Play button — slightly larger, teal accent */
+#cloud-ui-root .replay-play-btn {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(
+        145deg,
+        rgba(94,234,212,0.28) 0%,
+        rgba(74,158,255,0.22) 100%
+    );
+    border-color: rgba(140,250,220,0.30);
+    color: var(--prism-teal);
+}
+
+#cloud-ui-root .replay-play-btn:hover {
+    background: linear-gradient(
+        145deg,
+        rgba(94,234,212,0.42) 0%,
+        rgba(74,158,255,0.35) 100%
+    );
+    border-color: rgba(140,250,220,0.45);
+    box-shadow:
+        0 4px 18px rgba(94,234,212,0.18),
+        var(--spec-top);
+}
+
+/* Speed button — text style */
+#cloud-ui-root .replay-speed-btn {
+    width: auto;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    font-family: inherit;
+}
+
+/* Exit button — warm tint */
+#cloud-ui-root .replay-exit-btn:hover {
+    background: rgba(255,107,157,0.20);
+    border-color: rgba(255,140,160,0.30);
+    color: rgba(255,160,180,0.95);
+    box-shadow:
+        0 4px 16px rgba(255,107,157,0.15),
+        var(--spec-top);
+}
+
+/* Export button — teal tint */
+#cloud-ui-root .replay-export-btn:hover {
+    background: rgba(94,234,212,0.18);
+    border-color: rgba(94,234,212,0.30);
+    color: var(--prism-teal);
+    box-shadow:
+        0 4px 16px rgba(94,234,212,0.12),
+        var(--spec-top);
+}
+
+
+/*
  *  5d. Modal System
  */
 

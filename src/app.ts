@@ -229,7 +229,6 @@ window.addEventListener("ibouncy:replay-start", () => {
     if (!GP.at("over")) return;
     if (!replayControls) {
         replayControls = new E_ReplayControls();
-        replayControls.render_();
     }
     const replays = replayRecorder.getReplays();
     if (replays.length > 0) {
@@ -295,7 +294,6 @@ KS.whenUp((e) => {
                 // Initialize replay controls if not already done
                 if (!replayControls) {
                     replayControls = new E_ReplayControls();
-                    replayControls.render_();
                 }
                 // Start replay of the last game
                 const replays = replayRecorder.getReplays();
