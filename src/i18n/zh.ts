@@ -48,6 +48,13 @@ export const zh = {
         backKey: "回车键",
         backToMenu: "返回开始菜单",
     },
+    replayControls: {
+        title: "回放控制",
+        play: "播放",
+        pause: "暂停",
+        export: "导出",
+        exit: "退出",
+    },
     cloudOverlay: {
         soundToggle: "音效开关",
         soundOn: "开启音效",

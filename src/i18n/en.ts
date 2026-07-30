@@ -50,6 +50,13 @@ export const en: typeof import("./zh").zh = {
         backKey: "ENTER",
         backToMenu: " to return to menu",
     },
+    replayControls: {
+        title: "Replay",
+        play: "Play",
+        pause: "Pause",
+        export: "Export",
+        exit: "Exit",
+    },
     cloudOverlay: {
         soundToggle: "Sound",
         soundOn: "Unmute",
