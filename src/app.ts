@@ -303,6 +303,7 @@ KS.whenUp((e) => {
             break;
         case "Escape":
             if (replayControls?.isPlaying()) {
+                window.dispatchEvent(new CustomEvent("ibouncy:replay-end"));
                 replayControls.stopPlayback();
                 replayControls.hide();
                 GP.prepared();

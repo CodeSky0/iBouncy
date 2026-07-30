@@ -252,6 +252,7 @@ export default class E_ReplayControls extends Group {
 
         // Close (exit) button
         this.closeBtn.on("pointerdown", () => {
+            window.dispatchEvent(new CustomEvent("ibouncy:replay-end"));
             this.replayPlayer.stop();
             this.isReplayMode = false;
             this.#updatePlayPauseIcon(false);
@@ -303,6 +304,7 @@ export default class E_ReplayControls extends Group {
             this.#updateProgressUI();
         });
         this.replayPlayer.setPlaybackEndCallback(() => {
+            window.dispatchEvent(new CustomEvent("ibouncy:replay-end"));
             this.#updatePlayPauseIcon(false);
             this.isReplayMode = false;
         });

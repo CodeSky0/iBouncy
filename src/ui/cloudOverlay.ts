@@ -104,6 +104,16 @@ export function initCloudOverlay(): {
     eventBus.on(GEV.GAME_START, hideGameUI);
     eventBus.on(GEV.GAME_OVER, showGameUI);
 
+    // 回放期间隐藏云端 FAB（回放浮岛已有完整控件）
+    window.addEventListener("ibouncy:replay-start", () => {
+        ctx.fab.classList.add("cloud-fab--game-hidden");
+        soundBtn.classList.add("sound-toggle-btn--hidden");
+    });
+    window.addEventListener("ibouncy:replay-end", () => {
+        ctx.fab.classList.remove("cloud-fab--game-hidden");
+        soundBtn.classList.remove("sound-toggle-btn--hidden");
+    });
+
     // ---- Toast & error ----
     function showSuccess(message: string): void {
         ctx.successToast.textContent = message;
