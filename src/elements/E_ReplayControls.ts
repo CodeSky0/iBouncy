@@ -21,11 +21,11 @@ export default class E_ReplayControls extends Group {
     private progressBar: Rect;
     private progressFill: Rect;
     private progressHandle: Rect;
-    private timeText: Text;
-    private speedBtn: Group;
-    private speedText: Text;
-    private exportBtn: Group;
-    private exportText: Text;
+    private timeText!: Text;
+    private speedBtn!: Group;
+    private speedText!: Text;
+    private exportBtn!: Group;
+    private exportText!: Text;
     private replayPlayer: ReplayPlayer;
     private replayRecorder: ReplayRecorder;
     private isDraggingProgress = false;
@@ -313,7 +313,7 @@ export default class E_ReplayControls extends Group {
     #handleProgressSeek(e: any): void {
         if (!this.replayPlayer.getMetadata()) return;
 
-        const rect = this.progressBar.getRenderBounds();
+        const rect = this.progressBar.renderBounds;
         const x = e.x - rect.x;
         const progress = Math.max(0, Math.min(1, x / rect.width));
         this.replayPlayer.seekToProgress(progress);
