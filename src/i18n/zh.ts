@@ -55,6 +55,14 @@ export const zh = {
         export: "导出",
         exit: "退出",
     },
+    virtualButtons: {
+        start: "开始",
+        pause: "暂停",
+        resume: "继续",
+        restart: "重来",
+        menu: "菜单",
+        replay: "回放",
+    },
     cloudOverlay: {
         soundToggle: "音效开关",
         soundOn: "开启音效",

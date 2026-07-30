@@ -224,6 +224,24 @@ evBus.on(GEV.GAME_START, () => {
     soundManager.playStart();
 });
 
+// 监听虚拟操作按键的回放事件（无键盘用户）
+window.addEventListener("ibouncy:replay-start", () => {
+    if (!GP.at("over")) return;
+    if (!replayControls) {
+        replayControls = new E_ReplayControls();
+    }
+    const replays = replayRecorder.getReplays();
+    if (replays.length > 0) {
+        const lastReplay = replays[replays.length - 1];
+        if (replayControls.loadReplay(lastReplay.metadata.id)) {
+            Settlement.hide_();
+            replayControls.show();
+            replayControls.startPlayback();
+        }
+    }
+});
+
+
 // 球丢失时重置连击
 evBus.on(GEV.GAME_BALL_LOST, () => {
     GI.resetCombo();

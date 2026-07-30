@@ -5,11 +5,13 @@
  * 1. 检测设备是否为非电脑设备（Android、iOS、Harmony OS）
  * 2. 检测横竖屏状态，提示用户横屏体验更佳
  * 3. 检测键盘可用性，无键盘时提供虚拟摇杆
+ * 4. 无键盘时提供虚拟操作按键（替代空格/回车/R 等）
  */
 
 import { evBus, GEV } from "../events";
 import { touchCtrl } from "./TouchController";
 import { GP, leafer } from "../core/instances";
+import { virtualButtons } from "./VirtualActionButtons";
 
 export type DeviceType = "desktop" | "mobile" | "tablet" | "unknown";
 export type OrientationType = "portrait" | "landscape";
@@ -71,6 +73,9 @@ export class MobileAdapter {
     /** 横屏提示被Dismiss 状态 */
     private orientationPromptDismissed = false;
 
+    /** 键盘检测事件监听器引用，用于移除 */
+    private keyboardDetectHandler: ((e: KeyboardEvent) => void) | null = null;
+
     constructor() {
         this.#detectDeviceType();
         this.#detectOrientation();
@@ -93,13 +98,10 @@ export class MobileAdapter {
 
         console.log(`[MobileAdapter] Initialized - Device: ${this.deviceType}, Orientation: ${this.orientation}, HasKeyboard: ${this.hasPhysicalKeyboard}`);
 
-        // 仅在移动设备上启用增强功能
         if (this.deviceType !== "desktop") {
             this.#setupOrientationListener();
-
-            if (this.config.enableVirtualJoystick) {
-                this.#setupVirtualJoystick();
-            }
+            this.#setupKeyboardDetection();
+            this.#setupVirtualControls();
 
             if (this.config.enableOrientationPrompt && this.orientation === "portrait" && !this.orientationPromptDismissed) {
                 this.#showOrientationPrompt();
@@ -122,7 +124,6 @@ export class MobileAdapter {
         } else if (isMobile) {
             this.deviceType = "mobile";
         } else {
-            // 桌面设备检测
             const isTouchDevice =
                 "ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.maxTouchPoints === 0;
             this.deviceType = isTouchDevice ? "tablet" : "desktop";
@@ -142,15 +143,62 @@ export class MobileAdapter {
     }
 
     /**
-     * 检测物理键盘
+     * 初始检测物理键盘
      */
     #detectKeyboard(): void {
-        // 通过设备类型推断：移动设备通常无物理键盘
         if (this.deviceType === "mobile" || this.deviceType === "tablet") {
             this.hasPhysicalKeyboard = false;
         } else {
             this.hasPhysicalKeyboard = true;
         }
+    }
+
+    /**
+     * 运行时检测物理键盘：监听全局 keydown 事件。
+     * 当在移动/平板设备上检测到按键时，说明连接了物理键盘，
+     * 此时隐藏虚拟摇杆和虚拟操作按键。
+     */
+    #setupKeyboardDetection(): void {
+        this.keyboardDetectHandler = (_e: KeyboardEvent) => {
+            if (!this.hasPhysicalKeyboard) {
+                this.hasPhysicalKeyboard = true;
+                console.log("[MobileAdapter] Physical keyboard detected, hiding virtual controls");
+                this.#hideVirtualControls();
+            }
+        };
+        document.addEventListener("keydown", this.keyboardDetectHandler);
+    }
+
+    /**
+     * 设置虚拟控制器（摇杆 + 操作按键）
+     */
+    #setupVirtualControls(): void {
+        if (!this.needsVirtualController()) return;
+
+        if (this.config.enableVirtualJoystick) {
+            this.#setupVirtualJoystick();
+        }
+
+        // 挂载虚拟操作按键
+        virtualButtons.mount();
+        virtualButtons.show();
+
+        console.log("[MobileAdapter] Virtual controls enabled");
+    }
+
+    /**
+     * 隐藏所有虚拟控制器（检测到物理键盘时调用）
+     */
+    #hideVirtualControls(): void {
+        // 隐藏虚拟摇杆
+        if (this.joystickContainer) {
+            this.joystickContainer.remove();
+            this.joystickContainer = null;
+            console.log("[MobileAdapter] Virtual joystick removed");
+        }
+
+        // 隐藏虚拟操作按键
+        virtualButtons.hide();
     }
 
     /**
@@ -186,7 +234,6 @@ export class MobileAdapter {
         overlay.className = "orientation-prompt-overlay";
         overlay.innerHTML = this.config.orientationPromptMessage;
 
-        // 绑定关闭按钮事件
         const dismissBtn = overlay.querySelector(".orientation-dismiss-btn") as HTMLButtonElement;
         if (dismissBtn) {
             dismissBtn.addEventListener("click", () => {
@@ -198,7 +245,6 @@ export class MobileAdapter {
         document.body.appendChild(overlay);
         this.orientationPromptEl = overlay;
 
-        // 阻止背景滚动
         document.body.style.overflow = "hidden";
 
         console.log("[MobileAdapter] Orientation prompt shown");
@@ -223,12 +269,6 @@ export class MobileAdapter {
      * 设置虚拟摇杆
      */
     #setupVirtualJoystick(): void {
-        // 仅在没有物理键盘时显示虚拟摇杆
-        if (!this.config.enableVirtualJoystick || !this.needsVirtualController()) {
-            return;
-        }
-
-        // 创建虚拟摇杆 UI
         const joystick = document.createElement("div");
         joystick.className = `virtual-joystick joystick-${this.config.joystickPosition}`;
         joystick.innerHTML = `
@@ -240,7 +280,6 @@ export class MobileAdapter {
         document.body.appendChild(joystick);
         this.joystickContainer = joystick;
 
-        // 绑定触摸事件到摇杆
         this.#bindJoystickEvents(joystick);
 
         console.log("[MobileAdapter] Virtual joystick enabled");
@@ -257,7 +296,7 @@ export class MobileAdapter {
         let active = false;
         let startX = 0;
         let startY = 0;
-        const maxRadius = 50; // 摇杆最大移动半径
+        const maxRadius = 50;
 
         const handleStart = (e: TouchEvent | MouseEvent) => {
             e.preventDefault();
@@ -285,7 +324,6 @@ export class MobileAdapter {
 
             stick.style.transform = `translate(${stickX}px, ${stickY}px)`;
 
-            // 更新触摸控制器
             touchCtrl.updateFromJoystick(stickX / maxRadius, stickY / maxRadius);
         };
 
@@ -297,12 +335,10 @@ export class MobileAdapter {
             touchCtrl.updateFromJoystick(0, 0);
         };
 
-        // 触摸事件
         joystick.addEventListener("touchstart", handleStart, { passive: false });
         joystick.addEventListener("touchmove", handleMove, { passive: false });
         joystick.addEventListener("touchend", handleEnd, { passive: false });
 
-        // 鼠标事件（用于桌面调试）
         joystick.addEventListener("mousedown", handleStart);
         document.addEventListener("mousemove", handleMove);
         document.addEventListener("mouseup", handleEnd);
@@ -347,6 +383,11 @@ export class MobileAdapter {
             this.joystickContainer.remove();
             this.joystickContainer = null;
         }
+        if (this.keyboardDetectHandler) {
+            document.removeEventListener("keydown", this.keyboardDetectHandler);
+            this.keyboardDetectHandler = null;
+        }
+        virtualButtons.destroy();
         this.initialized = false;
     }
 }

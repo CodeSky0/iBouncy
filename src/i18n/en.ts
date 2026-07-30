@@ -57,6 +57,14 @@ export const en: typeof import("./zh").zh = {
         export: "Export",
         exit: "Exit",
     },
+    virtualButtons: {
+        start: "Start",
+        pause: "Pause",
+        resume: "Resume",
+        restart: "Restart",
+        menu: "Menu",
+        replay: "Replay",
+    },
     cloudOverlay: {
         soundToggle: "Sound",
         soundOn: "Unmute",
