@@ -11,16 +11,16 @@ const PANEL_RADIUS = 12;
 const PANEL_MARGIN = 16;
 
 export default class E_ReplayControls extends Group {
-    private background: Rect;
-    private titleText: Text;
-    private closeBtn: Group;
-    private closeIcon: Path;
-    private playPauseBtn: Group;
-    private playIcon: Path;
-    private pauseIcon: Path;
-    private progressBar: Rect;
-    private progressFill: Rect;
-    private progressHandle: Rect;
+    private background!: Rect;
+    private titleText!: Text;
+    private closeBtn!: Group;
+    private closeIcon!: Path;
+    private playPauseBtn!: Group;
+    private playIcon!: Path;
+    private pauseIcon!: Path;
+    private progressBar!: Rect;
+    private progressFill!: Rect;
+    private progressHandle!: Rect;
     private timeText!: Text;
     private speedBtn!: Group;
     private speedText!: Text;
