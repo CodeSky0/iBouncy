@@ -50,6 +50,13 @@ export class TouchController {
         this.h = h;
     }
 
+    /** 来自虚拟摇杆的输入更新 */
+    updateFromJoystick(dx: number, dy: number): void {
+        this.active = dx !== 0 || dy !== 0;
+        this.dx = Math.max(-1, Math.min(1, dx));
+        this.dy = Math.max(-1, Math.min(1, dy));
+    }
+
     #onTouchStart(e: TouchEvent): void {
         e.preventDefault();
         this.active = true;

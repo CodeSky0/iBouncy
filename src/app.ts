@@ -11,6 +11,7 @@ import { addScore } from "./cloud/client";
 import { addLocalScore, clearSynced, markSynced } from "./cloud/localScores";
 import { soundManager } from "./audio/SoundManager";
 import { touchCtrl } from "./utils/TouchController";
+import { mobileAdapter } from "./utils/MobileAdapter";
 import X_CollisionParticle from "./elements_extensions/X_CollisionParticle";
 import X_NativeParticle from "./elements_extensions/X_NativeParticle";
 import { ReplayRecorder } from "./core/replay";
@@ -94,6 +95,9 @@ initializeApp().catch((err) => {
 
 // 触摸控制器初始化
 touchCtrl.mount();
+
+// 移动端适配初始化
+mobileAdapter.mount();
 
 // 音效系统初始化（首次用户手势后恢复 AudioContext）
 let audioEnsured = false;

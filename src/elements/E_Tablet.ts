@@ -17,9 +17,12 @@ export default class E_Tablet extends Rect {
     /** 复用 `{ paddings }`，避免每子步分配新对象 */
     private readonly tabletBoundaryOpts: { paddings: [number, number, number, number] };
 
-    /** 键盘状态每帧缓存，避免子步循环内重复调用 Keyboard.isHold */
+    // 键盘状态每帧缓存，避免子步循环内重复调用 Keyboard.isHold
     private kbState = { w: false, a: false, s: false, d: false };
     private kbCacheFrame = -1;
+
+    // 键盘活动标记
+    private keyboardActive = false;
 
     constructor() {
         super({
@@ -28,8 +31,21 @@ export default class E_Tablet extends Rect {
             fill: UIConf.Tablet.FILL,
         });
         this.tabletBoundaryOpts = { paddings: this.availZone };
+        this.#$setupKeyboardDetection();
         this.#$setupEventListeners();
         this.reset_();
+    }
+
+    /**
+     * 设置键盘活动检测
+     */
+    #$setupKeyboardDetection(): void {
+        const markKeyboardActive = () => {
+            this.keyboardActive = true;
+        };
+
+        // 首次键盘活动时标记
+        window.addEventListener("keydown", markKeyboardActive, { once: true, capture: true });
     }
 
     #$setupEventListeners(): void {
@@ -58,11 +74,11 @@ export default class E_Tablet extends Rect {
             this.kbState.d = Keyboard.isHold("KeyD") || Keyboard.isHold("ArrowRight");
         }
 
-        // 触摸优先：有触摸活动时使用触摸方向，否则用键盘
+        // 触摸优先：有触摸活动时使用触摸方向，否则用键盘（仅当检测到键盘活动时）
         if (touchCtrl.active) {
             this.vx += touchCtrl.dx * this.vxMax * prog;
             this.vy += touchCtrl.dy * this.vyMax * prog;
-        } else {
+        } else if (this.keyboardActive) {
             if (this.kbState.w) this.vy -= this.vyMax * prog;
             if (this.kbState.s) this.vy += this.vyMax * prog;
             if (this.kbState.a) this.vx -= this.vxMax * prog;
