@@ -5,7 +5,7 @@
  * State includes ball/tablet positions/velocities, score, combo, timing.
  */
 
-import { GP, Ball, Tablet } from "./instances";
+import { Ball, Tablet } from "./instances";
 import { evBus, GEV } from "../events";
 
 export interface FrameState {

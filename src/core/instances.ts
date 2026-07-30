@@ -10,7 +10,6 @@ import EmbeddedTimer from "../utils/EmbeddedTimer";
 import E_Ball from "../elements/E_Ball";
 import E_Tablet from "../elements/E_Tablet";
 import E_Timing from "../elements/E_Timing";
-import E_ReplayControls from "../elements/E_ReplayControls";
 
 export const leafer = new Leafer({
     view: document.querySelector("canvas")!,
@@ -57,5 +56,3 @@ export const Tablet = new E_Tablet();
 export const GI = new Interaction({ Ball, Tablet, timer, GP });
 
 export const Timing = new E_Timing();
-// ReplayControls will be initialized later after viewport is ready
-export let ReplayControls: E_ReplayControls | null = null;
