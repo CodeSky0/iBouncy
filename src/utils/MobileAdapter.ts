@@ -125,7 +125,7 @@ export class MobileAdapter {
             this.deviceType = "mobile";
         } else {
             const isTouchDevice =
-                "ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.maxTouchPoints === 0;
+                "ontouchstart" in window && navigator.maxTouchPoints > 0;
             this.deviceType = isTouchDevice ? "tablet" : "desktop";
         }
 
