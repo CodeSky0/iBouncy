@@ -241,7 +241,6 @@ window.addEventListener("ibouncy:replay-start", () => {
     }
 });
 
-
 // 球丢失时重置连击
 evBus.on(GEV.GAME_BALL_LOST, () => {
     GI.resetCombo();

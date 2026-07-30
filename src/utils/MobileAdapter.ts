@@ -96,14 +96,20 @@ export class MobileAdapter {
 
         this.initialized = true;
 
-        console.log(`[MobileAdapter] Initialized - Device: ${this.deviceType}, Orientation: ${this.orientation}, HasKeyboard: ${this.hasPhysicalKeyboard}`);
+        console.log(
+            `[MobileAdapter] Initialized - Device: ${this.deviceType}, Orientation: ${this.orientation}, HasKeyboard: ${this.hasPhysicalKeyboard}`,
+        );
 
         if (this.deviceType !== "desktop") {
             this.#setupOrientationListener();
             this.#setupKeyboardDetection();
             this.#setupVirtualControls();
 
-            if (this.config.enableOrientationPrompt && this.orientation === "portrait" && !this.orientationPromptDismissed) {
+            if (
+                this.config.enableOrientationPrompt &&
+                this.orientation === "portrait" &&
+                !this.orientationPromptDismissed
+            ) {
                 this.#showOrientationPrompt();
             }
         }
@@ -124,8 +130,7 @@ export class MobileAdapter {
         } else if (isMobile) {
             this.deviceType = "mobile";
         } else {
-            const isTouchDevice =
-                "ontouchstart" in window && navigator.maxTouchPoints > 0;
+            const isTouchDevice = "ontouchstart" in window && navigator.maxTouchPoints > 0;
             this.deviceType = isTouchDevice ? "tablet" : "desktop";
         }
 
@@ -213,7 +218,11 @@ export class MobileAdapter {
                 this.orientation = newOrientation;
                 console.log(`[MobileAdapter] Orientation changed to: ${this.orientation}`);
 
-                if (this.config.enableOrientationPrompt && this.orientation === "portrait" && !this.orientationPromptDismissed) {
+                if (
+                    this.config.enableOrientationPrompt &&
+                    this.orientation === "portrait" &&
+                    !this.orientationPromptDismissed
+                ) {
                     this.#showOrientationPrompt();
                 }
             }

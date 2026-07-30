@@ -155,7 +155,6 @@ export class VirtualActionButtons {
                 break;
         }
     }
-
 }
 
 /** 全局单例 */
