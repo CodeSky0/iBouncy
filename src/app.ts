@@ -229,16 +229,24 @@ window.addEventListener("ibouncy:replay-start", () => {
     if (!GP.at("over")) return;
     if (!replayControls) {
         replayControls = new E_ReplayControls();
+        replayControls.render_();
     }
     const replays = replayRecorder.getReplays();
     if (replays.length > 0) {
         const lastReplay = replays[replays.length - 1];
         if (replayControls.loadReplay(lastReplay.metadata.id)) {
             Settlement.hide_();
+            Mask.hide_();
             replayControls.show();
             replayControls.startPlayback();
         }
     }
+});
+
+// 回放结束后重新显示遮罩和主菜单
+window.addEventListener("ibouncy:replay-end", () => {
+    Mask.show_("#FFF", 0, 0.4, 0.5);
+    Settlement.show_();
 });
 
 // 球丢失时重置连击
@@ -287,14 +295,16 @@ KS.whenUp((e) => {
                 // Initialize replay controls if not already done
                 if (!replayControls) {
                     replayControls = new E_ReplayControls();
+                    replayControls.render_();
                 }
                 // Start replay of the last game
                 const replays = replayRecorder.getReplays();
                 if (replays.length > 0) {
                     const lastReplay = replays[replays.length - 1];
                     if (replayControls.loadReplay(lastReplay.metadata.id)) {
-                        // Hide settlement screen before showing replay
+                        // Hide settlement screen and mask before showing replay
                         Settlement.hide_();
+                        Mask.hide_();
                         replayControls.show();
                         replayControls.startPlayback();
                     }
