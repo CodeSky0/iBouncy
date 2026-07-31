@@ -5,10 +5,9 @@
  * the same top-right location. Contains play/pause, progress bar, speed,
  * export, and exit controls.
  */
-import { evBus, GEV } from "../events";
 import { GP, Ball, Tablet, Timing } from "../core/instances";
 import { Scoring } from "../ui/elements";
-import { ReplayPlayer, type ReplayMetadata } from "../core/replay";
+import { ReplayPlayer } from "../core/replay";
 import { ReplayRecorder } from "../core/replay";
 import { t } from "../i18n";
 
@@ -136,7 +135,13 @@ export default class E_ReplayControls {
     #setupCallbacks(): void {
         // Play / Pause
         this.playBtn.addEventListener("click", () => {
-            if (!this.replayPlayer.isPlayingReplay()) return;
+            if (!this.replayPlayer.isPlayingReplay()) {
+                if (this.isReplayMode) {
+                    this.replayPlayer.start();
+                    this.#updatePlayIcon(true);
+                }
+                return;
+            }
             if (this.replayPlayer.isReplayPaused()) {
                 this.replayPlayer.resume();
                 this.#updatePlayIcon(true);
@@ -206,11 +211,9 @@ export default class E_ReplayControls {
             this.#updateProgressUI();
         });
 
-        // Playback ended
+        // Playback ended — stay on the last frame, keep the pill for the user
         this.replayPlayer.setPlaybackEndCallback(() => {
-            window.dispatchEvent(new CustomEvent("ibouncy:replay-end"));
             this.#updatePlayIcon(false);
-            this.isReplayMode = false;
         });
     }
 
