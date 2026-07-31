@@ -76,6 +76,11 @@ export default class Processor {
         evBus.emit(GEV.UI_RENDER_ELSE);
     }
 
+    /**
+     * 测量显示器刷新率（仅记录到 `ENV.refreshRate`，供视觉参数参考）。
+     * 物理子步固定为 120Hz（见 instances.ts），不再随显示器刷新率变化，
+     * 保证所有设备上物理行为一致。
+     */
     measureRefreshRate(prog: number): void {
         if (this.measured >= 20) return;
         const rrKey = Math.round(60 / prog);
@@ -96,8 +101,6 @@ export default class Processor {
             }
             this.refreshRateBucket.clear();
             this.ENV.refreshRate = k4maxV;
-            this.ENV.fixedStep = 1000 / k4maxV;
-            this.ENV.actUnitInterval = (1000 / k4maxV).toFixed(1);
             this.state("init2");
         }
     }

@@ -8,7 +8,11 @@ Units:
 export const GameConf = {
     TIME_LIMIT: 120,
     MAX_ACCUMULATED: 0.5, // can redisplay frames of up to 0.5s
-    MAX_STEP_PER_FRAME: 10,
+    /** 物理子步目标帧率：与显示器刷新率解耦，固定 120Hz 保证所有设备手感一致且碰撞更精确。 */
+    TARGET_FPS: 120,
+    /** 每渲染帧最多追赶的子步数：120Hz 子步下约 133ms 追赶窗口。 */
+    MAX_STEP_PER_FRAME: 16,
+    /** 速度基准帧率：GameConf 中速度单位 px/f 以 60fps 为基准，渲染刷新率变化不改变游戏速度。 */
     DEFAULT_REFRESH_RATE: 60,
     FPS_DETECT_INTERVAL: 0.4,
     PADDING: {

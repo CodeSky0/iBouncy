@@ -12,7 +12,6 @@ import { addLocalScore, clearSynced, markSynced } from "./cloud/localScores";
 import { soundManager } from "./audio/SoundManager";
 import { touchCtrl } from "./utils/TouchController";
 import { mobileAdapter } from "./utils/MobileAdapter";
-import X_CollisionParticle from "./elements_extensions/X_CollisionParticle";
 import X_NativeParticle from "./elements_extensions/X_NativeParticle";
 import { ReplayRecorder } from "./core/replay";
 import E_ReplayControls from "./elements/E_ReplayControls";
@@ -22,7 +21,6 @@ const TABLET_2PI_OVER_W = (Math.PI * 2) / UIConf.Tablet.WIDTH;
 const BV_ANGLE_SCALE = Math.PI / 30;
 
 const cloudUI = initCloudOverlay();
-const collisionParticle = new X_CollisionParticle();
 /** 原生 Canvas 粒子系统：绕过 Leafer 场景图，碰撞帧渲染快 5-10x */
 const nativeParticle = (() => {
     const cvs = document.querySelector("canvas");
@@ -167,7 +165,7 @@ function gameLoop(timeStamp: number): void {
             Ball.frameLoop_(unitProg);
             Tablet.frameLoop(unitProg);
             if (GI.collisionDetect() && Ball.vy < 0) {
-                const bv = Math.hypot(Ball.vx, Ball.vy);
+                const bv = Math.sqrt(Ball.vx * Ball.vx + Ball.vy * Ball.vy);
                 const bvP = Math.log2(bv) + 1 / Math.cos(BV_ANGLE_SCALE * bv);
                 const d = abs((Tablet as any).cx - (Ball as any).cx);
                 const dP = Math.cos(TABLET_2PI_OVER_W * d) + 0.5;
@@ -175,7 +173,6 @@ function gameLoop(timeStamp: number): void {
                 // 合并得分+连击为单一事件，减少一次事件分发
                 evBus.emit(GEV.SCORE_HIT, { delta: (0.4 * bvP + 0.16 * dP) * multiplier, combo, multiplier });
                 soundManager.playBounce();
-                collisionParticle.emit((Ball as any).cx, Math.min((Ball as any).oy, (Tablet as any).ty));
                 nativeParticle?.emit((Ball as any).cx, Math.min((Ball as any).oy, (Tablet as any).ty));
             }
         }

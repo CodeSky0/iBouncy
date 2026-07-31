@@ -36,6 +36,10 @@ export default class X_NativeParticle {
     private particles: NativeParticle[] = [];
     private lastEmitTime = 0;
     private readonly emitThrottleMs = 60;
+    /** 上一帧各粒子的绘制区域（位置+半径+1px 描边余量），用于只清除脏矩形而非全屏。 */
+    private prevRects: { x: number; y: number; r: number }[] = [];
+    /** 清除脏矩形时的外扩像素，避免残余描边。 */
+    private static readonly RECT_PAD = 1.5;
 
     /**
      * @param leaferCanvas Leafer 使用的 `<canvas>` 元素，用于定位和尺寸同步。
@@ -87,10 +91,19 @@ export default class X_NativeParticle {
     }
 
     render(dt: number): void {
-        if (this.particles.length === 0) return;
+        if (this.particles.length === 0) {
+            // 粒子清空后仍需清除上一帧残留的脏区域
+            this.clearPrevRects();
+            return;
+        }
 
         const ctx = this.ctx;
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+
+        // 只清除上一帧粒子所在的脏矩形，避免全屏 clearRect 开销
+        this.clearPrevRects();
+        this.prevRects.length = 0;
 
         // 从后向前过滤，避免 splice 开销
         let writeIdx = 0;
@@ -109,10 +122,32 @@ export default class X_NativeParticle {
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             ctx.fill();
 
+            this.prevRects.push({ x: p.x, y: p.y, r: p.r });
             this.particles[writeIdx++] = p;
         }
         this.particles.length = writeIdx;
 
         ctx.globalAlpha = 1;
+    }
+
+    /** 清除上一帧粒子绘制区域（含外扩边距），并裁剪到画布范围。 */
+    private clearPrevRects(): void {
+        const { ctx, canvas } = this;
+        const w = canvas.width;
+        const h = canvas.height;
+        for (let i = 0; i < this.prevRects.length; i++) {
+            const { x, y, r } = this.prevRects[i];
+            const pad = r + X_NativeParticle.RECT_PAD;
+            const left = x - pad;
+            const top = y - pad;
+            const size = pad * 2;
+            ctx.clearRect(
+                left < 0 ? 0 : left,
+                top < 0 ? 0 : top,
+                left + size > w ? w - (left < 0 ? 0 : left) : size,
+                top + size > h ? h - (top < 0 ? 0 : top) : size,
+            );
+        }
+        this.prevRects.length = 0;
     }
 }

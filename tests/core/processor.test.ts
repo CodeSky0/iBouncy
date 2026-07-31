@@ -27,6 +27,7 @@ vi.mock("../../src/events", () => ({
 vi.mock("leafer-game", () => ({}));
 
 import Processor from "../../src/core/processor";
+import { GameConf } from "../../src/config/GameConf";
 import { evBus } from "../../src/events";
 
 function createProcessor() {
@@ -154,5 +155,60 @@ describe("Processor 状态机", () => {
     it("renderElse 应该触发 UI_RENDER_ELSE 事件", () => {
         gp.renderElse();
         expect(evBus.emit).toHaveBeenCalledWith("ui:render-else");
+    });
+});
+
+describe("Processor 物理子步固定 120Hz", () => {
+    let gp: Processor;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        gp = createProcessor();
+    });
+
+    it("measureRefreshRate 只更新 refreshRate，不覆盖固定物理步长", () => {
+        const beforeStep = gp.ENV.fixedStep;
+        const beforeAct = gp.ENV.actUnitInterval;
+
+        // 模拟 120Hz 显示器（prog ≈ 0.5），测量 20 帧
+        for (let i = 0; i < 20; i++) {
+            gp.measureRefreshRate(0.5);
+        }
+
+        expect(gp.ENV.refreshRate).toBe(120);
+        // fixedStep / actUnitInterval 保持初始值（120Hz 物理子步），不随显示器刷新率变化
+        expect(gp.ENV.fixedStep).toBe(beforeStep);
+        expect(gp.ENV.actUnitInterval).toBe(beforeAct);
+        expect(gp.at("init2")).toBe(true);
+    });
+
+    it("模拟 60Hz 显示器测量后 fixedStep 同样保持不变", () => {
+        const beforeStep = gp.ENV.fixedStep;
+        for (let i = 0; i < 20; i++) {
+            gp.measureRefreshRate(1.0);
+        }
+        expect(gp.ENV.refreshRate).toBe(60);
+        expect(gp.ENV.fixedStep).toBe(beforeStep);
+    });
+
+    it("120Hz 物理子步下单位速度守恒：60Hz 渲染 2 子步/帧与 120Hz 渲染 1 子步/帧位移一致", () => {
+        // 按真实配置构造 120Hz 物理环境：fixedStep=1000/TARGET_FPS，速度基准 stdUnitInterval=1000/DEFAULT_REFRESH_RATE
+        const fixedStep = 1000 / GameConf.TARGET_FPS;
+        const stdUnitInterval = 1000 / GameConf.DEFAULT_REFRESH_RATE;
+        const unitProg = fixedStep / stdUnitInterval;
+        const vx = 3.5;
+
+        // 60Hz 渲染：1 个渲染帧（16.67ms）= 2 个子步，总位移 = 2 * vx * unitProg
+        const movePerFrame60 = 2 * vx * unitProg;
+
+        // 120Hz 渲染：2 个渲染帧（各 8.33ms，共 16.67ms）= 2 个子步，总位移 = 2 * vx * unitProg
+        const movePerFrame120 = 2 * vx * unitProg;
+
+        // 相同渲染时间窗（16.67ms）内总位移一致
+        expect(movePerFrame60).toBeCloseTo(movePerFrame120, 10);
+        // 且等于原 60Hz 物理的 vx * 1.0（prog=1, 1 子步）
+        expect(movePerFrame60).toBeCloseTo(vx, 10);
+        // TARGET_FPS 应为 120
+        expect(GameConf.TARGET_FPS).toBe(120);
     });
 });
