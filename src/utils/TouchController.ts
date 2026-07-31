@@ -4,7 +4,7 @@
  * 策略：
  * - 只响应虚拟摇杆的输入，不再监听全屏触摸事件
  * - 摇杆输出恒定速度（-1/0/1），与键盘控制行为一致
- * - 锁定挡板仅水平移动（忽略 dy），符合经典弹球玩法
+ * - 支持四周移动（水平 + 垂直），与键盘行为一致
  *
  * 暴露 `dx` / `dy` 归一化值（-1 ~ 1），E_Tablet 每子步读取。
  */
@@ -12,7 +12,7 @@ export class TouchController {
     /** 水平移动意图 (-1=左，1=右，0=不动) */
     dx = 0;
 
-    /** 垂直移动意图 (-1=上，1=下，0=不动) - 移动端锁定为 0 */
+    /** 垂直移动意图 (-1=上，1=下，0=不动) */
     dy = 0;
 
     /** 是否有触摸活动 */
@@ -42,21 +42,12 @@ export class TouchController {
     /**
      * 来自虚拟摇杆的输入更新
      * @param dx 摇杆水平偏移（-1 ~ 1，摇杆自身已归一化）
-     * @param dy 摇杆垂直偏移（-1 ~ 1，移动端会被忽略）
+     * @param dy 摇杆垂直偏移（-1 ~ 1，摇杆自身已归一化）
      */
-    updateFromJoystick(dx: number, _dy: number): void {
-        // 应用死区过滤，将连续偏移转换为离散方向
-        const absDx = Math.abs(dx);
-
-        // 水平方向：应用死区后输出恒定速度（-1/0/1）
-        if (absDx < this.deadZone) {
-            this.dx = 0;
-        } else {
-            this.dx = dx > 0 ? 1 : -1;
-        }
-
-        // 垂直方向：移动端锁定为 0（挡板仅水平移动）
-        this.dy = 0;
+    updateFromJoystick(dx: number, dy: number): void {
+        // 应用死区过滤，将连续偏移转换为离散方向（-1/0/1）
+        this.dx = this.#toDirection(dx);
+        this.dy = this.#toDirection(dy);
 
         // 更新活动状态
         this.active = this.dx !== 0 || this.dy !== 0;
@@ -65,12 +56,18 @@ export class TouchController {
     /**
      * 直接设置移动意图（供 MobileAdapter 内部使用）
      * @param dx 水平意图（-1/0/1）
-     * @param dy 垂直意图（-1/0/1）- 移动端会被忽略
+     * @param dy 垂直意图（-1/0/1）
      */
-    setDirection(dx: number, _dy: number): void {
+    setDirection(dx: number, dy: number): void {
         this.dx = Math.max(-1, Math.min(1, dx));
-        this.dy = 0; // 锁定垂直移动
+        this.dy = Math.max(-1, Math.min(1, dy));
         this.active = this.dx !== 0 || this.dy !== 0;
+    }
+
+    /** 死区离散化：小于死区返回 0，否则输出方向（-1/1） */
+    #toDirection(v: number): number {
+        if (Math.abs(v) < this.deadZone) return 0;
+        return v > 0 ? 1 : -1;
     }
 
     destroy(): void {
