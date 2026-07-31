@@ -634,11 +634,11 @@ canvas {
 }
 
 #cloud-ui-root .replay-pill {
-    display: flex;
-    flex-direction: column;
+    display: inline-flex;
+    align-items: center;
     gap: 8px;
-    padding: 10px 12px;
-    border-radius: var(--radius-lg);
+    padding: 5px 5px 5px 12px;
+    border-radius: var(--radius-full);
     color: rgba(255,255,255,0.96);
     border: 0.5px solid rgba(255,255,255,0.14);
     background: var(--glass-depth-low);
@@ -652,8 +652,11 @@ canvas {
         var(--spec-top);
     animation: pillBreathe 5s ease-in-out infinite, prismRim 7s ease-in-out infinite;
     transform-style: preserve-3d;
+    transition:
+        transform 0.4s var(--ease-spring),
+        box-shadow 0.4s ease,
+        border-color 0.4s ease;
     position: relative;
-    min-width: 220px;
 }
 
 /* Ambient light orb inside replay pill */
@@ -672,6 +675,7 @@ canvas {
 }
 
 #cloud-ui-root .replay-pill:hover {
+    transform: translateY(-3px) scale(1.03);
     box-shadow:
         0 0 0 0.5px rgba(140,250,210,0.18),
         0 0 0 1px rgba(120,170,255,0.10),
@@ -685,11 +689,13 @@ canvas {
 /* Progress bar */
 #cloud-ui-root .replay-progress {
     position: relative;
-    height: 6px;
+    width: 96px;
+    height: 4px;
     border-radius: var(--radius-full);
     background: rgba(255,255,255,0.08);
     cursor: pointer;
     overflow: visible;
+    flex-shrink: 0;
 }
 
 #cloud-ui-root .replay-progress-track {
@@ -713,8 +719,8 @@ canvas {
     position: absolute;
     top: 50%;
     left: 0%;
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: #fff;
     transform: translate(-50%, -50%);
@@ -735,20 +741,12 @@ canvas {
     transform: translate(-50%, -50%) scale(1.15);
 }
 
-/* Controls row */
-#cloud-ui-root .replay-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
 #cloud-ui-root .replay-time {
     font-size: 11px;
     font-weight: 520;
     color: rgba(255,255,255,0.65);
     letter-spacing: 0.2px;
     white-space: nowrap;
-    min-width: 72px;
     font-variant-numeric: tabular-nums;
 }
 
@@ -757,8 +755,8 @@ canvas {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     padding: 0;
     border-radius: var(--radius-full);
     background: var(--glass-depth-high);
@@ -799,8 +797,8 @@ canvas {
 
 /* Play button — slightly larger, teal accent */
 #cloud-ui-root .replay-play-btn {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     background: linear-gradient(
         145deg,
         rgba(94,234,212,0.28) 0%,

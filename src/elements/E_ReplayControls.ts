@@ -45,18 +45,16 @@ export default class E_ReplayControls {
         this.pill.className = "replay-fab";
         this.pill.innerHTML = `
             <div class="replay-pill">
+                <button class="replay-btn replay-play-btn" type="button" title="${t("replayControls.play")}">${PLAY_SVG}</button>
                 <div class="replay-progress">
                     <div class="replay-progress-track"></div>
                     <div class="replay-progress-fill"></div>
                     <div class="replay-progress-handle"></div>
                 </div>
-                <div class="replay-row">
-                    <span class="replay-time">0:00 / 0:00</span>
-                    <button class="replay-btn replay-play-btn" type="button" title="${t("replayControls.play")}">${PLAY_SVG}</button>
-                    <button class="replay-btn replay-speed-btn" type="button">1.0x</button>
-                    <button class="replay-btn replay-export-btn" type="button" title="${t("replayControls.export")}">${EXPORT_SVG}</button>
-                    <button class="replay-btn replay-exit-btn" type="button" title="${t("replayControls.exit")}">${EXIT_SVG}</button>
-                </div>
+                <span class="replay-time">0:00 / 0:00</span>
+                <button class="replay-btn replay-speed-btn" type="button">1.0x</button>
+                <button class="replay-btn replay-export-btn" type="button" title="${t("replayControls.export")}">${EXPORT_SVG}</button>
+                <button class="replay-btn replay-exit-btn" type="button" title="${t("replayControls.exit")}">${EXIT_SVG}</button>
             </div>
         `;
         this.root.appendChild(this.pill);
