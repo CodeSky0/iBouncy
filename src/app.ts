@@ -291,22 +291,8 @@ KS.whenUp((e) => {
             break;
         case "KeyR":
             if (GP.at("over")) {
-                // Initialize replay controls if not already done
-                if (!replayControls) {
-                    replayControls = new E_ReplayControls();
-                }
-                // Start replay of the last game
-                const replays = replayRecorder.getReplays();
-                if (replays.length > 0) {
-                    const lastReplay = replays[replays.length - 1];
-                    if (replayControls.loadReplay(lastReplay.metadata.id)) {
-                        // Hide settlement screen and mask before showing replay
-                        Settlement.hide_();
-                        Mask.hide_();
-                        replayControls.show();
-                        replayControls.startPlayback();
-                    }
-                }
+                // 统一通过 ibouncy:replay-start 事件进入回放（与虚拟按键路径一致）
+                window.dispatchEvent(new CustomEvent("ibouncy:replay-start"));
             }
             break;
         case "Escape":
