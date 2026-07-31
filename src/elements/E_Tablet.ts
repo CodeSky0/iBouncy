@@ -51,6 +51,9 @@ export default class E_Tablet extends Rect {
     #$setupEventListeners(): void {
         evBus.on(GEV.UI_RENDER_ELSE, this.render_.bind(this));
         evBus.on(GEV.GAME_RESET, this.reset_.bind(this));
+        evBus.on(GEV.GAME_START, () => this.setVisible(true));
+        evBus.on(GEV.GAME_RESTART, () => this.setVisible(true));
+        evBus.on(GEV.GAME_OVER, () => this.setVisible(false));
     }
 
     reset_(): void {
@@ -60,6 +63,12 @@ export default class E_Tablet extends Rect {
         this.vy = 0;
         this.cx = GP.bw * this.confUI.X_RATIO;
         this.y = GP.bh * this.confUI.Y_RATIO + this.confUI.Y_OFFSET;
+        // 游戏开始前（首页/结算界面）不显示挡板，开始游玩时才可见。
+        this.setVisible(false);
+    }
+
+    setVisible(visible: boolean): void {
+        this.visible = visible;
     }
 
     frameLoop(prog: number): void {

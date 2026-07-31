@@ -106,6 +106,9 @@ export default class E_ReplayControls {
         if (this.isReplayMode) {
             this.replayPlayer.start();
             this.#updatePlayIcon(true);
+            // 回放时显示游戏元素
+            Ball.setVisible(true);
+            Tablet.setVisible(true);
         }
     }
 
@@ -113,6 +116,9 @@ export default class E_ReplayControls {
         this.replayPlayer.stop();
         this.isReplayMode = false;
         this.#updatePlayIcon(false);
+        // 退出回放后回到结算界面，隐藏游戏元素
+        Ball.setVisible(false);
+        Tablet.setVisible(false);
     }
 
     update(): void {
