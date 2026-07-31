@@ -8,9 +8,7 @@
  * 4. 无键盘时提供虚拟操作按键（替代空格/回车/R 等）
  */
 
-import { evBus, GEV } from "../events";
 import { touchCtrl } from "./TouchController";
-import { GP, leafer } from "../core/instances";
 import { virtualButtons } from "./VirtualActionButtons";
 
 export type DeviceType = "desktop" | "mobile" | "tablet" | "unknown";

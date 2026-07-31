@@ -63,6 +63,9 @@ export default class E_Tablet extends Rect {
         this.vy = 0;
         this.cx = GP.bw * this.confUI.X_RATIO;
         this.y = GP.bh * this.confUI.Y_RATIO + this.confUI.Y_OFFSET;
+        // 移动端动态缩放挡板宽度：视口宽度的 40%，最小 120px
+        const mobileWidth = Math.max(120, Math.floor(GP.bw * 0.4));
+        this.width = mobileWidth;
         // 游戏开始前（首页/结算界面）不显示挡板，开始游玩时才可见。
         this.setVisible(false);
     }
