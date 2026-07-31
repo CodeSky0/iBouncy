@@ -25,6 +25,10 @@ build/
 .DS_Store
 Thumbs.db
 
+# AI tools
+.monkeycode/
+.trae/
+
 # Logs and temp
 logs/
 .tmp/
