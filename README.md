@@ -4,7 +4,7 @@
 
 > 品牌字体：[Akaya Telivigala](https://fonts.google.com/specimen/Akaya+Telivigala)
 
-[![GitHub license](https://img.shields.io/github/license/Horean0574/iBouncy)](https://github.com/Horean0574/iBouncy/blob/main/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/CodeSky0/iBouncy)](https://github.com/CodeSky0/iBouncy/blob/main/LICENSE)
 [![Vite](https://img.shields.io/badge/built%20with-Vite-646CFF?logo=vite)](https://vite.dev/)
 [![LeaferJS](https://img.shields.io/badge/powered%20by-LeaferJS-20A8D7)](https://leaferjs.com/)
 
@@ -33,7 +33,7 @@
 ### 安装步骤
 ```bash
 # 克隆项目
-git clone https://github.com/Horean0574/iBouncy.git
+git clone https://github.com/CodeSky0/iBouncy.git
 cd iBouncy
 
 # 安装依赖
@@ -235,7 +235,7 @@ $$
 - 所有贡献者和问题反馈者
 
 ## 📞 联系与支持
-- 🐛 问题反馈：[GitHub Issues](https://github.com/Horean0574/iBouncy/issues)
+- 🐛 问题反馈：[GitHub Issues](https://github.com/CodeSky0/iBouncy/issues)
 - 💡 功能建议：欢迎提交 Feature Request
 - ⭐ 喜欢这个项目？ 点个 Star 支持一下！
 

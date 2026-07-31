@@ -1,7 +1,7 @@
 {
   "name": "ibouncy",
   "version": "1.0.0",
-  "description": "Brand font: Akaya Telivigala",
+  "description": "iBouncy - an elegant, high-performance Canvas bounce game built with LeaferJS",
   "main": "src/app.ts",
   "scripts": {
     "dev": "vite",
@@ -19,16 +19,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Horean0574/iBouncy.git"
+    "url": "git+https://github.com/CodeSky0/iBouncy.git"
   },
-  "keywords": [],
+  "keywords": ["game", "canvas", "leafer", "typescript", "vite"],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/Horean0574/iBouncy/issues"
+    "url": "https://github.com/CodeSky0/iBouncy/issues"
   },
-  "homepage": "https://github.com/Horean0574/iBouncy#readme",
+  "homepage": "https://github.com/CodeSky0/iBouncy#readme",
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@types/cookie": "^1.0.0",
