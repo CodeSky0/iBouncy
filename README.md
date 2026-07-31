@@ -2,7 +2,7 @@
 
 > 一个优雅、高性能的 Canvas 弹球游戏，基于 LeaferJS 构建
 
-> 基于[ibouncy]([https://fonts.google.com/specimen/Akaya+Telivigala](https://github.com/Horean0574/iBouncy))的测试分支
+> 基于[ibouncy](https://github.com/Horean0574/iBouncy))的测试分支
 
 > 品牌字体：[Akaya Telivigala](https://fonts.google.com/specimen/Akaya+Telivigala)
 
