@@ -3,7 +3,7 @@
  *
  * 策略：
  * - 只响应虚拟摇杆的输入，不再监听全屏触摸事件
- * - 摇杆输出恒定速度（-1/0/1），与键盘控制行为一致
+ * - 摇杆输出连续模拟量（-1 ~ 1），挡板按拖动幅度比例调速，可精细微操
  * - 支持四周移动（水平 + 垂直），与键盘行为一致
  *
  * 暴露 `dx` / `dy` 归一化值（-1 ~ 1），E_Tablet 每子步读取。
@@ -18,8 +18,11 @@ export class TouchController {
     /** 是否有触摸活动 */
     active = false;
 
-    /** 摇杆死区阈值（归一化值），小于此值视为无意图 */
-    private deadZone = 0.3;
+    /**
+     * 摇杆死区阈值（归一化值），小于此值视为无意图。
+     * 0.15 ≈ 摇杆 50px 半径下约 7.5px 的微动即触发，移动端小幅操作也能立即响应。
+     */
+    private deadZone = 0.15;
 
     private w = 0;
     private h = 0;
@@ -45,9 +48,9 @@ export class TouchController {
      * @param dy 摇杆垂直偏移（-1 ~ 1，摇杆自身已归一化）
      */
     updateFromJoystick(dx: number, dy: number): void {
-        // 应用死区过滤，将连续偏移转换为离散方向（-1/0/1）
-        this.dx = this.#toDirection(dx);
-        this.dy = this.#toDirection(dy);
+        // 应用死区过滤，输出连续模拟量（-1 ~ 1），允许挡板按拖动幅度比例调速
+        this.dx = this.#applyDeadZone(dx);
+        this.dy = this.#applyDeadZone(dy);
 
         // 更新活动状态
         this.active = this.dx !== 0 || this.dy !== 0;
@@ -64,10 +67,16 @@ export class TouchController {
         this.active = this.dx !== 0 || this.dy !== 0;
     }
 
-    /** 死区离散化：小于死区返回 0，否则输出方向（-1/1） */
-    #toDirection(v: number): number {
-        if (Math.abs(v) < this.deadZone) return 0;
-        return v > 0 ? 1 : -1;
+    /**
+     * 死区过滤 + 重新映射：死区内输出 0，死区外将剩余幅度平滑映射到 0 ~ 1，
+     * 保证刚越过死区时不会直接跳到满速，微操更细腻。
+     */
+    #applyDeadZone(v: number): number {
+        const magnitude = Math.abs(v);
+        if (magnitude < this.deadZone) return 0;
+        const sign = v > 0 ? 1 : -1;
+        const rescaled = (magnitude - this.deadZone) / (1 - this.deadZone);
+        return sign * Math.min(1, rescaled);
     }
 
     destroy(): void {

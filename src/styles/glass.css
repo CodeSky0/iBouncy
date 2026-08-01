@@ -18,6 +18,8 @@
 body {
     width: 100vw;
     height: 100vh;
+    /* 移动端动态地址栏适配：dvh 随可见视口变化，避免底部 UI 被遮挡 */
+    height: 100dvh;
     margin: 0;
     overflow: hidden;
     background: #080810;
@@ -40,6 +42,8 @@ canvas {
     position: fixed;
     width: 100vw;
     height: 100vh;
+    /* 移动端动态地址栏适配 */
+    height: 100dvh;
     z-index: 0;
 }
 
@@ -1933,4 +1937,11 @@ canvas {
     box-shadow:
         0 8px 36px rgba(74,158,255,0.35),
         var(--spec-top);
+}
+
+/* 移动端性能优化：禁用全屏背景渐变动画，减少 GPU 合成开销 */
+@media (max-width: 768px) {
+    body {
+        animation: none;
+    }
 }

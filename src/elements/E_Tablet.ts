@@ -4,6 +4,7 @@ import { evBus, GEV } from "../events";
 import { GI, GP } from "../core/instances";
 import { GameConf, UIConf } from "../config";
 import { touchCtrl } from "../utils/TouchController";
+import { mobileAdapter } from "../utils/MobileAdapter";
 
 export default class E_Tablet extends Rect {
     confUI = UIConf.Tablet;
@@ -12,7 +13,8 @@ export default class E_Tablet extends Rect {
     vyMax!: number;
     vx!: number;
     vy!: number;
-    availZone: [number, number, number, number] = [80, 40, 0, 40]; // Top, Right, Bottom, Left
+    /** Top, Right, Bottom, Left；小屏上侧边 padding 收窄，让挡板能覆盖更靠边的球 */
+    availZone: [number, number, number, number] = [80, 40, 0, 40];
 
     /** 复用 `{ paddings }`，避免每子步分配新对象 */
     private readonly tabletBoundaryOpts: { paddings: [number, number, number, number] };
@@ -30,6 +32,10 @@ export default class E_Tablet extends Rect {
             height: UIConf.Tablet.HEIGHT,
             fill: UIConf.Tablet.FILL,
         });
+        // 移动端视口窄，40px 侧边死区占屏宽比例过大，收窄到 12px 提升边缘接球能力
+        if (mobileAdapter.getDeviceType() === "mobile") {
+            this.availZone = [60, 12, 0, 12];
+        }
         this.tabletBoundaryOpts = { paddings: this.availZone };
         this.#$setupKeyboardDetection();
         this.#$setupEventListeners();

@@ -293,7 +293,12 @@ export class MobileAdapter {
     }
 
     /**
-     * 绑定摇杆触摸事件
+     * 绑定摇杆触摸事件。
+     *
+     * 使用 Pointer Events + setPointerCapture：
+     * - 手指按下后即使拖出摇杆元素也能持续收到 pointermove，不再丢事件
+     * - 用 pointerId 锁定首个触摸手指，忽略手掌/其他手指误触
+     * - 同时覆盖触摸屏、触控笔与鼠标，移除对 touch/mouse 双套监听的依赖
      */
     #bindJoystickEvents(joystick: HTMLElement): void {
         const stick = joystick.querySelector(".joystick-stick") as HTMLElement;
@@ -301,26 +306,12 @@ export class MobileAdapter {
         if (!stick || !base) return;
 
         let active = false;
+        let pointerId = -1;
         let startX = 0;
         let startY = 0;
         const maxRadius = 50;
 
-        const handleStart = (e: TouchEvent | MouseEvent) => {
-            e.preventDefault();
-            active = true;
-            const rect = base.getBoundingClientRect();
-            startX = rect.left + rect.width / 2;
-            startY = rect.top + rect.height / 2;
-            stick.classList.add("active");
-        };
-
-        const handleMove = (e: TouchEvent | MouseEvent) => {
-            if (!active) return;
-            e.preventDefault();
-
-            const clientX = "touches" in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
-            const clientY = "touches" in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
-
+        const applyStick = (clientX: number, clientY: number): void => {
             const deltaX = clientX - startX;
             const deltaY = clientY - startY;
             const distance = Math.min(Math.hypot(deltaX, deltaY), maxRadius);
@@ -334,21 +325,47 @@ export class MobileAdapter {
             touchCtrl.updateFromJoystick(stickX / maxRadius, stickY / maxRadius);
         };
 
-        const handleEnd = (e: TouchEvent | MouseEvent) => {
+        const handlePointerDown = (e: PointerEvent) => {
+            // 已有手指在控制时忽略新的指针（多指/手掌误触）
+            if (active) return;
+            e.preventDefault();
+            e.stopPropagation();
+            active = true;
+            pointerId = e.pointerId;
+
+            try {
+                // 捕获指针，手指移出摇杆元素后仍持续收到 pointermove/pointerup
+                joystick.setPointerCapture(pointerId);
+            } catch {
+                // 某些环境不支持捕获时退化为普通事件流
+            }
+
+            const rect = base.getBoundingClientRect();
+            startX = rect.left + rect.width / 2;
+            startY = rect.top + rect.height / 2;
+            stick.classList.add("active");
+        };
+
+        const handlePointerMove = (e: PointerEvent) => {
+            if (!active || e.pointerId !== pointerId) return;
+            e.preventDefault();
+            applyStick(e.clientX, e.clientY);
+        };
+
+        const handlePointerEnd = (e: PointerEvent) => {
+            if (!active || e.pointerId !== pointerId) return;
             e.preventDefault();
             active = false;
+            pointerId = -1;
             stick.classList.remove("active");
             stick.style.transform = "translate(0, 0)";
             touchCtrl.updateFromJoystick(0, 0);
         };
 
-        joystick.addEventListener("touchstart", handleStart, { passive: false });
-        joystick.addEventListener("touchmove", handleMove, { passive: false });
-        joystick.addEventListener("touchend", handleEnd, { passive: false });
-
-        joystick.addEventListener("mousedown", handleStart);
-        document.addEventListener("mousemove", handleMove);
-        document.addEventListener("mouseup", handleEnd);
+        joystick.addEventListener("pointerdown", handlePointerDown);
+        joystick.addEventListener("pointermove", handlePointerMove);
+        joystick.addEventListener("pointerup", handlePointerEnd);
+        joystick.addEventListener("pointercancel", handlePointerEnd);
     }
 
     /**
