@@ -148,7 +148,10 @@ export default class E_Scoring extends Group {
     }
 
     relocate_(e: IResizeLike): void {
-        this.cx = e.width / 2;
+        // 用显式 x 定位而非 cx：本 Group 的 width 会被初始位于屏幕外的
+        // Integer/Decimal/Combo 文本撑大，依赖 cx 会导致 resize 时整体漂移。
+        // Panel 中心在 Group 局部坐标 x=Panel.x（=120），保持其处于屏幕水平中心。
+        this.x = e.width / 2 - this.Panel.x!;
         this.#newScore_();
     }
 
