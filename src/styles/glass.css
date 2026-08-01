@@ -1939,9 +1939,10 @@ canvas {
         var(--spec-top);
 }
 
-/* 移动端性能优化：禁用全屏背景渐变动画，减少 GPU 合成开销 */
-@media (max-width: 768px) {
+/* 移动端性能优化：禁用全屏背景渐变动画并简化多层背景，减少持续绘制与 GPU 合成开销 */
+@media (pointer: coarse) {
     body {
         animation: none;
+        background-image: linear-gradient(180deg, #080810 0%, #0C0C1E 40%, #0A0A19 100%);
     }
 }

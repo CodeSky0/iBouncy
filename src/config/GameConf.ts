@@ -12,6 +12,10 @@ export const GameConf = {
     TARGET_FPS: 120,
     /** 每渲染帧最多追赶的子步数：120Hz 子步下约 133ms 追赶窗口。 */
     MAX_STEP_PER_FRAME: 16,
+    /** 移动端物理子步帧率：低端移动设备 CPU 有限，60Hz 子步已足够精确，能明显降低卡顿。 */
+    MOBILE_TARGET_FPS: 60,
+    /** 移动端每渲染帧最多追赶的子步数：60Hz 子步下约 133ms 追赶窗口。 */
+    MOBILE_MAX_STEP_PER_FRAME: 8,
     /** 速度基准帧率：GameConf 中速度单位 px/f 以 60fps 为基准，渲染刷新率变化不改变游戏速度。 */
     DEFAULT_REFRESH_RATE: 60,
     FPS_DETECT_INTERVAL: 0.4,

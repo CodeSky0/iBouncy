@@ -26,15 +26,22 @@ export default class E_Tablet extends Rect {
     // 键盘活动标记
     private keyboardActive = false;
 
+    /** 移动端挡板速度加成：弥补摇杆模拟量输入下挡板需比球更快的追赶能力 */
+    private readonly mobileBoost: number;
+
     constructor() {
         super({
             width: UIConf.Tablet.WIDTH,
             height: UIConf.Tablet.HEIGHT,
             fill: UIConf.Tablet.FILL,
         });
-        // 移动端视口窄，40px 侧边死区占屏宽比例过大，收窄到 12px 提升边缘接球能力
+        // 移动端视口窄，40px 侧边死区占屏宽比例过大，收窄到 12px 提升边缘接球能力；
+        // 同时提速挡板（约 1.25x），保证摇杆半推时也能追上弹球，避免"挡板没反应导致掉球"。
         if (mobileAdapter.getDeviceType() === "mobile") {
             this.availZone = [60, 12, 0, 12];
+            this.mobileBoost = 1.25;
+        } else {
+            this.mobileBoost = 1;
         }
         this.tabletBoundaryOpts = { paddings: this.availZone };
         this.#$setupKeyboardDetection();
@@ -63,8 +70,8 @@ export default class E_Tablet extends Rect {
     }
 
     reset_(): void {
-        this.vxMax = this.confGm.VX;
-        this.vyMax = this.confGm.VY;
+        this.vxMax = this.confGm.VX * this.mobileBoost;
+        this.vyMax = this.confGm.VY * this.mobileBoost;
         this.vx = 0;
         this.vy = 0;
         this.cx = GP.bw * this.confUI.X_RATIO;

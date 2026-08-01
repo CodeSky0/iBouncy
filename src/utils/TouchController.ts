@@ -20,9 +20,9 @@ export class TouchController {
 
     /**
      * 摇杆死区阈值（归一化值），小于此值视为无意图。
-     * 0.15 ≈ 摇杆 50px 半径下约 7.5px 的微动即触发，移动端小幅操作也能立即响应。
+     * 0.08 ≈ 摇杆 60px 行程下约 4.8px 的微动即触发，移动端小幅操作也能立即响应。
      */
-    private deadZone = 0.15;
+    private deadZone = 0.08;
 
     private w = 0;
     private h = 0;
@@ -68,15 +68,16 @@ export class TouchController {
     }
 
     /**
-     * 死区过滤 + 重新映射：死区内输出 0，死区外将剩余幅度平滑映射到 0 ~ 1，
-     * 保证刚越过死区时不会直接跳到满速，微操更细腻。
+     * 死区过滤 + 重新映射：死区内输出 0，死区外将剩余幅度平滑映射到 0 ~ 1。
+     * 最后再开平方根，放大低幅度区间的输出，保证刚越过死区时挡板能立即启动，
+     * 小幅推动也有足够速度追上弹球（线性映射下半推挡板速度低于球速，球容易落空）。
      */
     #applyDeadZone(v: number): number {
         const magnitude = Math.abs(v);
         if (magnitude < this.deadZone) return 0;
         const sign = v > 0 ? 1 : -1;
         const rescaled = (magnitude - this.deadZone) / (1 - this.deadZone);
-        return sign * Math.min(1, rescaled);
+        return sign * Math.sqrt(Math.min(1, rescaled));
     }
 
     destroy(): void {

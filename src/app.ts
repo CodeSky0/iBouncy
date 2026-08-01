@@ -104,8 +104,9 @@ const ensureAudio = () => {
     soundManager.ensure();
     audioEnsured = true;
 };
-document.addEventListener("pointerdown", ensureAudio, { once: true });
-document.addEventListener("keydown", ensureAudio, { once: true });
+// capture 阶段监听：摇杆/虚拟按钮的 stopPropagation 不会截断，首次操作即可初始化音频
+document.addEventListener("pointerdown", ensureAudio, { once: true, capture: true });
+document.addEventListener("keydown", ensureAudio, { once: true, capture: true });
 
 window.addEventListener("unload", () => {
     if (rafId) cancelAnimationFrame(rafId);

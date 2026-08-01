@@ -309,7 +309,11 @@ export class MobileAdapter {
         let pointerId = -1;
         let startX = 0;
         let startY = 0;
-        const maxRadius = 50;
+        // 摇杆最大行程：与 base 尺寸匹配（小屏 base 112 半径 56），行程大则控制更精细
+        const maxRadius = 60;
+        // CSS 中 stick 以自身中心为锚点（translate(-50%,-50%)），JS 位移必须保留该居中偏移，
+        // 否则 stick 视觉位置会偏右下且松手后无法回中。
+        const resetStick = () => (stick.style.transform = "translate(-50%, -50%)");
 
         const applyStick = (clientX: number, clientY: number): void => {
             const deltaX = clientX - startX;
@@ -320,7 +324,7 @@ export class MobileAdapter {
             const stickX = Math.cos(angle) * distance;
             const stickY = Math.sin(angle) * distance;
 
-            stick.style.transform = `translate(${stickX}px, ${stickY}px)`;
+            stick.style.transform = `translate(${stickX}px, ${stickY}px) translate(-50%, -50%)`;
 
             touchCtrl.updateFromJoystick(stickX / maxRadius, stickY / maxRadius);
         };
@@ -358,7 +362,7 @@ export class MobileAdapter {
             active = false;
             pointerId = -1;
             stick.classList.remove("active");
-            stick.style.transform = "translate(0, 0)";
+            resetStick();
             touchCtrl.updateFromJoystick(0, 0);
         };
 

@@ -10,14 +10,20 @@ import EmbeddedTimer from "../utils/EmbeddedTimer";
 import E_Ball from "../elements/E_Ball";
 import E_Tablet from "../elements/E_Tablet";
 import E_Timing from "../elements/E_Timing";
+import { mobileAdapter } from "../utils/MobileAdapter";
+
+/** 移动端与桌面端差异化物理/渲染参数：低端移动设备降频以缓解卡顿。 */
+const isMobileDevice = mobileAdapter.getDeviceType() === "mobile";
+const targetFps = isMobileDevice ? GameConf.MOBILE_TARGET_FPS : GameConf.TARGET_FPS;
+const maxStepPerFrame = isMobileDevice ? GameConf.MOBILE_MAX_STEP_PER_FRAME : GameConf.MAX_STEP_PER_FRAME;
 
 export const leafer = new Leafer({
     view: document.querySelector("canvas")!,
     fill: UIConf.BACKGROUND_FILL,
-    // 渲染帧率上限对齐物理子步（120Hz），高刷显示器上渲染不设 60FPS 限制
-    maxFPS: GameConf.TARGET_FPS,
-    // 限制画布像素比，避免 3x Retina 屏渲染面积放大 9 倍导致卡顿；2x 视觉几乎无差别
-    pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+    // 渲染帧率上限对齐物理子步：移动端 60fps，桌面端对齐 120Hz 物理子步
+    maxFPS: targetFps,
+    // 限制画布像素比，避免高倍 Retina 屏渲染面积过大导致卡顿；移动端进一步降到 1.5x，视觉几乎无差别
+    pixelRatio: Math.min(window.devicePixelRatio || 1, isMobileDevice ? 1.5 : 2),
     pointer: {
         preventDefaultMenu: true,
     },
@@ -34,16 +40,17 @@ const defFrameInterval = 1000 / GameConf.DEFAULT_REFRESH_RATE;
  * viewport dimensions (`.bw` / `.bh`), environment config (`.ENV`),
  * and asset loading helpers (`fontInitializer`, `ImageInitializer`).
  *
- * 物理子步固定 `1000 / TARGET_FPS`（120Hz）：60Hz 显示器每渲染帧执行 2 个子步，
- * 120Hz+ 显示器每帧 1 个子步，物理精度与手感在所有刷新率设备上保持一致。
+ * 物理子步固定 `1000 / TARGET_FPS`：桌面端 120Hz，移动端 60Hz。
+ * 桌面 60Hz 显示器每渲染帧执行 2 个子步、移动端每帧 1 个子步，
+ * 物理精度与手感在各自设备上保持一致，且降低移动端 CPU 负担。
  */
 export const GP = new Processor(
     {
         refreshRate: GameConf.DEFAULT_REFRESH_RATE,
-        actUnitInterval: 1000 / GameConf.TARGET_FPS,
+        actUnitInterval: 1000 / targetFps,
         stdUnitInterval: defFrameInterval,
-        fixedStep: 1000 / GameConf.TARGET_FPS,
-        maxStepPerFrame: GameConf.MAX_STEP_PER_FRAME,
+        fixedStep: 1000 / targetFps,
+        maxStepPerFrame,
         paddingTop: GameConf.PADDING.TOP,
         paddingSide: GameConf.PADDING.SIDE,
         timeLimit: GameConf.TIME_LIMIT,

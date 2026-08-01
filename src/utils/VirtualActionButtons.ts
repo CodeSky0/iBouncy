@@ -124,14 +124,9 @@ export class VirtualActionButtons {
         btn.className = `vb-btn ${config.className}`;
         btn.textContent = t(config.i18nKey as any);
         btn.setAttribute("data-action", config.action);
-        // pointerdown 用于鼠标/触控笔
+        // 统一使用 pointerdown：覆盖鼠标、触摸、触控笔，避免 pointerdown + touchstart
+        // 双监听在触摸设备上触发两次动作（如开始被连续执行两次）。
         btn.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.#handleAction(config.action);
-        });
-        // touchstart 用于手指触摸，必须阻止冒泡避免触发全局控制
-        btn.addEventListener("touchstart", (e) => {
             e.preventDefault();
             e.stopPropagation();
             this.#handleAction(config.action);
