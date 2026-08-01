@@ -76,6 +76,9 @@ export default class E_Ball extends Ellipse {
     prepare_(): void {
         if (!this.trailing) {
             this.trailing = new X_BallTrailing();
+            // render_() 在 UI_RENDER_ELSE 阶段执行时 trailing 尚未创建，
+            // 此处补充将拖尾点加入 Leafer 渲染树，否则拖尾永远不会显示。
+            this.trailing.render();
         }
         this.trailing.prepare();
     }

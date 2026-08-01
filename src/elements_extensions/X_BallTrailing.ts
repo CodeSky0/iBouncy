@@ -31,6 +31,8 @@ export default class X_BallTrailing {
                     around: "center",
                     fill: UIConf.BallTrailing.FILL,
                     visible: false,
+                    // 拖尾点位于球下层（球已先加入渲染树，zIndex 较低保持拖尾在球后）
+                    zIndex: -1,
                 }),
             );
         }
